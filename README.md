@@ -9,7 +9,7 @@ Turn your IDE into a Senior Engineering Team. This repository contains the "Gove
 Run this command in any project root:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/antigravity-core/main/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 ```
 
 ## Features

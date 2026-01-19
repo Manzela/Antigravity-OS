@@ -1,8 +1,8 @@
 #!/bin/bash
 # Antigravity OS Installer (V1.0)
-# Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/antigravity-core/main/install.sh)"
+# Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
-REPO_URL="https://raw.githubusercontent.com/manzela/antigravity-core/main"
+REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 TARGET_DIR="$(pwd)"
 
 echo "🚀 Installing Antigravity OS..."
