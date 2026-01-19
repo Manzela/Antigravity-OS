@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flight Recorder State Object",
+  "description": "The deterministic state object for Antigravity V2.1",
+  "type": "object",
+  "required": ["trace_id", "status", "owner"],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["PLANNING", "BUILDING", "READY_FOR_MERGE", "PROD_ALERT"] },
+    "owner": { "type": "string" },
+    "handover_manifest": { "type": "object" }
+  }
+}
