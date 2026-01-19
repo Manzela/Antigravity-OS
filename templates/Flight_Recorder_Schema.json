@@ -3,11 +3,36 @@
   "title": "Flight Recorder State Object",
   "description": "The deterministic state object for Antigravity V2.1",
   "type": "object",
-  "required": ["trace_id", "status", "owner"],
+  "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
     "trace_id": { "type": "string" },
-    "status": { "type": "string", "enum": ["PLANNING", "BUILDING", "READY_FOR_MERGE", "PROD_ALERT"] },
+    "status": {
+      "type": "string",
+      "enum": ["PLANNING", "PLAN_APPROVED", "BUILDING", "BUILD_COMPLETE", "NEEDS_REVISION", "READY_FOR_MERGE", "PROD_ALERT"]
+    },
+    "loop_count": { "type": "integer", "description": "Max 5 before human intervention." },
     "owner": { "type": "string" },
-    "handover_manifest": { "type": "object" }
+    "handover_manifest": {
+      "type": "object",
+      "description": "Critical metadata enforcing Rule 06.",
+      "properties": {
+        "build_image_digest": { "type": "string" },
+        "plan_md_path": { "type": "string" },
+        "api_contract_version": { "type": "string" },
+        "test_suite_id": { "type": "string" },
+        "preview_url": { "type": "string" }
+      }
+    },
+    "feedback_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "string" },
+          "verdict": { "type": "string", "enum": ["PASS", "FAIL"] },
+          "reason": { "type": "string" }
+        }
+      }
+    }
   }
 }
