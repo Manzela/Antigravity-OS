@@ -366,7 +366,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Cost Guard (Rule 08)
         run: |
-          python .agent/sentinel/cost_guard.py 15.00
+          if [ -f .agent/sentinel/cost_guard.py ]; then
+            python .agent/sentinel/cost_guard.py 15.00
+          elif [ -f templates/sentinel/cost_guard.py ]; then
+            python templates/sentinel/cost_guard.py 15.00
+          else
+            echo "::error::Cost Guard script not found!"
+            exit 1
+          fi
       - name: Security Scan (Rule 03)
         run: echo "Running Trivy Scan..."
   
@@ -446,6 +453,8 @@ curl -s "\$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governa
 curl -s "\$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
 curl -s "\$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
 curl -s "\$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
+curl -s "\$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workflows/antigravity-gatekeeper.yml
+curl -s "\$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
 chmod +x scripts/sync_governance.sh
 
 # 6. Inject Bridge

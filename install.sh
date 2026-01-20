@@ -37,6 +37,8 @@ curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governan
 curl -s "$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
 curl -s "$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
 curl -s "$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
+curl -s "$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workflows/antigravity-gatekeeper.yml
+curl -s "$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
 chmod +x scripts/sync_governance.sh
 
 # 6. Inject Bridge
