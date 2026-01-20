@@ -678,6 +678,57 @@ cat <<EOF > templates/tests/package.json
 }
 EOF
 
+cat <<EOF > templates/tests/test_jira_bridge.py
+import unittest
+import sys
+import os
+import json
+
+# Add path to find jira_bridge in templates/observability
+current_dir = os.path.dirname(os.path.abspath(__file__))
+bridge_path = os.path.abspath(os.path.join(current_dir, "../observability"))
+sys.path.append(bridge_path)
+
+try:
+    import jira_bridge
+except ImportError:
+    # Fallback if running from different context
+    sys.path.append(os.path.abspath("templates/observability"))
+    import jira_bridge
+
+class TestJiraBridge(unittest.TestCase):
+    def test_construct_flight_recorder_payload(self):
+        """Test R 6.5 Schema Compliance"""
+        trace_id = "test-trace-123"
+        git_hash = "abc1234"
+        logs = "Critical failure in engine"
+        owner = "jane.doe@example.com"
+        
+        payload = jira_bridge.construct_flight_recorder_payload(
+            trace_id, git_hash, logs, owner, status_code="Critical"
+        )
+        
+        # Level 1: Key Existence
+        self.assertIn("trace_id", payload)
+        self.assertIn("span_id", payload)
+        self.assertIn("resource", payload)
+        self.assertIn("logs", payload)
+        
+        # Level 2: Value Correctness
+        self.assertEqual(payload["trace_id"], trace_id)
+        self.assertEqual(payload["status"]["code"], "Critical")
+        self.assertEqual(payload["resource"]["vcs.revision.id"], git_hash)
+        self.assertEqual(payload["attributes"]["owner"], owner)
+        
+        # Level 3: Structure
+        self.assertIsInstance(payload["logs"], list)
+        self.assertEqual(payload["logs"][0]["body"], logs)
+        self.assertEqual(payload["logs"][0]["severity"], "ERROR")
+
+if __name__ == "__main__":
+    unittest.main()
+EOF
+
 # --- TESTS ---
 cat <<EOF > templates/scripts/run_e2e.sh
 #!/bin/bash
@@ -695,6 +746,94 @@ echo "[TEST 1] Cost Guard Solvency Check (nvidia_l4)..."
 python3 templates/sentinel/cost_guard.py 1.0 --tier nvidia_l4 || { echo "[FAIL] Cost Guard blocked valid request"; exit 1; }
 
 # 2. Simulate Build Failure & File Ticket
+echo "[TEST 2] Simulating Build Failure..."
+echo "Build Failed: Syntax Error in src/main.py" > build_fail.log
+echo "[TEST 2] Filing Jira Ticket (Target: TNG)..."
+python3 templates/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: http://localhost/logs" "TNG" --log-file build_fail.log
+
+# 3. Verify Traceability
+echo "[TEST 3] Verifying Traceability (Fetch Logs)..."
+python3 templates/observability/jira_bridge.py --fetch
+
+echo "----------------------------------------"
+echo "[SUCCESS] End-to-End Verification Passed."
+EOF
+
+cat <<EOF > templates/scripts/run_qa.sh
+#!/bin/bash
+# Antigravity QA Orchestrator (Phase 7)
+# Runs Static Analysis (ShellCheck) and Unit Tests (Pytest/Unittest)
+
+set -e
+
+echo "========================================"
+echo "   ANTIGRAVITY QA SUITE (V2.5.1)        "
+echo "========================================"
+
+# 1. Static Analysis (Dockerized ShellCheck)
+echo "[QA-1] Running ShellCheck (via Docker)..."
+if command -v docker >/dev/null 2>&1; then
+    # Linting build_product.sh and install.sh
+    # Excluding SC2016 (Expressions in single quotes) if necessary, but broadly standard
+    docker run --rm -v "\$(pwd):/mnt" koalaman/shellcheck:stable \
+        build_product.sh install.sh templates/scripts/*.sh \
+        || echo "[WARN] ShellCheck found issues. Review output above."
+else
+    echo "[SKIP] Docker not found. Skipping ShellCheck."
+fi
+
+# 2. Unit Testing (Jira Bridge Logic)
+echo "[QA-2] Running Unit Tests (Python)..."
+export PYTHONPATH=\$PYTHONPATH:\$(pwd)
+if python3 -c "import pytest" >/dev/null 2>&1; then
+    python3 -m pytest templates/tests/test_jira_bridge.py -v
+else
+    echo "[INFO] Pytest not installed. Falling back to Unittest."
+    python3 templates/tests/test_jira_bridge.py
+fi
+
+echo "========================================"
+echo "[SUCCESS] QA Suite Completed."
+echo "========================================"
+EOF
+
+cat <<EOF > templates/scripts/run_qa.sh
+#!/bin/bash
+# Antigravity QA Orchestrator (Phase 7)
+# Runs Static Analysis (ShellCheck) and Unit Tests (Pytest/Unittest)
+
+set -e
+
+echo "========================================"
+echo "   ANTIGRAVITY QA SUITE (V2.5.1)        "
+echo "========================================"
+
+# 1. Static Analysis (Dockerized ShellCheck)
+echo "[QA-1] Running ShellCheck (via Docker)..."
+if command -v docker >/dev/null 2>&1; then
+    # Linting build_product.sh and install.sh
+    # Excluding SC2016 (Expressions in single quotes) if necessary, but broadly standard
+    docker run --rm -v "\$(pwd):/mnt" koalaman/shellcheck:stable \
+        build_product.sh install.sh templates/scripts/*.sh \
+        || echo "[WARN] ShellCheck found issues. Review output above."
+else
+    echo "[SKIP] Docker not found. Skipping ShellCheck."
+fi
+
+# 2. Unit Testing (Jira Bridge Logic)
+echo "[QA-2] Running Unit Tests (Python)..."
+export PYTHONPATH=\$PYTHONPATH:\$(pwd)
+if python3 -c "import pytest" >/dev/null 2>&1; then
+    python3 -m pytest templates/tests/test_jira_bridge.py -v
+else
+    echo "[INFO] Pytest not installed. Falling back to Unittest."
+    python3 templates/tests/test_jira_bridge.py
+fi
+
+echo "========================================"
+echo "[SUCCESS] QA Suite Completed."
+echo "========================================"
+EOF
 # Creating a dummy failure log
 echo "Build Failed: Syntax Error in src/main.py" > build_fail.log
 echo "[TEST 2] Filing Jira Ticket (Target: TNG)..."
