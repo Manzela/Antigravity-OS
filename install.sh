@@ -1,13 +1,13 @@
 #!/bin/bash
-# Antigravity OS Installer (V2.1 Enterprise)
+# Antigravity OS Installer (V2.2 Enterprise)
 # Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
 REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 
-echo "Installing Antigravity OS (V2.1)..."
+echo "Installing Antigravity OS (V2.2)..."
 
 # 1. Scaffold Directory Structure
-mkdir -p .agent/rules .agent/workflows
+mkdir -p .agent/rules .agent/workflows scripts
 mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
 mkdir -p docs/Runbooks src tests
 
@@ -20,6 +20,7 @@ curl -s "$REPO_URL/templates/SKILLS.md" > .agent/SKILLS.md
 echo "Initializing State Machine..."
 curl -s "$REPO_URL/templates/Flight_Recorder_Schema.json" > docs/Flight_Recorder_Schema.json
 curl -s "$REPO_URL/templates/docs/Agent_Handover_Contracts.md" > docs/Agent_Handover_Contracts.md
+curl -s "$REPO_URL/templates/docs/SDLC_Friction_Log.md" > docs/SDLC_Friction_Log.md
 
 if [ ! -f docs/API_Contract.md ]; then
     curl -s "$REPO_URL/templates/docs/API_Contract.md" > docs/API_Contract.md
@@ -27,17 +28,22 @@ fi
 
 # 4. Fetch Rules
 echo "Ratifying Constitution..."
-for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md; do
+for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md; do
     curl -s "$REPO_URL/templates/rules/$rule" > .agent/rules/$rule
 done
 
-# 5. Inject Bridge
+# 5. Fetch Scripts
+curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
+chmod +x scripts/sync_governance.sh
+
+# 6. Inject Bridge
 cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.1)
+# Antigravity Compatibility Bridge (V2.2)
 SYSTEM_INSTRUCTION:
 "IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
 "Your Source of Truth is .agent/rules/."
 "You must output the Flight Recorder JSON at the start of every turn."
+"If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
 EOT
 
-echo "Antigravity OS V2.1 Installed. System Online."
+echo "Antigravity OS V2.2 Installed. System Online."

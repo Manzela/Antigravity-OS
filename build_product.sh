@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "Packaging Antigravity OS (Enterprise V2.1)..."
+echo "Packaging Antigravity OS (Enterprise V2.2 - Self-Evolving)..."
 
 # 1. Create Product Structure
-mkdir -p templates/rules templates/workflows templates/docs
+mkdir -p templates/rules templates/workflows templates/docs templates/scripts
 mkdir -p .github/workflows
 
 # --- GOVERNANCE (The Constitution) ---
@@ -61,11 +61,18 @@ cat <<EOF > templates/rules/06-handover.md
 2. **Artifacts**: Ensure plans, reports, and screenshots are saved to \`artifacts/\`.
 EOF
 
+# Rule 07 (NEW: The Nervous System)
+cat <<EOF > templates/rules/07-telemetry.md
+# Rule 07: Telemetry & Evolution
+1. **Friction Logging**: If a task fails validation or enters a loop (count > 2), you MUST append a row to \`docs/SDLC_Friction_Log.md\`.
+2. **Format**: \`| Date | Trace ID | Loop Count | Error Summary | Root Cause |\`
+3. **Evolution**: If a rule causes repeated failures, the Architect must propose a Governance Change Request (GCR).
+EOF
+
 # --- WORKFORCE (Agents) ---
-# Cleaned: Removed Emojis for professional presentation
 
 cat <<EOF > templates/AGENTS.md
-# Antigravity Workforce Registry (V2.1)
+# Antigravity Workforce Registry (V2.2)
 
 ## 1. The Architect (Planner)
 * **Role:** Strategic Planning.
@@ -87,7 +94,7 @@ cat <<EOF > templates/AGENTS.md
 
 ## 5. The Sentinel (SecOps)
 * **Role:** Security & Governance.
-* **Mandate:** Enforces Protocol C (Dependency checks) and Rule 03.
+* **Mandate:** Enforces Protocol C, scans for secrets, and maintains the \`SDLC_Friction_Log.md\`.
 EOF
 
 # --- SKILLS ---
@@ -99,15 +106,16 @@ cat <<EOF > templates/SKILLS.md
 - **run_tests**: Execute test suite.
 - **snapshot_ui**: Capture screenshots of the UI.
 - **scan_dependencies**: Check for CVEs (Sentinel).
+- **log_friction**: Append error details to the Friction Log.
 EOF
 
-# --- STATE ENGINE (Flight Recorder) ---
+# --- STATE ENGINE ---
 
 cat <<EOF > templates/Flight_Recorder_Schema.json
 {
   "\$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Flight Recorder State Object",
-  "description": "The deterministic state object for Antigravity V2.1",
+  "description": "The deterministic state object for Antigravity V2.2",
   "type": "object",
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
@@ -174,20 +182,48 @@ cat <<EOF > templates/docs/API_Contract.md
 * **Description**: Single Source of Truth for Backend/Frontend integration.
 EOF
 
+# NEW: Friction Log Template
+cat <<EOF > templates/docs/SDLC_Friction_Log.md
+# SDLC Friction Log (Rule 07)
+
+This file tracks automated failures and friction points to drive the evolution of the Antigravity OS.
+
+| Date | Trace ID | Loop Count | Error Summary | Root Cause |
+| :--- | :--- | :--- | :--- | :--- |
+| YYYY-MM-DD | init-001 | 0 | Log initialized | System Setup |
+EOF
+
+# --- SCRIPTS ---
+
+# NEW: Governance Sync Script
+cat <<EOF > templates/scripts/sync_governance.sh
+#!/bin/bash
+# Antigravity Governance Sync
+# Pulls the latest rules from the Master OS Repository.
+
+REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
+
+echo "🔄 Syncing Governance Layer..."
+for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md; do
+    echo "  - Updating \$rule..."
+    curl -s "\$REPO_URL/templates/rules/\$rule" > .agent/rules/\$rule
+done
+echo "✅ Governance Synced."
+EOF
+
 # --- INSTALLER SCRIPT ---
-# Cleaned: Removed emojis for a standard Linux tool feel
 
 cat <<EOF > install.sh
 #!/bin/bash
-# Antigravity OS Installer (V2.1 Enterprise)
+# Antigravity OS Installer (V2.2 Enterprise)
 # Usage: /bin/bash -c "\$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
 REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 
-echo "Installing Antigravity OS (V2.1)..."
+echo "Installing Antigravity OS (V2.2)..."
 
 # 1. Scaffold Directory Structure
-mkdir -p .agent/rules .agent/workflows
+mkdir -p .agent/rules .agent/workflows scripts
 mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
 mkdir -p docs/Runbooks src tests
 
@@ -200,6 +236,7 @@ curl -s "\$REPO_URL/templates/SKILLS.md" > .agent/SKILLS.md
 echo "Initializing State Machine..."
 curl -s "\$REPO_URL/templates/Flight_Recorder_Schema.json" > docs/Flight_Recorder_Schema.json
 curl -s "\$REPO_URL/templates/docs/Agent_Handover_Contracts.md" > docs/Agent_Handover_Contracts.md
+curl -s "\$REPO_URL/templates/docs/SDLC_Friction_Log.md" > docs/SDLC_Friction_Log.md
 
 if [ ! -f docs/API_Contract.md ]; then
     curl -s "\$REPO_URL/templates/docs/API_Contract.md" > docs/API_Contract.md
@@ -207,128 +244,77 @@ fi
 
 # 4. Fetch Rules
 echo "Ratifying Constitution..."
-for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md; do
+for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md; do
     curl -s "\$REPO_URL/templates/rules/\$rule" > .agent/rules/\$rule
 done
 
-# 5. Inject Bridge
+# 5. Fetch Scripts
+curl -s "\$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
+chmod +x scripts/sync_governance.sh
+
+# 6. Inject Bridge
 cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.1)
+# Antigravity Compatibility Bridge (V2.2)
 SYSTEM_INSTRUCTION:
 "IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
 "Your Source of Truth is .agent/rules/."
 "You must output the Flight Recorder JSON at the start of every turn."
+"If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
 EOT
 
-echo "Antigravity OS V2.1 Installed. System Online."
+echo "Antigravity OS V2.2 Installed. System Online."
 EOF
 
 chmod +x install.sh
 
 # --- README ---
-# Cleaned: Professional Technical Specification
 
 cat <<EOF > README.md
-# Antigravity OS (V2.1 Enterprise)
+# Antigravity OS (V2.2 Enterprise)
 
 > **"High-Gravity Governance for a Weightless Developer Experience."**
 
-**Antigravity OS** is a governance kernel that transforms your IDE (Cursor, VS Code) from a simple code editor into a **deterministic software factory**. It forces AI Agents to adhere to strict SDLC protocols, ensuring that generated code is planned, secure, and tested before it ever reaches production.
-
----
-
-## The Problem: Ungoverned AI
-Most AI coding assistants operate as "Cowboy Coders." They hallucinate APIs, skip security checks, create circular dependency loops, and generate "working" code that is unmaintainable.
-
-## The Solution: Fail-Closed Architecture
-Antigravity OS installs a **Constitution** into your project. It replaces the "Chatbot" persona with an **Orchestrator** that follows a strict **Hub-and-Spoke Architecture**.
-
-* **No Planning?** The Builder Agent is blocked from writing code.
-* **No Contract?** The Frontend Agent cannot invent API endpoints.
-* **No Validation?** The QC Agent prevents the code from being merged.
+**Antigravity OS** is a governance kernel that transforms your IDE into a **deterministic software factory**. It forces AI Agents to adhere to strict SDLC protocols, ensuring that generated code is planned, secure, and tested.
 
 ---
 
 ## Core Features
 
-### 1. The Flight Recorder Protocol (State Machine)
-We do not pass raw text between agents. We pass a **Flight Recorder Object**—a deterministic JSON state ledger that tracks:
-* \`trace_id\`: The unique signature of the feature.
-* \`status\`: Rigid states (\`PLANNING\` → \`BUILDING\` → \`READY_FOR_MERGE\`).
-* \`handover_manifest\`: Cryptographic proof that the previous step was completed (e.g., a Build Digest or Test Report).
+### 1. The Flight Recorder Protocol
+We pass a **Flight Recorder Object**—a deterministic JSON state ledger that tracks \`trace_id\`, \`status\`, and \`handover_manifest\`.
 
-### 2. The Workforce (Role-Based Access Control)
-Your AI is partitioned into 5 distinct personas with separate permissions:
-1.  **The Architect (Planner)**: Reads docs, generates Markdown Plans. *Cannot write code.*
-2.  **The Builder (Full-Stack)**: Implements code based *strictly* on the Plan and API Contract.
-3.  **The Design Lead (Frontend)**: Connects UI components to the API. *Must verify against the Contract.*
-4.  **The Nerd (QC)**: Adversarial tester. Tries to break the build. *Fail-Closed Gatekeeper.*
-5.  **The Sentinel (SecOps)**: Enforces dependency governance (Protocol C) and scans for secrets.
+### 2. The Workforce (Roles)
+* **Architect (Planner)**: Generates Plans.
+* **Builder (Full-Stack)**: Writes code per Contract.
+* **Sentinel (SecOps)**: Enforces Security & Telemetry.
 
-### 3. The Constitution (Immutable Rules)
-The system injects a \`.agent/rules/\` directory containing the Laws of Physics for your project:
-* **Rule 00 (Plan First):** Code cannot exist without a signed Plan Artifact.
-* **Rule 01 (Data Contracts):** The \`API_Contract.md\` is the Single Source of Truth.
-* **Rule 06 (Strict Handover):** Agents must exchange a valid Manifest to pass the baton.
+### 3. The Constitution (Rules)
+* **Rule 00 (Plan First)**: No code without a Plan.
+* **Rule 01 (Data Contracts)**: API Contract is Truth.
+* **Rule 06 (Strict Handover)**: Validated Manifests required.
+* **Rule 07 (Telemetry)**: Automated Friction Logging.
 
 ---
 
 ## Installation
 
-Turn any repository into an Antigravity Project with one command:
+Turn any repository into an Antigravity Project:
 
 \`\`\`bash
 /bin/bash -c "\$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 \`\`\`
 
-### What this does:
-1.  **Scaffolds the Brain:** Creates \`.agent/\`, \`artifacts/\`, and \`docs/\` directories.
-2.  **Ratifies the Constitution:** Downloads the V2.1 Rule Set (00-06).
-3.  **Installs the Schema:** Deploys the \`Flight_Recorder_Schema.json\` state engine.
-4.  **Injects the Bridge:** Configures \`.cursorrules\` to force the AI to respect the new laws.
+## Evolution & Updates
 
----
+To update your project's rules to the latest Antigravity Standard:
 
-## Usage Workflow
-
-Once installed, your interaction model shifts from "Chatting" to "Commanding":
-
-**1. Initialize**
-> "Status Check."
-> *(System responds with Flight Recorder JSON: \`status: PLANNING\`)*
-
-**2. Plan**
-> "/plan-feature 'Add Dark Mode toggle to the settings page.'"
-> *(Architect Agent generates \`artifacts/plans/feat-dark-mode.md\`)*
-
-**3. Approve**
-> "Plan looks good. Proceed."
-> *(System transitions to Builder Agent. \`status: BUILDING\`)*
-
-**4. Build & Verify**
-> *(Builder writes code. QC Agent runs tests. Sentinel checks dependencies.)*
-
-**5. Merge**
-> *(System presents \`artifacts/validation-reports/report.md\` for final human sign-off.)*
-
----
-
-## System Architecture
-
-\`\`\`mermaid
-graph TD
-    User((User)) -->|Approves Plan| Hub{Flight Recorder}
-    Hub -->|Manifest| Architect[Planner Agent]
-    Hub -->|Contract| Builder[Builder Agent]
-    Hub -->|Preview URL| Design[Design Lead]
-    Hub -->|Build Hash| QC[QC Agent]
-    QC -->|Verdict: PASS| Hub
-    QC -->|Verdict: FAIL| Builder
+\`\`\`bash
+./scripts/sync_governance.sh
 \`\`\`
 
 ---
 
-*Powered by the Antigravity SDLC V2.1 Standard.*
+*Powered by the Antigravity SDLC V2.2 Standard.*
 EOF
 
-echo "Product Re-Build Complete. Ready to push V2.1 (Professional) to GitHub."
+echo "Product Re-Build Complete. Ready to push V2.2 (Self-Evolving) to GitHub."
