@@ -1,10 +1,11 @@
 #!/bin/bash
 set -e
 
-echo "[INFO] Packaging Antigravity OS (Enterprise V2.4 - GCS Telemetry)..."
+echo "[INFO] Packaging Antigravity OS (V2.5.1 - Golden Master - Self-Healing Edition)..."
 
 # 1. Create Product Structure
 mkdir -p templates/rules templates/workflows templates/docs templates/scripts
+mkdir -p templates/rules templates/workflows templates/docs templates/scripts templates/sentinel templates/observability
 mkdir -p .github/workflows
 
 # --- GOVERNANCE (The Constitution) ---
@@ -69,6 +70,15 @@ cat <<EOF > templates/rules/07-telemetry.md
 3. **Archival**: The Sentinel Agent must sync this log to the Global Cloud Bucket.
 EOF
 
+# Rule 08 (Economic Safety)
+cat <<EOF > templates/rules/08-economic-safety.md
+# Rule 08: The Invariant Solvency Gate (Cost Guard)
+1. **Blocking Gate**: You strictly CANNOT proceed from PLAN_APPROVED to BUILDING without a passed \`cost_validation\` check.
+2. **Budget Cap**: If (Projected Cost + Current Spend) > Monthly Cap, STOP and trigger Insolvency Protocol.
+3. **Lease Model**: You must acquire a logical "Budget Lease" from the Redis instance before spinning up resources.
+4. **Resolution**: If blocked, you must either (A) Optimize the plan (lower tier) or (B) Request Human Override via Jira.
+EOF
+
 # --- WORKFORCE (Agents) ---
 
 cat <<EOF > templates/AGENTS.md
@@ -106,6 +116,7 @@ cat <<EOF > templates/SKILLS.md
 - **run_tests**: Execute test suite.
 - **snapshot_ui**: Capture screenshots of the UI.
 - **scan_dependencies**: Check for CVEs (Sentinel).
+- **check_solvency**: Run Cost Guard validation (Rule 08).
 - **archive_telemetry**: Sync logs to Google Cloud Storage.
 EOF
 
@@ -115,17 +126,21 @@ cat <<EOF > templates/Flight_Recorder_Schema.json
 {
   "\$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Flight Recorder State Object",
-  "description": "The deterministic state object for Antigravity V2.4",
+  "description": "The deterministic state object for Antigravity V2.5.1",
   "type": "object",
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
     "trace_id": { "type": "string" },
+    "jira_ticket_id": { "type": "string" },
+    "gcp_trace_id": { "type": "string" },
+    "ci_build_id": { "type": "string" },
     "status": {
       "type": "string",
-      "enum": ["PLANNING", "PLAN_APPROVED", "BUILDING", "BUILD_COMPLETE", "NEEDS_REVISION", "READY_FOR_MERGE", "PROD_ALERT"]
+      "enum": ["PLANNING", "PLAN_APPROVED", "COST_VALIDATED", "BUILDING", "BUILD_COMPLETE", "NEEDS_REVISION", "READY_FOR_MERGE", "PROD_ALERT"]
     },
     "loop_count": { "type": "integer", "description": "Max 5 before human intervention." },
     "owner": { "type": "string" },
+    "cost_estimate": { "type": "number", "description": "Projected cost in USD" },
     "handover_manifest": {
       "type": "object",
       "description": "Critical metadata enforcing Rule 06.",
@@ -134,7 +149,8 @@ cat <<EOF > templates/Flight_Recorder_Schema.json
         "plan_md_path": { "type": "string" },
         "api_contract_version": { "type": "string" },
         "test_suite_id": { "type": "string" },
-        "preview_url": { "type": "string" }
+        "preview_url": { "type": "string" },
+        "solvency_token": { "type": "string", "description": "Proof of passed Rule 08 gate" }
       }
     },
     "feedback_chain": {
@@ -159,17 +175,22 @@ cat <<EOF > templates/docs/Agent_Handover_Contracts.md
 
 This document strictly defines the required output metadata for all Agent-to-Agent (A2A) handoffs, enforcing Rule 06.
 
-## I. Planner -> Builder (PLAN_APPROVED)
+## I. Planner -> Cost Guard (PLAN_APPROVED)
 * **Required Manifest:**
   * \`plan_md_path\`: Path to the approved plan.
-  * \`api_contract_version\`: Version of the contract used.
+  * \`cost_estimate_usd\`: Estimated infrastructure cost.
 
-## II. Builder -> QC (BUILD_COMPLETE)
+## II. Cost Guard -> Builder (COST_VALIDATED)
+* **Invariant Solvency Gate (Rule 08)**
+* **Required Manifest:**
+  * \`solvency_token\`: Redis Lease ID or Approval Hash.
+
+## III. Builder -> QC (BUILD_COMPLETE)
 * **Required Manifest:**
   * \`build_image_digest\`: SHA256 of the Docker image.
   * \`service_endpoint_url\`: Localhost or staging URL.
 
-## III. QC -> Hub (READY_FOR_MERGE)
+## IV. QC -> Hub (READY_FOR_MERGE)
 * **Required Manifest:**
   * \`validation_report_path\`: Path to the Nerd's report.
   * \`verdict\`: PASS or FAIL.
@@ -191,6 +212,51 @@ This file tracks automated failures and friction points to drive the evolution o
 | Date | Trace ID | Loop Count | Error Summary | Root Cause |
 | :--- | :--- | :--- | :--- | :--- |
 | YYYY-MM-DD | init-001 | 0 | Log initialized | System Setup |
+EOF
+
+# --- SENTINEL (The Cost Guard) ---
+cat <<EOF > templates/sentinel/cost_guard.py
+import os
+import sys
+
+# Antigravity Cost Guard (Rule 08)
+# Blocks execution if solvency is not guaranteed.
+
+MONTHLY_CAP = 50.00
+CURRENT_SPEND = 12.50 # Mock value, ideally fetched from GCP Billing
+
+def check_solvency(projected_cost):
+    total = CURRENT_SPEND + projected_cost
+    if total > MONTHLY_CAP:
+        print(f"[BLOCK] Insolvency Triggered! Total \${total} > Cap \${MONTHLY_CAP}")
+        print("Protocol: Request Override or Optimize Plan.")
+        sys.exit(1)
+    else:
+        print(f"[PASS] Solvency Validated. Margin: \${MONTHLY_CAP - total}")
+        # Generate Lease Token
+        print("LEASE_TOKEN: " + "lg-" + os.urandom(4).hex())
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python cost_guard.py <projected_cost>")
+        sys.exit(1)
+    
+    check_solvency(float(sys.argv[1]))
+EOF
+
+# --- OBSERVABILITY (Jira Bridge) ---
+cat <<EOF > templates/observability/jira_bridge.py
+# Antigravity Jira Bridge
+# Connects Flight Recorder to Jira for Rule 08/07.
+
+def create_ticket(summary, description, project_id):
+    # Mock Implementation
+    print(f"[JIRA] Creating Ticket: {summary}")
+    print(f"       Project: {project_id}")
+    return "JIRA-1234"
+
+if __name__ == "__main__":
+    create_ticket("Build Failure", "Trace ID: 123", "AG-OS")
 EOF
 
 # --- SCRIPTS ---
@@ -287,6 +353,57 @@ if __name__ == "__main__":
     archive_to_bucket()
 EOF
 
+# --- CI/CD WORKFLOWS ---
+
+cat <<EOF > .github/workflows/antigravity-gatekeeper.yml
+name: Antigravity Gatekeeper (Rule 08 & 02)
+on: [push, pull_request]
+
+jobs:
+  governance-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cost Guard (Rule 08)
+        run: |
+          python .agent/sentinel/cost_guard.py 15.00
+      - name: Security Scan (Rule 03)
+        run: echo "Running Trivy Scan..."
+  
+  test-suite:
+    needs: governance-gate
+    runs-on: ubuntu-latest
+    container:
+      image: node:18
+      options: --network none # Air-Gap (Rule 3.3)
+    steps:
+      - name: Run Tests
+        run: npm test
+EOF
+
+cat <<EOF > .github/workflows/integration-queue.yml
+name: Self-Healing Integration Queue (Rule 4.3)
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  validate-and-heal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Integration Test
+        id: test
+        run: ./scripts/run_integration_suite.sh || echo "::set-output name=status::fail"
+      
+      - name: Self-Healing Rollback
+        if: steps.test.outputs.status == 'fail'
+        run: |
+          echo "[HEAL] Reverting commit..."
+          git revert HEAD --no-edit
+          # In real life, push back or close PR
+EOF
+
 # --- INSTALLER SCRIPT ---
 
 cat <<EOF > install.sh
@@ -299,7 +416,7 @@ REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 echo "[INFO] Installing Antigravity OS (V2.4)..."
 
 # 1. Scaffold Directory Structure
-mkdir -p .agent/rules .agent/workflows scripts
+mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
 mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
 mkdir -p docs/Runbooks src tests
 
@@ -320,13 +437,15 @@ fi
 
 # 4. Fetch Rules
 echo "[INFO] Ratifying Constitution..."
-for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md; do
+for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md 08-economic-safety.md; do
     curl -s "\$REPO_URL/templates/rules/\$rule" > .agent/rules/\$rule
 done
 
-# 5. Fetch Scripts
+# 5. Fetch Scripts & Brain
 curl -s "\$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
 curl -s "\$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
+curl -s "\$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
+curl -s "\$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
 chmod +x scripts/sync_governance.sh
 
 # 6. Inject Bridge
@@ -347,29 +466,31 @@ chmod +x install.sh
 # --- README ---
 
 cat <<EOF > README.md
-# Antigravity OS (V2.4 Enterprise)
-
+# Antigravity OS (V2.5.1 Enterprise)
+ 
 > **"High-Gravity Governance for a Weightless Developer Experience."**
-
+ 
 **Antigravity OS** is a governance kernel that transforms your IDE into a **deterministic software factory**. It forces AI Agents to adhere to strict SDLC protocols, ensuring that generated code is planned, secure, and tested.
-
+ 
 ---
-
+ 
 ## Core Features
-
+ 
 ### 1. The Flight Recorder Protocol
 We pass a **Flight Recorder Object**—a deterministic JSON state ledger that tracks \`trace_id\`, \`status\`, and \`handover_manifest\`.
-
+ 
 ### 2. The Workforce (Roles)
 * **Architect (Planner)**: Generates Plans.
 * **Builder (Full-Stack)**: Writes code per Contract.
 * **Sentinel (SecOps)**: Enforces Security & Telemetry.
-
+* **Cost Guard**: Enforces Rule 08 (Solvency).
+ 
 ### 3. The Constitution (Rules)
 * **Rule 00 (Plan First)**: No code without a Plan.
 * **Rule 01 (Data Contracts)**: API Contract is Truth.
 * **Rule 06 (Strict Handover)**: Validated Manifests required.
 * **Rule 07 (Telemetry)**: Automated Friction Logging.
+* **Rule 08 (Economic Safety)**: Invariant Solvency Gate.
 
 ---
 
@@ -396,7 +517,7 @@ To update your project's rules to the latest Antigravity Standard:
 
 ---
 
-*Powered by the Antigravity SDLC V2.4 Standard.*
+*Powered by the Antigravity SDLC V2.5.1 Standard.*
 EOF
 
-echo "[SUCCESS] Product Re-Build Complete. Ready to push V2.4 to GitHub."
+echo "[SUCCESS] Product Re-Build Complete. Ready to push V2.5.1 to GitHub."

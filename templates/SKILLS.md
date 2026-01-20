@@ -4,4 +4,5 @@
 - **run_tests**: Execute test suite.
 - **snapshot_ui**: Capture screenshots of the UI.
 - **scan_dependencies**: Check for CVEs (Sentinel).
+- **check_solvency**: Run Cost Guard validation (Rule 08).
 - **archive_telemetry**: Sync logs to Google Cloud Storage.

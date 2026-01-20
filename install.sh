@@ -7,7 +7,7 @@ REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 echo "[INFO] Installing Antigravity OS (V2.4)..."
 
 # 1. Scaffold Directory Structure
-mkdir -p .agent/rules .agent/workflows scripts
+mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
 mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
 mkdir -p docs/Runbooks src tests
 
@@ -28,13 +28,15 @@ fi
 
 # 4. Fetch Rules
 echo "[INFO] Ratifying Constitution..."
-for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md; do
+for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md 08-economic-safety.md; do
     curl -s "$REPO_URL/templates/rules/$rule" > .agent/rules/$rule
 done
 
-# 5. Fetch Scripts
+# 5. Fetch Scripts & Brain
 curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
 curl -s "$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
+curl -s "$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
+curl -s "$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
 chmod +x scripts/sync_governance.sh
 
 # 6. Inject Bridge

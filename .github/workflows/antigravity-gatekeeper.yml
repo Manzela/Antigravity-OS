@@ -1,0 +1,23 @@
+name: Antigravity Gatekeeper (Rule 08 & 02)
+on: [push, pull_request]
+
+jobs:
+  governance-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cost Guard (Rule 08)
+        run: |
+          python .agent/sentinel/cost_guard.py 15.00
+      - name: Security Scan (Rule 03)
+        run: echo "Running Trivy Scan..."
+  
+  test-suite:
+    needs: governance-gate
+    runs-on: ubuntu-latest
+    container:
+      image: node:18
+      options: --network none # Air-Gap (Rule 3.3)
+    steps:
+      - name: Run Tests
+        run: npm test

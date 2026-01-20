@@ -1,26 +1,28 @@
-# Antigravity OS (V2.4 Enterprise)
-
+# Antigravity OS (V2.5.1 Enterprise)
+ 
 > **"High-Gravity Governance for a Weightless Developer Experience."**
-
+ 
 **Antigravity OS** is a governance kernel that transforms your IDE into a **deterministic software factory**. It forces AI Agents to adhere to strict SDLC protocols, ensuring that generated code is planned, secure, and tested.
-
+ 
 ---
-
+ 
 ## Core Features
-
+ 
 ### 1. The Flight Recorder Protocol
 We pass a **Flight Recorder Object**—a deterministic JSON state ledger that tracks `trace_id`, `status`, and `handover_manifest`.
-
+ 
 ### 2. The Workforce (Roles)
 * **Architect (Planner)**: Generates Plans.
 * **Builder (Full-Stack)**: Writes code per Contract.
 * **Sentinel (SecOps)**: Enforces Security & Telemetry.
-
+* **Cost Guard**: Enforces Rule 08 (Solvency).
+ 
 ### 3. The Constitution (Rules)
 * **Rule 00 (Plan First)**: No code without a Plan.
 * **Rule 01 (Data Contracts)**: API Contract is Truth.
 * **Rule 06 (Strict Handover)**: Validated Manifests required.
 * **Rule 07 (Telemetry)**: Automated Friction Logging.
+* **Rule 08 (Economic Safety)**: Invariant Solvency Gate.
 
 ---
 
@@ -47,4 +49,4 @@ To update your project's rules to the latest Antigravity Standard:
 
 ---
 
-*Powered by the Antigravity SDLC V2.4 Standard.*
+*Powered by the Antigravity SDLC V2.5.1 Standard.*

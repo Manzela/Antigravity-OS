@@ -1,0 +1,20 @@
+name: Self-Healing Integration Queue (Rule 4.3)
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  validate-and-heal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Integration Test
+        id: test
+        run: ./scripts/run_integration_suite.sh || echo "::set-output name=status::fail"
+      
+      - name: Self-Healing Rollback
+        if: steps.test.outputs.status == 'fail'
+        run: |
+          echo "[HEAL] Reverting commit..."
+          git revert HEAD --no-edit
+          # In real life, push back or close PR
