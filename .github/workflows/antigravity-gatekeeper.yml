@@ -47,14 +47,13 @@ jobs:
           if [ -s ci_failure.log ]; then
              echo "Triggering Jira Bridge..."
              
-             # Phase 6: Archive to GCS
-             GCS_LINK=""
+             # Phase 6: Archive to GCS (via Bridge Schema Enforcement)
+             GCS_BUCKET="gs://antigravity-logging-i-for-ai" # Hardcoded for this environment, could be secret
+             
              if [ -n "$GCP_SA_KEY" ]; then
                 echo "$GCP_SA_KEY" > gcp_key.json
                 gcloud auth activate-service-account --key-file=gcp_key.json
-                gsutil cp ci_failure.log gs://antigravity-logging-i-for-ai/$TRACE_ID.log
-                GCS_LINK="https://storage.cloud.google.com/antigravity-logging-i-for-ai/$TRACE_ID.log"
              fi
              
-             python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-link "$GCS_LINK"
+             python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-bucket "$GCS_BUCKET"
           fi

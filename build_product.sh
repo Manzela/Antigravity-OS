@@ -378,6 +378,47 @@ def get_git_info(filepath, line_number):
     except:
         return "git-error", "devops-oncall@tngshopper.com"
 
+def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, status="PROD_ALERT"):
+    """R 6.5 Schema Enforcement: Wrap logs in strict JSON Schema."""
+    import datetime
+    return {
+        "trace_id": trace_id or "unknown-trace",
+        "git_commit_hash": git_hash or "unknown-hash",
+        "jira_ticket_id": None, # Filled after creation
+        "gcp_trace_id": trace_id, # Mapping execution trace to GCP trace
+        "ci_build_id": os.getenv("GITHUB_RUN_ID", "local-run"),
+        "status": status,
+        "owner": owner,
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "logs": {
+            "stderr": log_content
+        }
+    }
+
+def upload_to_gcs(payload, bucket_name, trace_id):
+    """R 6.5 Upload validated JSON payload to GCS."""
+    if not bucket_name or not trace_id: return None
+    
+    filename = f"trace_{trace_id}.json"
+    local_path = f"/tmp/{filename}"
+    gcs_path = f"{bucket_name}/{filename}"
+    
+    try:
+        with open(local_path, "w") as f:
+            json.dump(payload, f, indent=2)
+            
+        cmd = ["gsutil", "cp", local_path, gcs_path]
+        subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        # Construct HTTPS Link
+        # Pattern: https://storage.cloud.google.com/<bucket>/<file>
+        # Strip gs:// prefix if present
+        clean_bucket = bucket_name.replace("gs://", "")
+        return f"https://storage.cloud.google.com/{clean_bucket}/{filename}"
+    except Exception as e:
+        print(f"[WARN] GCS Upload Failed: {e}")
+        return None
+
 def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint, gcs_link=None):
     """R 5.1 Rich Context: Generate Professional ADF Description (No Emojis)."""
     
@@ -440,7 +481,7 @@ def create_rich_description(summary, description, log_content, owner_name, owner
     
     return {"type": "doc", "version": 1, "content": content}
 
-def create_ticket(summary, description, project_id, filepath=None, line=1, log_file=None, gcs_link=None):
+def create_ticket(summary, description, project_id, filepath=None, line=1, log_file=None, gcs_bucket=None):
     headers = get_credentials()
     
     # Ingestion: Read Logs
@@ -454,7 +495,21 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
 
     # Traceability
     owner_name, owner_email = get_git_info(filepath, line)
+    # Get Git Hash
+    try:
+        git_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.PIPE).decode("utf-8").strip()
+    except:
+        git_hash = "unknown"
+
+    trace_id = os.getenv("TRACE_ID", hashlib.md5(f"{summary}{description}".encode()).hexdigest()[:8])
     error_fingerprint = hashlib.md5(f"{summary}|{description}".encode()).hexdigest()
+    
+    # Schema Enforcement & Upload
+    gcs_link = None
+    if gcs_bucket:
+        payload = construct_flight_recorder_payload(trace_id, git_hash, log_content, owner_email)
+        print(f"[TRACE] Uploading Flight Recorder Payload to {gcs_bucket}...")
+        gcs_link = upload_to_gcs(payload, gcs_bucket, trace_id)
     
     # Mock Fallback
     if not headers:
@@ -554,7 +609,7 @@ if __name__ == "__main__":
     parser.add_argument("--file", help="Source file for blame")
     parser.add_argument("--line", type=int, default=1, help="Line number for blame")
     parser.add_argument("--log-file", help="Path to log file for ingestion")
-    parser.add_argument("--gcs-link", help="Link to GCS Archive")
+    parser.add_argument("--gcs-bucket", help="Target GCS Bucket for Flight Recorder Payload")
     
     args = parser.parse_args()
     
@@ -564,7 +619,7 @@ if __name__ == "__main__":
         if not args.summary:
              if get_credentials(): print("[INFO] Auth Valid."); sys.exit(0)
              else: sys.exit(1)
-        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line, args.log_file, args.gcs_link)
+        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line, args.log_file, args.gcs_bucket)
 EOF
 
 # --- TESTS ---
@@ -760,16 +815,15 @@ jobs:
           if [ -s ci_failure.log ]; then
              echo "Triggering Jira Bridge..."
              
-             # Phase 6: Archive to GCS
-             GCS_LINK=""
+             # Phase 6: Archive to GCS (via Bridge Schema Enforcement)
+             GCS_BUCKET="gs://antigravity-logging-i-for-ai" # Hardcoded for this environment, could be secret
+             
              if [ -n "$GCP_SA_KEY" ]; then
                 echo "$GCP_SA_KEY" > gcp_key.json
                 gcloud auth activate-service-account --key-file=gcp_key.json
-                gsutil cp ci_failure.log gs://antigravity-logging-i-for-ai/$TRACE_ID.log
-                GCS_LINK="https://storage.cloud.google.com/antigravity-logging-i-for-ai/$TRACE_ID.log"
              fi
              
-             python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-link "$GCS_LINK"
+             python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-bucket "$GCS_BUCKET"
           fi
 EOF
 
