@@ -8,6 +8,19 @@ import os
 # Implements R 2.1 (Schema), R 2.2 (Deduplication), R 2.3 (Dynamic Ownership)
 
 MOCK_JIRA_DB = "/tmp/antigravity_jira_state.txt"
+JIRA_BASE_URL = "https://tngshopper.atlassian.net/jira/core/projects/TNG/"
+
+def fetch_logs():
+    """R 2.4 Fetch Capability: Retrieve ticket history."""
+    if not os.path.exists(MOCK_JIRA_DB):
+        print("[INFO] No Jira logs found.")
+        return
+
+    print(f"[JIRA] Fetching Ticket History from {JIRA_BASE_URL} (Local Mirror)...")
+    print("-" * 40)
+    with open(MOCK_JIRA_DB, "r") as f:
+        print(f.read())
+    print("-" * 40)
 
 def get_git_owner(filepath, line_number):
     """R 2.3 Dynamic Ownership: Use git blame to find the human owner."""
@@ -54,13 +67,14 @@ def create_ticket(summary, description, project_id, filepath=None, line=1):
          owner = get_git_owner(filepath, line)
 
     print(f"[JIRA] Creating Ticket: {summary}")
+    print(f"       Target: {JIRA_BASE_URL}")
     print(f"       Project: {project_id}")
     print(f"       Assignee: {owner}")
     print(f"       Fingerprint: {error_fingerprint}")
     
     # Save state
     with open(MOCK_JIRA_DB, "a") as f:
-        f.write(error_fingerprint + "\n")
+        f.write(f"[{project_id}] {summary} (Assignee: {owner}) | Fingerprint: {error_fingerprint}\n")
         
     return "JIRA-" + os.urandom(2).hex().upper()
 
@@ -68,11 +82,19 @@ if __name__ == "__main__":
     # Example Usage: python jira_bridge.py "Fix [API] Timeout" "Trace..." "AG-OS" --file src/main.py --line 10
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("summary")
-    parser.add_argument("description")
-    parser.add_argument("project")
+    parser.add_argument("summary", nargs="?")
+    parser.add_argument("description", nargs="?")
+    parser.add_argument("project", nargs="?")
+    parser.add_argument("--fetch", action="store_true", help="Fetch ticket logs")
     parser.add_argument("--file", help="Source file for blame")
     parser.add_argument("--line", type=int, default=1, help="Line number for blame")
     
     args = parser.parse_args()
-    create_ticket(args.summary, args.description, args.project, args.file, args.line)
+    args = parser.parse_args()
+    
+    if args.fetch:
+        fetch_logs()
+    else:
+        if not args.summary or not args.description or not args.project:
+             parser.error("Summary, Description, and Project are required for ticket creation.")
+        create_ticket(args.summary, args.description, args.project, args.file, args.line)
