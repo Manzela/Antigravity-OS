@@ -6,10 +6,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install Antigravity OS
+      
+      - name: Install Antigravity OS (Local Source)
         run: |
-          chmod +x install.sh
-          ./install.sh
+          # CI FIX: Install from local templates instead of fetching from 'main'
+          # This ensures we test the code in the current PR/Branch.
+          
+          echo "[CI] Hydrating from Local Source..."
+          mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
+          
+          # Copy Brain & Rules
+          cp templates/sentinel/cost_guard.py .agent/sentinel/
+          cp templates/observability/jira_bridge.py .agent/observability/
+          cp templates/rules/*.md .agent/rules/
+          
+          # Copy Scripts
+          cp templates/scripts/* scripts/ || true
+          chmod +x scripts/*.sh || true
+          
+          echo "[CI] Installation Complete."
+
       - name: Cost Guard (Rule 08)
         run: |
           if [ -f .agent/sentinel/cost_guard.py ]; then
@@ -24,22 +40,28 @@ jobs:
   test-suite:
     needs: governance-gate
     runs-on: ubuntu-latest
-    # environment: Production  <-- Uncomment if you configured the Environment
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Install Antigravity OS (Test Env)
+          
+      - name: Install Antigravity OS (Local Source)
         run: |
-          chmod +x install.sh
-          ./install.sh
+          echo "[CI] Hydrating from Local Source..."
+          mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
+          cp templates/sentinel/cost_guard.py .agent/sentinel/
+          cp templates/observability/jira_bridge.py .agent/observability/
+          cp templates/rules/*.md .agent/rules/
+          cp templates/scripts/* scripts/ || true
+          chmod +x scripts/*.sh || true
+
       - name: Run Tests
-        # We allow failure so the next step can capture the log
+        # Allow failure so we can test the telemetry hook
         run: npm test 2> ci_failure.log || echo "Tests Failed"
+
       - name: Jira Telemetry (Failure Hook)
-        # FIX: Use 'always()' to ensure this runs, then check file existence in shell
         if: always()
         env:
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
@@ -50,7 +72,6 @@ jobs:
           if [ -s ci_failure.log ]; then
              echo "Triggering Jira Bridge..."
              
-             # Phase 6: Archive to GCS (via Bridge Schema Enforcement)
              GCS_BUCKET="gs://antigravity-logging-i-for-ai"
              
              if [ -n "$GCP_SA_KEY" ]; then
@@ -58,5 +79,9 @@ jobs:
                 gcloud auth activate-service-account --key-file=gcp_key.json
              fi
              
-             python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-bucket "$GCS_BUCKET"
+             if [ -f .agent/observability/jira_bridge.py ]; then
+                 python3 .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --log-file ci_failure.log --gcs-bucket "$GCS_BUCKET"
+             else
+                 echo "[WARN] Jira Bridge not found."
+             fi
           fi
