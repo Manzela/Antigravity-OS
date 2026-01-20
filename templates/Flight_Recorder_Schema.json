@@ -6,6 +6,7 @@
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
     "trace_id": { "type": "string" },
+    "git_commit_hash": { "type": "string" },
     "jira_ticket_id": { "type": "string" },
     "gcp_trace_id": { "type": "string" },
     "ci_build_id": { "type": "string" },

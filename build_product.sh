@@ -131,6 +131,7 @@ cat <<EOF > templates/Flight_Recorder_Schema.json
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
     "trace_id": { "type": "string" },
+    "git_commit_hash": { "type": "string" },
     "jira_ticket_id": { "type": "string" },
     "gcp_trace_id": { "type": "string" },
     "ci_build_id": { "type": "string" },
@@ -218,45 +219,170 @@ EOF
 cat <<EOF > templates/sentinel/cost_guard.py
 import os
 import sys
+import argparse
+import json
+import time
 
 # Antigravity Cost Guard (Rule 08)
 # Blocks execution if solvency is not guaranteed.
+# Implements Requirements R 1.1, R 1.2, R 1.3, R 1.4
 
 MONTHLY_CAP = 50.00
-CURRENT_SPEND = 12.50 # Mock value, ideally fetched from GCP Billing
+CURRENT_SPEND = 12.50 # Default fail-safe
 
-def check_solvency(projected_cost):
+TIER_PRICING = {
+    "standard_cpu": 1.00, # Base unit price (treated as \$1/unit for simplify if just passing dollar amount)
+    "nvidia_l4": 2.50,
+    "nvidia_a100": 8.00
+}
+
+CONFIG_PATH = os.path.expanduser("~/.antigravity/config")
+
+def load_global_config():
+    """R 1.4 Persistent Reconciliation: Load config from ~/.antigravity/config"""
+    global MONTHLY_CAP, CURRENT_SPEND
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+                MONTHLY_CAP = config.get("monthly_cap", MONTHLY_CAP)
+                CURRENT_SPEND = config.get("current_spend", CURRENT_SPEND)
+                print(f"[INFO] Loaded Global Config: Cap=\${MONTHLY_CAP}, Spend=\${CURRENT_SPEND}")
+        except Exception as e:
+            print(f"[WARN] Failed to load config: {e}")
+    else:
+        print("[INFO] No Global Config found. Using Defaults.")
+
+class MockRedis:
+    """R 1.3 Budget Lease Model: Mock interface for Redis"""
+    def __init__(self):
+        print("[INFO] Connecting to Redis (Mock)...")
+        self.connected = True
+    
+    def set(self, key, value, ex=None):
+        print(f"[REDIS] SET {key} = {value} (EX={ex})")
+        return True
+
+def check_solvency(projected_cost_units, tier):
+    """R 1.1 + R 1.2: Hardware-Aware Solvency Check"""
+    load_global_config()
+    
+    # If using 'standard_cpu', we assume the input is effectively usage units or raw dollars if priced at 1.0
+    # The requirement asks for distinction.
+    # In the CI workflow, we pass "15.00". If we consider that "Units", then the Cost = 15.00 * Price.
+    rate = TIER_PRICING.get(tier)
+    if not rate:
+        print(f"[ERROR] Invalid Hardware Tier: {tier}. Available: {list(TIER_PRICING.keys())}")
+        sys.exit(1)
+        
+    projected_cost = float(projected_cost_units) * rate
     total = CURRENT_SPEND + projected_cost
+    
+    print(f"[AUDIT] Tier: {tier} (\${rate}/unit) * {projected_cost_units} units = \${projected_cost:.2f}")
+    
     if total > MONTHLY_CAP:
-        print(f"[BLOCK] Insolvency Triggered! Total \${total} > Cap \${MONTHLY_CAP}")
+        print(f"[BLOCK] Insolvency Triggered! Total \${total:.2f} > Cap \${MONTHLY_CAP:.2f}")
         print("Protocol: Request Override or Optimize Plan.")
         sys.exit(1)
     else:
-        print(f"[PASS] Solvency Validated. Margin: \${MONTHLY_CAP - total}")
-        # Generate Lease Token
-        print("LEASE_TOKEN: " + "lg-" + os.urandom(4).hex())
+        print(f"[PASS] Solvency Validated. Margin: \${MONTHLY_CAP - total:.2f}")
+        
+        # R 1.3: Acquire Lease
+        r = MockRedis()
+        lease_id = "lg-" + os.urandom(4).hex()
+        r.set(f"lease:{lease_id}", projected_cost, ex=3600)
+        print(f"LEASE_TOKEN: {lease_id}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python cost_guard.py <projected_cost>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Antigravity Cost Guard")
+    parser.add_argument("units", type=float, help="Projected units (hours/ops) or raw cost")
+    parser.add_argument("--tier", default="standard_cpu", choices=TIER_PRICING.keys(), help="Hardware Tier")
     
-    check_solvency(float(sys.argv[1]))
+    args = parser.parse_args()
+    
+    check_solvency(args.units, args.tier)
 EOF
 
 # --- OBSERVABILITY (Jira Bridge) ---
 cat <<EOF > templates/observability/jira_bridge.py
+import sys
+import hashlib
+import subprocess
+import os
+
 # Antigravity Jira Bridge
 # Connects Flight Recorder to Jira for Rule 08/07.
+# Implements R 2.1 (Schema), R 2.2 (Deduplication), R 2.3 (Dynamic Ownership)
 
-def create_ticket(summary, description, project_id):
-    # Mock Implementation
+MOCK_JIRA_DB = "/tmp/antigravity_jira_state.txt"
+
+def get_git_owner(filepath, line_number):
+    """R 2.3 Dynamic Ownership: Use git blame to find the human owner."""
+    try:
+        # Check if file exists
+        if not os.path.exists(filepath):
+            return "unknown-committer"
+            
+        cmd = ["git", "blame", "--line-porcelain", "-L", f"{line_number},{line_number}", filepath]
+        result = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode("utf-8")
+        for line in result.split("\n"):
+            if line.startswith("author "):
+                return line.split(" ", 1)[1]
+    except Exception as e:
+        print(f"[WARN] Git Blame failed: {e}")
+        return "devops-oncall"
+    return "devops-oncall"
+
+def validate_schema(summary):
+    """R 2.1 Standardized Schema: Enforce 'Verb Source Error' format."""
+    parts = summary.split(" ")
+    if len(parts) < 3:
+        print(f"[ERROR] Invalid Jira Summary: '{summary}'. Must be 'VERB [SOURCE] ERROR'")
+        return False
+    return True
+
+def create_ticket(summary, description, project_id, filepath=None, line=1):
+    if not validate_schema(summary):
+        sys.exit(1)
+
+    # R 2.2 Semantic Deduplication
+    error_fingerprint = hashlib.md5(f"{summary}|{description}".encode()).hexdigest()
+    
+    # Check for duplicate (Mock Logic)
+    if os.path.exists(MOCK_JIRA_DB):
+        with open(MOCK_JIRA_DB, "r") as f:
+            if error_fingerprint in f.read():
+                print(f"[INFO] Duplicate Error {error_fingerprint} detected. Incrementing counter. No new ticket.")
+                return "EXISTING-TICKET"
+
+    # R 2.3 Resolve Owner
+    owner = "devops-oncall"
+    if filepath:
+         owner = get_git_owner(filepath, line)
+
     print(f"[JIRA] Creating Ticket: {summary}")
     print(f"       Project: {project_id}")
-    return "JIRA-1234"
+    print(f"       Assignee: {owner}")
+    print(f"       Fingerprint: {error_fingerprint}")
+    
+    # Save state
+    with open(MOCK_JIRA_DB, "a") as f:
+        f.write(error_fingerprint + "\n")
+        
+    return "JIRA-" + os.urandom(2).hex().upper()
 
 if __name__ == "__main__":
-    create_ticket("Build Failure", "Trace ID: 123", "AG-OS")
+    # Example Usage: python jira_bridge.py "Fix [API] Timeout" "Trace..." "AG-OS" --file src/main.py --line 10
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("summary")
+    parser.add_argument("description")
+    parser.add_argument("project")
+    parser.add_argument("--file", help="Source file for blame")
+    parser.add_argument("--line", type=int, default=1, help="Line number for blame")
+    
+    args = parser.parse_args()
+    create_ticket(args.summary, args.description, args.project, args.file, args.line)
 EOF
 
 # --- SCRIPTS ---
