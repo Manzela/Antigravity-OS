@@ -20,8 +20,7 @@ fi
 
 # 2. Unit Testing (Jira Bridge Logic)
 echo "[QA-2] Running Unit Tests (Python)..."
-PYTHONPATH=$PYTHONPATH:$(pwd)
-export PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 if python3 -c "import pytest" >/dev/null 2>&1; then
     python3 -m pytest templates/tests/test_jira_bridge.py -v
 else

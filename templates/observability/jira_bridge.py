@@ -5,10 +5,6 @@ import os
 import json
 import base64
 import argparse
-import platform
-import datetime
-import time
-import uuid
 
 # Antigravity Jira Bridge V2.5.1 (Enterprise Edition)
 # Connects Flight Recorder to Atlassian Jira (Cloud)
@@ -31,9 +27,9 @@ def get_credentials():
     return {"Authorization": f"Basic {b64_creds}", "Content-Type": "application/json"}
 
 def make_request(method, endpoint, headers, data=None):
-    # Using CURL with strict timeouts (5s connect, 15s total)
+    # Using CURL to allow for better cert handling on local Mac environs
     url = f"{JIRA_BASE_URL}{endpoint}"
-    cmd = ["curl", "-s", "--connect-timeout", "5", "--max-time", "15", "-X", method, url]
+    cmd = ["curl", "-s", "-X", method, url]
     for k, v in headers.items():
         cmd.extend(["-H", f"{k}: {v}"])
     if data:
@@ -77,6 +73,9 @@ def get_git_info(filepath, line_number):
 
 def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, status_code="Error"):
     """R 6.5 Advanced Schema Enforcement: OpenTelemetry-style Flight Recorder."""
+    import datetime
+    import time
+    import uuid
     
     # Generate Spans
     span_id = uuid.uuid4().hex[:16]
@@ -123,7 +122,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
       },
       "logs": [
         { 
-          "timestamp": datetime.datetime.now(datetime.UTC).isoformat() + "Z", 
+          "timestamp": datetime.datetime.utcnow().isoformat() + "Z", 
           "body": log_content, 
           "severity": "ERROR",
           "attributes": { "exception.type": "RuntimeError" } 
@@ -155,145 +154,65 @@ def upload_to_gcs(payload, bucket_name, trace_id):
         print(f"[WARN] GCS Upload Failed: {e}")
         return None
 
-# --- ADF Helper Functions ---
-def adf_text(text, marks=None):
-    content = {"type": "text", "text": text}
-    if marks: content["marks"] = marks
-    return content
-
-def adf_paragraph(content_list):
-    # content_list can be a list of dicts (nodes) or strings
-    nodes = []
-    for item in content_list:
-        if isinstance(item, str): nodes.append(adf_text(item))
-        else: nodes.append(item)
-    return {"type": "paragraph", "content": nodes}
-
-def adf_heading(text, level=3):
-    return {
-        "type": "heading",
-        "attrs": {"level": level},
-        "content": [adf_text(text)]
-    }
-
-def adf_code_block(text, language="text"):
-    return {
-        "type": "codeBlock",
-        "attrs": {"language": language},
-        "content": [adf_text(text or "")]
-    }
-
-def adf_table_row(cells, header=False):
-    cell_type = "tableHeader" if header else "tableCell"
-    row_content = []
-    for cell_content in cells:
-        # If cell_content is a string, wrap in paragraph
-        if isinstance(cell_content, str):
-            inner = [adf_paragraph([adf_text(cell_content, marks=[{"type": "strong"}] if header else None)])]
-        elif isinstance(cell_content, list): # List of nodes
-             inner = cell_content
-        else:
-             inner = [cell_content] # Single node
-             
-        row_content.append({
-            "type": cell_type,
-            "attrs": {},
-            "content": inner
-        })
-    return {"type": "tableRow", "content": row_content}
-
-def adf_table(rows):
-    # Rows should be list of lists of strings/content
-    # First row is treated as header if we want, but for flexibility let's assume rows are already processed or we check first
-    # Ref: Our usage passes strings usually.
-    return {
-        "type": "table",
-        "attrs": {"isNumberColumnEnabled": False, "layout": "default", "width": 100},
-        "content": rows
-    }
-
-def adf_task_item(text, state="TODO"):
-    return {
-        "type": "taskItem",
-        "attrs": {"state": state},
-        "content": [adf_paragraph([text])]
-    }
-
-def adf_task_list(items):
-    return {
-        "type": "taskList",
-        "attrs": {"localId": uuid.uuid4().hex},
-        "content": items
-    }
-
-def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint, gcs_link, env_info, repro_cmd):
+def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint, gcs_link=None):
     """R 5.1 Rich Context: Generate Professional ADF Description (No Emojis)."""
     
     # Truncate log if too long (Jira limit)
     if len(log_content) > 2000:
         log_content = log_content[:2000] + "... [TRUNCATED]"
 
-    content = []
-
-    # Section 1: System Impact & Governance Metadata (Table)
-    content.append(adf_heading("System Impact & Governance", 3))
-
-    # Governance Table Data
-    gov_rows_data = [
-        ["Attribute", "Value"],
-        ["Execution Model", "Deterministic"],
-        ["Failure Mode", "Fail-Closed"],
-        ["Risk Level", "High (Blocking CI)" if "blocking" in description.lower() else "Medium"],
-        ["Compliance Rule", "R-02, R-08"],
-        ["Owner", f"{owner_name} ({owner_email})"],
-        ["Error Fingerprint", fingerprint]
+    diag_items = [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Error Fingerprint: {fingerprint}"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Detected Owner: {owner_name} ({owner_email})"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Component: DevOps / Infrastructure"}]}]}
     ]
 
-    gov_table_rows = [adf_table_row(gov_rows_data[0], header=True)]
-    for r in gov_rows_data[1:]:
-        gov_table_rows.append(adf_table_row(r))
-
-    content.append(adf_table(gov_table_rows))
-
-    # Section 2: Environment Specification & Reproduction
-    content.append(adf_heading("Environment & Reproduction", 3))
-    
-    # Env Table Data
-    env_rows_data = [["Context", "Details"]] + [[k, v] for k, v in env_info.items()]
-    env_table_rows = [adf_table_row(env_rows_data[0], header=True)]
-    for r in env_rows_data[1:]:
-        env_table_rows.append(adf_table_row(r))
-        
-    content.append(adf_table(env_table_rows))
-
-    # Diagnosis / Logs
     if gcs_link:
-         link_mark = [{"type": "link", "attrs": {"href": gcs_link}}]
-         content.append(adf_paragraph([
-             "Full Log Archive: ", 
-             adf_text("Download from GCS", marks=link_mark)
-         ]))
+         diag_items.append({"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Full Log Archive", "marks": [{"type": "link", "attrs": {"href": gcs_link}}]}]}]})
 
-    content.append(adf_heading("Reproduction Command", 4))
-    content.append(adf_code_block(repro_cmd, "bash"))
-
-    content.append(adf_heading("System Logs / Stack Trace", 4))
-    content.append(adf_code_block(log_content or "No logs provided."))
-
-    # Section 3: Acceptance Criteria (Definition of Done)
-    content.append(adf_heading("Acceptance Criteria (Definition of Done)", 3))
-    
-    ac_texts = [
-        "Root cause identified and documented",
-        "Fix implemented in local environment",
-        "Reproduction command now passes",
-        "New regression test added (if applicable)",
-        "CI Pipeline passing",
-        "Code reviewed by peer"
+    content = [
+        # Section 1: Issue Summary
+        {
+            "type": "heading",
+            "attrs": {"level": 3},
+            "content": [{"type": "text", "text": "Issue Summary"}]
+        },
+        {
+            "type": "paragraph",
+            "content": [{"type": "text", "text": description}]
+        },
+        # Section 2: Diagnostics
+        {
+            "type": "heading",
+            "attrs": {"level": 3},
+            "content": [{"type": "text", "text": "Diagnostics"}]
+        },
+        {
+            "type": "bulletList",
+            "content": diag_items
+        },
+        # Section 3: System Logs
+        {
+            "type": "heading",
+            "attrs": {"level": 3},
+            "content": [{"type": "text", "text": "System Logs / Stack Trace"}]
+        },
+        {
+            "type": "codeBlock",
+            "attrs": {"language": "text"},
+            "content": [{"type": "text", "text": log_content or "No logs provided."}]
+        },
+        # Section 4: Suggested Action
+        {
+            "type": "heading",
+            "attrs": {"level": 3},
+            "content": [{"type": "text", "text": "Suggested Action"}]
+        },
+        {
+            "type": "paragraph",
+            "content": [{"type": "text", "text": "Please review the attached logs and the commit history. Verify syntax and configuration files."}]
+        }
     ]
-    
-    task_items = [adf_task_item(t) for t in ac_texts]
-    content.append(adf_task_list(task_items))
     
     return {"type": "doc", "version": 1, "content": content}
 
@@ -316,36 +235,6 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         git_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.PIPE).decode("utf-8").strip()
     except:
         git_hash = "unknown"
-        
-    try:
-        git_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.PIPE).decode("utf-8").strip()
-    except:
-        git_branch = "unknown"
-
-    # Environment Info
-    env_info = {
-        "OS": f"{platform.system()} {platform.release()}",
-        "Python": platform.python_version(),
-        "Git Branch": git_branch,
-        "Git Commit": git_hash,
-        "CI Context": "Yes" if os.getenv("CI") else "Local Development"
-    }
-    
-    # Reproduction Command
-    reproduce_cmd = f"git checkout {git_hash}\n"
-    if filepath:
-        # QA Hardening: Sanitize filepath to prevent injection or ADF breakages
-        clean_path = "".join(c for c in filepath if c.isalnum() or c in "._-/")
-        if clean_path.endswith(".py"):
-             reproduce_cmd += f"python3 {clean_path} # (Check line {line})"
-        elif clean_path.endswith(".sh"):
-             reproduce_cmd += f"bash {clean_path}"
-        elif clean_path.endswith(".js"):
-             reproduce_cmd += f"node {clean_path}"
-        else:
-             reproduce_cmd += f"cat {clean_path} # (Inspect file)"
-    else:
-        reproduce_cmd += "./build_product.sh # (or relevant script)"
 
     trace_id = os.getenv("TRACE_ID", hashlib.md5(f"{summary}{description}".encode()).hexdigest()[:8])
     error_fingerprint = hashlib.md5(f"{summary}|{description}".encode()).hexdigest()
@@ -357,23 +246,11 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         print(f"[TRACE] Uploading Flight Recorder Payload to {gcs_bucket}...")
         gcs_link = upload_to_gcs(payload, gcs_bucket, trace_id)
     
-    # Create Issue Payload
-    desc_doc = create_rich_description(summary, description, log_content, owner_name, owner_email, error_fingerprint, gcs_link, env_info, reproduce_cmd)
-    
-    # Handle Project ID
-    target_project = project_id if project_id else PROJECT_KEY
-
     # Mock Fallback
     if not headers:
         print(f"[MOCK-JIRA] Would create ticket: {summary}")
-        # Validate JSON serialization for debug
-        try:
-             json.dumps(desc_doc)
-        except Exception as e:
-             print(f"[ERROR] ADF Serialization Failed: {e}")
-             
         with open(MOCK_JIRA_DB, "a") as f:
-            f.write(f"[{target_project}] {summary} (Owner: {owner_email}) | FP: {error_fingerprint}\n")
+            f.write(f"[{project_id}] {summary} (Owner: {owner_email}) | FP: {error_fingerprint}\n")
         return "MOCK-123"
 
     # Smart Assignment
@@ -397,15 +274,18 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         }
         make_request("POST", f"/rest/api/3/issue/{key}/comment", headers, comment_body)
         return key
+
+    # Create Issue Payload
+    desc_doc = create_rich_description(summary, description, log_content, owner_name, owner_email, error_fingerprint, gcs_link)
     
     payload = {
         "fields": {
-            "project": {"key": target_project},
+            "project": {"key": PROJECT_KEY},
             "summary": summary,
             "description": desc_doc,
             "issuetype": {"name": "Task"},
             "priority": {"id": "2"}, # High Priority
-            "labels": ["auto-generated", "build-failure", "blocking", "governance-enforced", "fail-closed", f"fp:{error_fingerprint}"],
+            "labels": ["auto-generated", "build-failure", "blocking", f"fp:{error_fingerprint}"],
             # Note: "components" field varies by project. Omitting to avoid API 400 if not exists.
         }
     }

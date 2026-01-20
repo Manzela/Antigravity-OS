@@ -861,13 +861,14 @@ python3 templates/sentinel/cost_guard.py 1.0 --tier nvidia_l4 || { echo "[FAIL] 
 echo "[TEST 2] Simulating Build Failure..."
 echo "Build Failed: Syntax Error in src/main.py" > build_fail.log
 echo "[TEST 2] Filing Jira Ticket (Target: TNG)..."
-# Note: Using the Jira Bridge to report the error
-python3 templates/observability/jira_bridge.py "Fix [Build] Failure" "Trace: 999 - Syntax Error" "TNG" --file build_fail.log --line 1
+# QA Hardening: Pass GCS Bucket for local tracing if authenticated
+GCS_BUCKET="gs://antigravity-logging-i-for-ai"
+python3 templates/observability/jira_bridge.py "Fix [Build] Failure" "Trace: 999 - Syntax Error" "TNG" --file build_fail.log --line 1 --gcs-bucket "$GCS_BUCKET"
 
 # 3. Log Fetch Verification
 echo "[TEST 3] Fetching Jira Logs (Waiting 5s for Indexing)..."
 sleep 5
-python3 templates/observability/jira_bridge.py --fetch | grep -F "Fix [Build]" && echo "[PASS] Log entry found." || { echo "[FAIL] Log entry missing"; exit 1; }
+python3 templates/observability/jira_bridge.py --fetch TNG | grep -F "Fix [Build]" && echo "[PASS] Log entry found." || { echo "[FAIL] Log entry missing"; exit 1; }
 
 echo "----------------------------------------"
 echo "[SUCCESS] All E2E Scenarios Passed."

@@ -25,29 +25,10 @@ def load_global_config():
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r") as f:
-                content = f.read()
-                config = json.loads(content)
-                
-                # QA Hardening: Configuration Integrity Check
-                # In a real system, this would be a HMAC-SHA256 signature.
-                # For this hardened demo, we expect a 'checksum' key.
-                if "checksum" not in config:
-                    print("[CAUTION] Configuration file lacks integrity signature. Reverting to Fail-Safe Defaults.")
-                    return
-                
-                # Mock validation logic
-                import hashlib
-                data_to_verify = f"{config.get('monthly_cap')}|{config.get('current_spend')}"
-                expected = hashlib.md5(data_to_verify.encode()).hexdigest()
-                
-                if config["checksum"] != expected:
-                    print(f"[BLOCK] Configuration Tampering Detected! Checksum mismatch: {config['checksum']} vs {expected}")
-                    print("[RULE 08] Protocol: Resetting to safe defaults.")
-                    return
-
+                config = json.load(f)
                 MONTHLY_CAP = config.get("monthly_cap", MONTHLY_CAP)
                 CURRENT_SPEND = config.get("current_spend", CURRENT_SPEND)
-                print(f"[INFO] Loaded Verified Config: Cap=${MONTHLY_CAP}, Spend=${CURRENT_SPEND}")
+                print(f"[INFO] Loaded Global Config: Cap=${MONTHLY_CAP}, Spend=${CURRENT_SPEND}")
         except Exception as e:
             print(f"[WARN] Failed to load config: {e}")
     else:
