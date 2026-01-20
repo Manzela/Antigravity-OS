@@ -30,14 +30,19 @@ run_with_retry() {
 
     echo "[RETRY-ENGINE] Executing: $cmd"
     
+    local log_file="/tmp/antigravity_e2e_failure_$$.log"
+    echo "" > "$log_file"
+
     while [ $attempt -le $MAX_RETRIES ]; do
         echo "[ATTEMPT $attempt/$MAX_RETRIES] Starting..."
+        echo "[$(date -u)] Attempt $attempt of $MAX_RETRIES..." >> "$log_file"
         
         # QA Hardening: Chaos Injection
         if [ "$CHAOS_MODE" = true ]; then
             if [ $((RANDOM % 4)) -eq 0 ]; then
                 echo "[CHAOS] Randomly injected failure!"
-                eval "false" || true # Force failure logic
+                echo "[CHAOS] System injected failure on attempt $attempt" >> "$log_file"
+                eval "false" 2>> "$log_file" || true # Force failure logic
                 goto_fail=true
             else
                 goto_fail=false
@@ -46,12 +51,14 @@ run_with_retry() {
             goto_fail=false
         fi
 
-        if [ "$goto_fail" = false ] && eval "$cmd"; then
+        if [ "$goto_fail" = false ] && eval "$cmd" >> "$log_file" 2>&1; then
             echo "[SUCCESS] Command passed on attempt $attempt."
+            echo "[SUCCESS] Command passed." >> "$log_file"
             success=true
             break
         else
             echo "[FAIL] Attempt $attempt failed."
+            echo "[FAIL] Attempt $attempt failed. Retrying..." >> "$log_file"
             if [ $attempt -lt $MAX_RETRIES ]; then
                 echo "[INFO] Waiting ${RETRY_DELAY}s before next attempt..."
                 sleep $RETRY_DELAY
@@ -62,12 +69,16 @@ run_with_retry() {
 
     if [ "$success" = false ]; then
         echo "[ESCALATION] All $MAX_RETRIES attempts failed. Triggering Jira Bridge..."
+        # QA Hardening: Ensure GCS Bucket is passed for trace upload
+        GCS_BUCKET="gs://antigravity-logging-i-for-ai"
         python3 templates/observability/jira_bridge.py \
             "CRITICAL: E2E Failure after $MAX_RETRIES retries" \
             "The command '$cmd' failed $MAX_RETRIES times. Immediate intervention required." \
             "$JIRA_PROJECT" \
             --file "templates/scripts/final_e2e_verification.sh" \
-            --line 15
+            --line 15 \
+            --gcs-bucket "$GCS_BUCKET" \
+            --log-file "$log_file"
         return 1
     fi
     return 0

@@ -384,6 +384,8 @@ import os
 import json
 import base64
 import argparse
+import time
+import random
 
 # Antigravity Jira Bridge V2.5.1 (Enterprise Edition)
 # Connects Flight Recorder to Atlassian Jira (Cloud)
@@ -393,13 +395,24 @@ JIRA_BASE_URL = "https://tngshopper.atlassian.net"
 PROJECT_KEY = "TNG"
 MOCK_JIRA_DB = "/tmp/antigravity_jira_state.txt"
 
+def detect_environment():
+    """R 2.5 Dynamic Environment Detection"""
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        ref = os.getenv("GITHUB_REF_NAME", "unknown")
+        return "production" if ref == "main" else f"ci-{ref}"
+    return "local-development"
+
 def get_credentials():
-    email = os.getenv("JIRA_USER_EMAIL")
-    token = os.getenv("JIRA_API_TOKEN")
+    email = os.getenv("JIRA_USER_EMAIL", "").strip()
+    token = os.getenv("JIRA_API_TOKEN", "").strip()
+    
     if not email or not token:
         if os.getenv("CI"):
             print("[WARN] CI Detected but Credentials Missing. Telemetry Disabled.")
         return None
+    
+    if len(token) < 20: 
+        print(f"[WARN] Loaded Token is dangerously short ({len(token)} chars). Likely invalid.")
     
     creds = f"{email}:{token}"
     b64_creds = base64.b64encode(creds.encode()).decode("ascii")
@@ -418,6 +431,10 @@ def make_request(method, endpoint, headers, data=None):
         result = subprocess.check_output(cmd, stderr=subprocess.PIPE).decode("utf-8")
         if not result: return None
         return json.loads(result)
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Invalid JSON Response: {e}")
+        print(f"[DEBUG] Raw Output: {result}")
+        return None
     except Exception as e:
         print(f"[ERROR] Curl Request Failed: {e}")
         return None
@@ -431,6 +448,37 @@ def find_user_by_email(headers, email):
     if resp and len(resp) > 0:
         return resp[0].get("accountId")
     return None
+
+def diagnose_auth(headers, project_key):
+    """Diagnose authentication and permission issues."""
+    print("--- DIAGNOSTIC RESULT ---")
+    if not headers:
+        print("[FAIL] No Credentials Found (JIRA_USER_EMAIL / JIRA_API_TOKEN).")
+        return
+
+    # 1. Who am I?
+    print("[CHECK 1] Verifying Identity...")
+    resp = make_request("GET", "/rest/api/3/myself", headers)
+    if resp and "emailAddress" in resp:
+        print(f"[PASS] Authenticated as: {resp['emailAddress']} (AccountID: {resp['accountId']})")
+    else:
+        print("[FAIL] Authentication Failed. Token invalid or user deactivated.")
+        return
+
+    # 2. Project Access
+    print(f"[CHECK 2] Verifying Access to Project '{project_key}'...")
+    perf_resp = make_request("GET", f"/rest/api/3/user/permission/search?projectKey={project_key}&permissions=CREATE_ISSUES", headers)
+    
+    if perf_resp and "permissions" in perf_resp:
+        perms = perf_resp["permissions"]
+        if "CREATE_ISSUES" in perms and perms["CREATE_ISSUES"].get("havePermission"):
+             print(f"[PASS] User has CREATE_ISSUES permission in {project_key}.")
+        else:
+             print(f"[FAIL] User DENIED CREATE_ISSUES permission in {project_key}.")
+             print("Reason: Use a Service Account with 'Create Issues' role or check Permission Scheme.")
+    else:
+         print("[WARN] Could not check permissions (API error).")
+    print("-------------------------")
 
 def get_git_info(filepath, line_number):
     """R 2.3 Dynamic Ownership: Use git blame to find author email and name."""
@@ -477,7 +525,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
       "resource": {
         "service.name": "flight-recorder-service",
         "service.version": "2.1.0",
-        "deployment.environment.name": "production",
+        "deployment.environment.name": detect_environment(),
         
         # VCS
         "vcs.repository.url.full": f"{server}/{repo}",
@@ -501,7 +549,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
       },
       "logs": [
         { 
-          "timestamp": datetime.datetime.utcnow().isoformat() + "Z", 
+          "timestamp": datetime.datetime.now(datetime.UTC).isoformat() + "Z", 
           "body": log_content, 
           "severity": "ERROR",
           "attributes": { "exception.type": "RuntimeError" } 
@@ -510,9 +558,16 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
     }
 
 def upload_to_gcs(payload, bucket_name, trace_id):
-    """R 6.5 Upload validated JSON payload to GCS."""
+    """R 6.5 Upload validated JSON payload to GCS with Retries."""
     if not bucket_name or not trace_id: return None
     
+    # 1. Dependency Check
+    try:
+        subprocess.check_call(["gsutil", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except:
+        print("[ERROR] 'gsutil' not found or not in PATH. GCS Trace disabled.")
+        return None
+
     filename = f"trace_{trace_id}.json"
     local_path = f"/tmp/{filename}"
     gcs_path = f"{bucket_name}/{filename}"
@@ -521,16 +576,26 @@ def upload_to_gcs(payload, bucket_name, trace_id):
         with open(local_path, "w") as f:
             json.dump(payload, f, indent=2)
             
-        cmd = ["gsutil", "cp", local_path, gcs_path]
-        subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-        # Construct HTTPS Link
-        # Pattern: https://storage.cloud.google.com/<bucket>/<file>
-        # Strip gs:// prefix if present
-        clean_bucket = bucket_name.replace("gs://", "")
-        return f"https://storage.cloud.google.com/{clean_bucket}/{filename}"
+        # Retry Logic: 3 attempts with exponential backoff
+        for attempt in range(1, 4):
+            try:
+                print(f"[TRACE] Uploading Flight Recorder Payload (Attempt {attempt}/3)...")
+                # Removed stdout/stderr suppression for better debugging
+                subprocess.check_call(["gsutil", "cp", local_path, gcs_path])
+                
+                # Construct HTTPS Link
+                clean_bucket = bucket_name.replace("gs://", "")
+                return f"https://storage.cloud.google.com/{clean_bucket}/{filename}"
+            except subprocess.CalledProcessError as e:
+                if attempt < 3:
+                    wait = (2 ** attempt) + (random.randint(0, 1000) / 1000)
+                    print(f"[WARN] Upload attempt {attempt} failed. Retrying in {wait:.2f}s...")
+                    time.sleep(wait)
+                else:
+                    print(f"[ERROR] All GCS upload attempts failed: {e}")
+                    return None
     except Exception as e:
-        print(f"[WARN] GCS Upload Failed: {e}")
+        print(f"[WARN] GCS Upload logic failed: {e}")
         return None
 
 def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint, gcs_link=None):
@@ -606,6 +671,10 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
                 log_content = f.read()
         except:
             log_content = "[ERROR] Could not read log file."
+    
+    # Log Forcing: If logs are empty, inject system context to ensure trace isn't useless
+    if not log_content.strip():
+        log_content = f"[SYSTEM SNAPSHOT]\nTIME: {time.ctime()}\nENV: {detect_environment()}\nTRACE_ID: {os.getenv('TRACE_ID', 'None')}"
 
     # Traceability
     owner_name, owner_email = get_git_info(filepath, line)
@@ -636,18 +705,23 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
     assignee_id = find_user_by_email(headers, owner_email)
     
     # Deduplication
-    print("[JIRA] Checking for duplicates...")
-    existing = find_duplicate_issue(headers, error_fingerprint) # Re-use existing func logic (assumed in scope)
+    print(f"[JIRA] Checking for duplicates in {project_id}...")
+    existing = find_duplicate_issue(headers, error_fingerprint, project_id)
     if existing:
         key = existing["key"]
         print(f"[INFO] Duplicate found: {key}. Adding comment.")
+        
+        comment_text = f"Recurrence detected. Trace ID: {trace_id}"
+        if gcs_link:
+            comment_text += f"\nFull Log Archive: {gcs_link}"
+            
         comment_body = {
             "body": {
                 "type": "doc",
                 "version": 1,
                 "content": [{
                     "type": "paragraph",
-                    "content": [{"type": "text", "text": f"Recurrence detected. Trace ID: {os.getenv('TRACE_ID', 'N/A')}"}]
+                    "content": [{"type": "text", "text": comment_text}]
                 }]
             }
         }
@@ -659,10 +733,10 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
     
     payload = {
         "fields": {
-            "project": {"key": PROJECT_KEY},
+            "project": {"key": project_id},
             "summary": summary,
             "description": desc_doc,
-            "issuetype": {"name": "Task"},
+            "issuetype": {"name": "Bug"},
             "priority": {"id": "2"}, # High Priority
             "labels": ["auto-generated", "build-failure", "blocking", f"fp:{error_fingerprint}"],
             # Note: "components" field varies by project. Omitting to avoid API 400 if not exists.
@@ -672,27 +746,27 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
     if assignee_id:
         payload["fields"]["assignee"] = {"id": assignee_id}
     
-    print(f"[JIRA] Creating Ticket in {PROJECT_KEY}...")
+    print(f"[JIRA] Creating Ticket in {project_id}...")
     resp = make_request("POST", "/rest/api/3/issue", headers, payload)
     if resp and "key" in resp:
         print(f"[SUCCESS] Created {resp['key']}")
         return resp['key']
     else:
         print("[FAIL] Could not create ticket.")
-        # print(resp) # Debug
+        print(f"[DEBUG] API Response: {json.dumps(resp, indent=2)}") 
         sys.exit(1)
 
-# Helper for deduplication (same as V4)
-def find_duplicate_issue(headers, fingerprint):
+# Helper for deduplication
+def find_duplicate_issue(headers, fingerprint, project_key):
     import urllib.parse
-    jql = f"project = {PROJECT_KEY} AND labels = \"fp:{fingerprint}\""
+    jql = f"project = {project_key} AND labels = \"fp:{fingerprint}\""
     resp = make_request("GET", f"/rest/api/3/search?jql={urllib.parse.quote(jql)}", headers)
     if resp and resp.get("total", 0) > 0:
         return resp["issues"][0]
     return None
 
-def fetch_logs(headers):
-    """R 2.4 Fetch Capability: Fetch recent issues from TNG project."""
+def fetch_logs(headers, project_key):
+    """R 2.4 Fetch Capability: Fetch recent issues from project."""
     if not headers:
         if os.path.exists(MOCK_JIRA_DB):
             print("[INFO] Fetching from Local Mock DB...")
@@ -700,9 +774,9 @@ def fetch_logs(headers):
                 print(f.read())
         return
 
-    print(f"[JIRA] Fetching recent errors from {JIRA_BASE_URL}/projects/{PROJECT_KEY}...")
+    print(f"[JIRA] Fetching recent errors from {JIRA_BASE_URL}/projects/{project_key}...")
     import urllib.parse
-    jql = f"project = {PROJECT_KEY} ORDER BY created DESC"
+    jql = f"project = {project_key} ORDER BY created DESC"
     query = f"/rest/api/3/search?jql={urllib.parse.quote(jql)}&maxResults=5"
     
     resp = make_request("GET", query, headers)
@@ -718,22 +792,32 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("summary", nargs="?")
     parser.add_argument("description", nargs="?")
-    parser.add_argument("project", nargs="?")
+    parser.add_argument("pos_project", nargs="?", help="Project Key (Positional)")
+    parser.add_argument("--project", help="Project Key (Named)")
     parser.add_argument("--fetch", action="store_true", help="Fetch ticket logs")
     parser.add_argument("--file", help="Source file for blame")
     parser.add_argument("--line", type=int, default=1, help="Line number for blame")
     parser.add_argument("--log-file", help="Path to log file for ingestion")
     parser.add_argument("--gcs-bucket", help="Target GCS Bucket for Flight Recorder Payload")
     
+    parser.add_argument("--check-auth", action="store_true", help="Run auth diagnostics")
+    
     args = parser.parse_args()
     
+    # Resolve Project Priority: Named > Positional > Global Default
+    target_project = args.project or args.pos_project or PROJECT_KEY
+    
+    if args.check_auth:
+        diagnose_auth(get_credentials(), target_project)
+        sys.exit(0)
+
     if args.fetch:
-        fetch_logs(get_credentials())
+        fetch_logs(get_credentials(), target_project)
     else:
         if not args.summary:
              if get_credentials(): print("[INFO] Auth Valid."); sys.exit(0)
              else: sys.exit(1)
-        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line, args.log_file, args.gcs_bucket)
+        create_ticket(args.summary, args.description or "No Desc", target_project, args.file, args.line, args.log_file, args.gcs_bucket)
 EOF
 
 # --- TESTS ---
