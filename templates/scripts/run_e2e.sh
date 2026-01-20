@@ -19,8 +19,9 @@ echo "[TEST 2] Filing Jira Ticket (Target: TNG)..."
 python3 templates/observability/jira_bridge.py "Fix [Build] Failure" "Trace: 999 - Syntax Error" "TNG" --file build_fail.log --line 1
 
 # 3. Log Fetch Verification
-# We verify that the ticket (fingerprint) was stored locally
-echo "[TEST 3] Fetching Jira Logs..."
+# We verify that the ticket (fingerprint) was stored locally (or remote)
+echo "[TEST 3] Fetching Jira Logs (Waiting 5s for Indexing)..."
+sleep 5
 python3 templates/observability/jira_bridge.py --fetch | grep -F "Fix [Build] Failure" && echo "[PASS] Log entry found." || { echo "[FAIL] Log entry missing"; exit 1; }
 
 echo "----------------------------------------"

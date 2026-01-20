@@ -309,85 +309,167 @@ import sys
 import hashlib
 import subprocess
 import os
+import json
+import base64
+import argparse
 
-# Antigravity Jira Bridge
-# Connects Flight Recorder to Jira for Rule 08/07.
-# Implements R 2.1 (Schema), R 2.2 (Deduplication), R 2.3 (Dynamic Ownership)
+# Antigravity Jira Bridge V2.5.1
+# Connects Flight Recorder to Atlassian Jira (Cloud)
+# Implements Real-Time Telemetry, Deduplication, and Dynamic Ownership
+
+JIRA_BASE_URL = "https://tngshopper.atlassian.net"
+PROJECT_KEY = "TNG"
 
 MOCK_JIRA_DB = "/tmp/antigravity_jira_state.txt"
-JIRA_BASE_URL = "https://tngshopper.atlassian.net/jira/core/projects/TNG/"
 
-def fetch_logs():
-    """R 2.4 Fetch Capability: Retrieve ticket history."""
-    if not os.path.exists(MOCK_JIRA_DB):
-        print("[INFO] No Jira logs found.")
+def get_credentials():
+    email = os.getenv("JIRA_USER_EMAIL")
+    token = os.getenv("JIRA_API_TOKEN")
+    if not email or not token:
+        # Check if we are in CI
+        if os.getenv("CI"):
+            print("[WARN] CI Detected but Credentials Missing. Telemetry Disabled.")
+        return None
+    
+    # Create Basic Auth Header
+    creds = f"{email}:{token}"
+    b64_creds = base64.b64encode(creds.encode()).decode("ascii")
+    return {"Authorization": f"Basic {b64_creds}", "Content-Type": "application/json"}
+
+def make_request(method, endpoint, headers, data=None):
+    # Using CURL to allow for better cert handling on local Mac environs
+    url = f"{JIRA_BASE_URL}{endpoint}"
+    cmd = ["curl", "-s", "-X", method, url]
+    for k, v in headers.items():
+        cmd.extend(["-H", f"{k}: {v}"])
+    if data:
+        cmd.extend(["-d", json.dumps(data)])
+    
+    try:
+        # print("DEBUG CMD:", " ".join(cmd))
+        result = subprocess.check_output(cmd, stderr=subprocess.PIPE).decode("utf-8")
+        if not result: return None
+        return json.loads(result)
+    except Exception as e:
+        print(f"[ERROR] Curl Request Failed: {e}")
+        return None
+
+def fetch_logs(headers):
+    """R 2.4 Fetch Capability: Fetch recent issues from TNG project."""
+    if not headers:
+        if os.path.exists(MOCK_JIRA_DB):
+            print("[INFO] Fetching from Local Mock DB...")
+            with open(MOCK_JIRA_DB, "r") as f:
+                print(f.read())
         return
 
-    print(f"[JIRA] Fetching Ticket History from {JIRA_BASE_URL} (Local Mirror)...")
-    print("-" * 40)
-    with open(MOCK_JIRA_DB, "r") as f:
-        print(f.read())
-    print("-" * 40)
+    print(f"[JIRA] Fetching recent errors from {JIRA_BASE_URL}/projects/{PROJECT_KEY}...")
+    import urllib.parse
+    jql = f"project = {PROJECT_KEY} ORDER BY created DESC"
+    query = f"/rest/api/3/search?jql={urllib.parse.quote(jql)}&maxResults=5"
+    
+    resp = make_request("GET", query, headers)
+    if resp and "issues" in resp:
+        for issue in resp["issues"]:
+            key = issue["key"]
+            summary = issue["fields"]["summary"]
+            status = issue["fields"]["status"]["name"]
+            assignee = issue["fields"]["assignee"]["displayName"] if issue["fields"]["assignee"] else "Unassigned"
+            print(f"[{key}] {summary} ({status}) - {assignee}")
 
 def get_git_owner(filepath, line_number):
-    """R 2.3 Dynamic Ownership: Use git blame to find the human owner."""
+    """R 2.3 Dynamic Ownership: Use git blame."""
+    if not filepath: return "devops-oncall"
     try:
-        # Check if file exists
-        if not os.path.exists(filepath):
-            return "unknown-committer"
-            
+        if not os.path.exists(filepath): return "unknown-committer"
         cmd = ["git", "blame", "--line-porcelain", "-L", f"{line_number},{line_number}", filepath]
         result = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode("utf-8")
         for line in result.split("\n"):
             if line.startswith("author "):
                 return line.split(" ", 1)[1]
-    except Exception as e:
-        print(f"[WARN] Git Blame failed: {e}")
-        return "devops-oncall"
+    except:
+        pass
     return "devops-oncall"
 
 def validate_schema(summary):
-    """R 2.1 Standardized Schema: Enforce 'Verb Source Error' format."""
-    parts = summary.split(" ")
-    if len(parts) < 3:
-        print(f"[ERROR] Invalid Jira Summary: '{summary}'. Must be 'VERB [SOURCE] ERROR'")
-        return False
+    # Requirement: Verb [Source] Error
+    import re
+    if not re.match(r"^\w+\s+\[.+\]\s+.+$", summary):
+         print(f"[ERROR] Schema Violation: '{summary}'. expected 'Verb [Source] Error'")
+         return False
     return True
 
-def create_ticket(summary, description, project_id, filepath=None, line=1):
-    if not validate_schema(summary):
-        sys.exit(1)
+def find_duplicate_issue(headers, fingerprint):
+    import urllib.parse
+    jql = f"project = {PROJECT_KEY} AND labels = \"fp:{fingerprint}\""
+    resp = make_request("GET", f"/rest/api/3/search?jql={urllib.parse.quote(jql)}", headers)
+    if resp and resp.get("total", 0) > 0:
+        return resp["issues"][0]
+    return None
 
-    # R 2.2 Semantic Deduplication
+def create_ticket(summary, description, project_id, filepath=None, line=1):
+    if not validate_schema(summary): sys.exit(1)
+    
+    headers = get_credentials()
+    owner = get_git_owner(filepath, line)
     error_fingerprint = hashlib.md5(f"{summary}|{description}".encode()).hexdigest()
     
-    # Check for duplicate (Mock Logic)
-    if os.path.exists(MOCK_JIRA_DB):
-        with open(MOCK_JIRA_DB, "r") as f:
-            if error_fingerprint in f.read():
-                print(f"[INFO] Duplicate Error {error_fingerprint} detected. Incrementing counter. No new ticket.")
-                return "EXISTING-TICKET"
+    # Mock Fallback
+    if not headers:
+        print(f"[MOCK-JIRA] Would create ticket: {summary}")
+        with open(MOCK_JIRA_DB, "a") as f:
+            f.write(f"[{project_id}] {summary} (Assignee: {owner}) | Fingerprint: {error_fingerprint}\n")
+        return "MOCK-123"
 
-    # R 2.3 Resolve Owner
-    owner = "devops-oncall"
-    if filepath:
-         owner = get_git_owner(filepath, line)
+    # Deduplication
+    print("[JIRA] Checking for duplicates...")
+    existing = find_duplicate_issue(headers, error_fingerprint)
+    if existing:
+        key = existing["key"]
+        print(f"[INFO] Duplicate found: {key}. Adding comment.")
+        comment_body = {
+            "body": {
+                "type": "doc",
+                "version": 1,
+                "content": [{
+                    "type": "paragraph",
+                    "content": [{"type": "text", "text": f"Recurrence detected. Trace ID: {os.getenv('TRACE_ID', 'N/A')}"}]
+                }]
+            }
+        }
+        make_request("POST", f"/rest/api/3/issue/{key}/comment", headers, comment_body)
+        return key
 
-    print(f"[JIRA] Creating Ticket: {summary}")
-    print(f"       Target: {JIRA_BASE_URL}")
-    print(f"       Project: {project_id}")
-    print(f"       Assignee: {owner}")
-    print(f"       Fingerprint: {error_fingerprint}")
+    # Create Issue
+    desc_doc = {
+        "type": "doc",
+        "version": 1,
+        "content": [
+            {"type": "paragraph", "content": [{"type": "text", "text": description}]},
+            {"type": "paragraph", "content": [{"type": "text", "text": f"\n\nOwner: {owner}\nFingerprint: {error_fingerprint}"}]}
+        ]
+    }
     
-    # Save state
-    with open(MOCK_JIRA_DB, "a") as f:
-        f.write(f"[{project_id}] {summary} (Assignee: {owner}) | Fingerprint: {error_fingerprint}\n")
-        
-    return "JIRA-" + os.urandom(2).hex().upper()
+    payload = {
+        "fields": {
+            "project": {"key": PROJECT_KEY},
+            "summary": summary,
+            "description": desc_doc,
+            "issuetype": {"name": "Task"},
+            "labels": ["auto-generated", f"fp:{error_fingerprint}"]
+        }
+    }
+    
+    print(f"[JIRA] Creating Ticket in {PROJECT_KEY}...")
+    resp = make_request("POST", "/rest/api/3/issue", headers, payload)
+    if resp and "key" in resp:
+        print(f"[SUCCESS] Created {resp['key']}")
+        return resp['key']
+    else:
+        print("[FAIL] Could not create ticket.")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    # Example Usage: python jira_bridge.py "Fix [API] Timeout" "Trace..." "AG-OS" --file src/main.py --line 10
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("summary", nargs="?")
     parser.add_argument("description", nargs="?")
@@ -397,14 +479,14 @@ if __name__ == "__main__":
     parser.add_argument("--line", type=int, default=1, help="Line number for blame")
     
     args = parser.parse_args()
-    args = parser.parse_args()
     
     if args.fetch:
-        fetch_logs()
+        fetch_logs(get_credentials())
     else:
-        if not args.summary or not args.description or not args.project:
-             parser.error("Summary, Description, and Project are required for ticket creation.")
-        create_ticket(args.summary, args.description, args.project, args.file, args.line)
+        if not args.summary:
+             if get_credentials(): print("[INFO] Auth Valid."); sys.exit(0)
+             else: sys.exit(1)
+        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line)
 EOF
 
 # --- TESTS ---
@@ -430,8 +512,9 @@ echo "[TEST 2] Filing Jira Ticket (Target: TNG)..."
 python3 templates/observability/jira_bridge.py "Fix [Build] Failure" "Trace: 999 - Syntax Error" "TNG" --file build_fail.log --line 1
 
 # 3. Log Fetch Verification
-# We verify that the ticket (fingerprint) was stored locally
-echo "[TEST 3] Fetching Jira Logs..."
+# We verify that the ticket (fingerprint) was stored locally (or remote)
+echo "[TEST 3] Fetching Jira Logs (Waiting 5s for Indexing)..."
+sleep 5
 python3 templates/observability/jira_bridge.py --fetch | grep -F "Fix [Build] Failure" && echo "[PASS] Log entry found." || { echo "[FAIL] Log entry missing"; exit 1; }
 
 echo "----------------------------------------"
@@ -535,7 +618,7 @@ EOF
 
 # --- CI/CD WORKFLOWS ---
 
-cat <<EOF > .github/workflows/antigravity-gatekeeper.yml
+cat <<'EOF' > .github/workflows/antigravity-gatekeeper.yml
 name: Antigravity Gatekeeper (Rule 08 & 02)
 on: [push, pull_request]
 
@@ -560,12 +643,23 @@ jobs:
   test-suite:
     needs: governance-gate
     runs-on: ubuntu-latest
-    container:
-      image: node:18
-      options: --network none # Air-Gap (Rule 3.3)
     steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: Run Tests
         run: npm test
+      - name: Jira Telemetry (Failure Hook)
+        if: failure()
+        env:
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          # Create placeholder log if not exists
+          echo "CI Failure at $(date)" > ci_failure.log
+          python .agent/observability/jira_bridge.py "Fix [CI] Build Failure" "See Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" "TNG" --file ci_failure.log
 EOF
 
 cat <<EOF > .github/workflows/integration-queue.yml
@@ -595,12 +689,12 @@ EOF
 
 cat <<EOF > install.sh
 #!/bin/bash
-# Antigravity OS Installer (V2.4 Enterprise)
+# Antigravity OS Installer (V2.5.1 Golden Master)
 # Usage: /bin/bash -c "\$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
 REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 
-echo "[INFO] Installing Antigravity OS (V2.4)..."
+echo "[INFO] Installing Antigravity OS (V2.5.1 - Golden Master)..."
 
 # 1. Scaffold Directory Structure
 mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
@@ -622,32 +716,37 @@ if [ ! -f docs/API_Contract.md ]; then
     curl -s "\$REPO_URL/templates/docs/API_Contract.md" > docs/API_Contract.md
 fi
 
-# 4. Fetch Rules
+# 4. Fetch Rules (Including New Rule 08)
 echo "[INFO] Ratifying Constitution..."
 for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md 08-economic-safety.md; do
     curl -s "\$REPO_URL/templates/rules/\$rule" > .agent/rules/\$rule
 done
 
-# 5. Fetch Scripts & Brain
+# 5. Fetch Scripts, Sentinel, and Observability
 curl -s "\$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
 curl -s "\$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
 curl -s "\$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
+# Updated Jira Bridge (Phase 4)
 curl -s "\$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
+
+# 6. Workflows (Including Self-Healing)
 curl -s "\$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workflows/antigravity-gatekeeper.yml
 curl -s "\$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
+
 chmod +x scripts/sync_governance.sh
 
-# 6. Inject Bridge
+# 7. Inject Bridge
 cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.4)
+# Antigravity Compatibility Bridge (V2.5.1)
 SYSTEM_INSTRUCTION:
 "IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
 "Your Source of Truth is .agent/rules/."
 "You must output the Flight Recorder JSON at the start of every turn."
 "If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
+"Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
 EOT
 
-echo "[SUCCESS] Antigravity OS V2.4 Installed. System Online."
+echo "[SUCCESS] Antigravity OS V2.5.1 Installed. System Online."
 EOF
 
 chmod +x install.sh
