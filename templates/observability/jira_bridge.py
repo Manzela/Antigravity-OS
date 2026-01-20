@@ -31,9 +31,9 @@ def get_credentials():
     return {"Authorization": f"Basic {b64_creds}", "Content-Type": "application/json"}
 
 def make_request(method, endpoint, headers, data=None):
-    # Using CURL to allow for better cert handling on local Mac environs
+    # Using CURL with strict timeouts (5s connect, 15s total)
     url = f"{JIRA_BASE_URL}{endpoint}"
-    cmd = ["curl", "-s", "-X", method, url]
+    cmd = ["curl", "-s", "--connect-timeout", "5", "--max-time", "15", "-X", method, url]
     for k, v in headers.items():
         cmd.extend(["-H", f"{k}: {v}"])
     if data:
@@ -334,14 +334,16 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
     # Reproduction Command
     reproduce_cmd = f"git checkout {git_hash}\n"
     if filepath:
-        if filepath.endswith(".py"):
-             reproduce_cmd += f"python3 {filepath} # (Check line {line})"
-        elif filepath.endswith(".sh"):
-             reproduce_cmd += f"bash {filepath}"
-        elif filepath.endswith(".js"):
-             reproduce_cmd += f"node {filepath}"
+        # QA Hardening: Sanitize filepath to prevent injection or ADF breakages
+        clean_path = "".join(c for c in filepath if c.isalnum() or c in "._-/")
+        if clean_path.endswith(".py"):
+             reproduce_cmd += f"python3 {clean_path} # (Check line {line})"
+        elif clean_path.endswith(".sh"):
+             reproduce_cmd += f"bash {clean_path}"
+        elif clean_path.endswith(".js"):
+             reproduce_cmd += f"node {clean_path}"
         else:
-             reproduce_cmd += f"cat {filepath} # (Inspect file)"
+             reproduce_cmd += f"cat {clean_path} # (Inspect file)"
     else:
         reproduce_cmd += "./build_product.sh # (or relevant script)"
 
