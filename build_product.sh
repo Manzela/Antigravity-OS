@@ -215,6 +215,78 @@ This file tracks automated failures and friction points to drive the evolution o
 | YYYY-MM-DD | init-001 | 0 | Log initialized | System Setup |
 EOF
 
+cat <<EOF > templates/docs/Day2_Operations.md
+# Antigravity OS: Day 2 Operations Manual
+# How to Distribute, Propagate, and Enforce Governance
+
+## 1. Creating New Projects ("The Golden Template")
+This repository is the **Master Kernel**. To start a new Antigravity project:
+1.  Go to the GitHub page of this repository.
+2.  Click **"Use this template"**.
+3.  Clone your new repository.
+4.  Run \`./install.sh\` to hydrate the environment.
+    *   *Effect*: Your new project immediately inherits the V2.5.1 Schema, Gates, and Workflows.
+
+## 2. Updating Existing Projects ("The Genetic Update")
+Antigravity Rules evolve. To sync your project with the Master Kernel:
+1.  Run \`./scripts/sync_governance.sh\`.
+    *   *Effect*: Fetches the latest \`rules/*.md\` from the Master OS repository.
+2.  Commit the changes.
+    *   *Why*: This ensures your "Constitution" (Rule 00-08) is always up to date with the Enterprise Standard.
+
+## 3. Local Enforcement ("The Invisible Guardrails")
+To prevent bad code from leaving your machine:
+1.  Run \`./scripts/setup_hooks.sh\`.
+    *   *Effect*: Installs a \`pre-push\` Git hook.
+    *   *Behavior*: Runs \`scripts/run_qa.sh\` (ShellCheck + Unit Tests) before every push.
+    *   *Block*: If QA fails, the push is rejected.
+
+## 4. Emergency Overrides
+If the Guardrails are blocking a critical hotfix:
+*   **Git Hook**: Run \`git push --no-verify\`.
+*   **Cost Guard**: Use the \`/authorize-overage\` command (Manual Human Protocol).
+*   **Strict Note**: Every override is logged to \`docs/SDLC_Friction_Log.md\` (Rule 07).
+EOF
+
+# Phase 8: Git Hooks (Local Enforcement)
+mkdir -p templates/scripts
+cat <<EOF > templates/scripts/setup_hooks.sh
+#!/bin/bash
+# Antigravity Hooks Installer
+# Enforces Rule 02 (Fail Closed) at the Git Layer
+
+HOOK_DIR=".git/hooks"
+PRE_PUSH="\$HOOK_DIR/pre-push"
+
+if [ ! -d ".git" ]; then
+    echo "[ERROR] Not a git repository. Run 'git init' first."
+    exit 1
+fi
+
+echo "[INFO] Installing Antigravity Guardrails (Pre-Push)..."
+
+cat <<EOT > \$PRE_PUSH
+#!/bin/bash
+# Antigravity Pre-Push Hook
+# Runs QA Suite before allowing push.
+
+echo "[HOOK] Running Antigravity QA Suite..."
+./scripts/run_qa.sh
+
+STATUS=\\\$?
+if [ \\\$STATUS -ne 0 ]; then
+    echo "[BLOCK] Push Rejected. QA Suite Failed."
+    echo "Run 'git push --no-verify' to override (Emergency Only)."
+    exit 1
+fi
+echo "[PASS] QA Passed. Pushing..."
+exit 0
+EOT
+
+chmod +x \$PRE_PUSH
+echo "[SUCCESS] Guardrails Active. QA Suite will run on every push."
+EOF
+
 # --- SENTINEL (The Cost Guard) ---
 cat <<EOF > templates/sentinel/cost_guard.py
 import os
@@ -851,6 +923,9 @@ EOF
 chmod +x templates/scripts/run_e2e.sh
 
 # --- SCRIPTS ---
+mkdir -p templates/scripts
+
+
 
 # 1. Sync Governance Script
 cat <<EOF > templates/scripts/sync_governance.sh
@@ -866,6 +941,8 @@ for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.
     curl -s "\$REPO_URL/templates/rules/\$rule" > .agent/rules/\$rule
 done
 echo "[SUCCESS] Governance Synced."
+EOF
+
 EOF
 
 # 2. Archive Telemetry (GCS Edition)
@@ -1084,7 +1161,12 @@ curl -s "\$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows
 
 chmod +x scripts/sync_governance.sh
 
-# 7. Inject Bridge
+# 8. Setup Hooks (Optional but Recommended)
+curl -s "\$REPO_URL/templates/docs/Day2_Operations.md" > docs/Runbooks/Day2_Operations.md
+curl -s "\$REPO_URL/templates/scripts/setup_hooks.sh" > scripts/setup_hooks.sh
+chmod +x scripts/setup_hooks.sh
+
+# 9. Inject Bridge
 cat <<EOT > .cursorrules
 # Antigravity Compatibility Bridge (V2.5.1)
 SYSTEM_INSTRUCTION:
