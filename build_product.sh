@@ -378,21 +378,63 @@ def get_git_info(filepath, line_number):
     except:
         return "git-error", "devops-oncall@tngshopper.com"
 
-def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, status="PROD_ALERT"):
-    """R 6.5 Schema Enforcement: Wrap logs in strict JSON Schema."""
+def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, status_code="Error"):
+    """R 6.5 Advanced Schema Enforcement: OpenTelemetry-style Flight Recorder."""
     import datetime
+    import time
+    import uuid
+    
+    # Generate Spans
+    span_id = uuid.uuid4().hex[:16]
+    start_ns = time.time_ns()
+    end_ns = start_ns + 1000000000 # Mock 1s duration
+    
+    # Context
+    repo = os.getenv("GITHUB_REPOSITORY", "Manzela/Antigravity-OS")
+    server = os.getenv("GITHUB_SERVER_URL", "https://github.com")
+    run_id = os.getenv("GITHUB_RUN_ID", "local-run")
+    ref = os.getenv("GITHUB_REF_NAME", "unknown-branch")
+
     return {
-        "trace_id": trace_id or "unknown-trace",
-        "git_commit_hash": git_hash or "unknown-hash",
-        "jira_ticket_id": None, # Filled after creation
-        "gcp_trace_id": trace_id, # Mapping execution trace to GCP trace
-        "ci_build_id": os.getenv("GITHUB_RUN_ID", "local-run"),
-        "status": status,
-        "owner": owner,
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-        "logs": {
-            "stderr": log_content
+      "trace_id": trace_id,
+      "span_id": span_id,
+      "parent_span_id": None, # Root span
+      "start_time_unix_nano": start_ns,
+      "end_time_unix_nano": end_ns,
+      "status": { "code": status_code },
+      "resource": {
+        "service.name": "flight-recorder-service",
+        "service.version": "2.1.0",
+        "deployment.environment.name": "production",
+        
+        # VCS
+        "vcs.repository.url.full": f"{server}/{repo}",
+        "vcs.ref.head.name": ref,
+        "vcs.revision.id": git_hash,
+
+        # CI/CD
+        "cicd.pipeline.name": "antigravity-gatekeeper",
+        "cicd.pipeline.run.id": run_id,
+        
+        # Artifact
+        "artifact.name": "antigravity-installer",
+        "artifact.version": "2.5.1",
+        "container.image.name": "flight-recorder",
+        "container.image.tags": ["v2.5.1", "latest"]
+      },
+      "attributes": {
+        "test.suite.name": "antigravity-e2e",
+        "test.result": "fail" if status_code == "Error" else "pass",
+        "owner": owner
+      },
+      "logs": [
+        { 
+          "timestamp": datetime.datetime.utcnow().isoformat() + "Z", 
+          "body": log_content, 
+          "severity": "ERROR",
+          "attributes": { "exception.type": "RuntimeError" } 
         }
+      ]
     }
 
 def upload_to_gcs(payload, bucket_name, trace_id):
