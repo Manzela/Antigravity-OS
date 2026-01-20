@@ -71,12 +71,21 @@ def get_git_info(filepath, line_number):
     except:
         return "git-error", "devops-oncall@tngshopper.com"
 
-def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint):
+def create_rich_description(summary, description, log_content, owner_name, owner_email, fingerprint, gcs_link=None):
     """R 5.1 Rich Context: Generate Professional ADF Description (No Emojis)."""
     
     # Truncate log if too long (Jira limit)
     if len(log_content) > 2000:
         log_content = log_content[:2000] + "... [TRUNCATED]"
+
+    diag_items = [
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Error Fingerprint: {fingerprint}"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Detected Owner: {owner_name} ({owner_email})"}]}]},
+        {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Component: DevOps / Infrastructure"}]}]}
+    ]
+
+    if gcs_link:
+         diag_items.append({"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Full Log Archive", "marks": [{"type": "link", "attrs": {"href": gcs_link}}]}]}]})
 
     content = [
         # Section 1: Issue Summary
@@ -97,11 +106,7 @@ def create_rich_description(summary, description, log_content, owner_name, owner
         },
         {
             "type": "bulletList",
-            "content": [
-                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Error Fingerprint: {fingerprint}"}]}]},
-                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Detected Owner: {owner_name} ({owner_email})"}]}]},
-                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Component: DevOps / Infrastructure"}]}]}
-            ]
+            "content": diag_items
         },
         # Section 3: System Logs
         {
@@ -128,7 +133,7 @@ def create_rich_description(summary, description, log_content, owner_name, owner
     
     return {"type": "doc", "version": 1, "content": content}
 
-def create_ticket(summary, description, project_id, filepath=None, line=1, log_file=None):
+def create_ticket(summary, description, project_id, filepath=None, line=1, log_file=None, gcs_link=None):
     headers = get_credentials()
     
     # Ingestion: Read Logs
@@ -174,7 +179,7 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         return key
 
     # Create Issue Payload
-    desc_doc = create_rich_description(summary, description, log_content, owner_name, owner_email, error_fingerprint)
+    desc_doc = create_rich_description(summary, description, log_content, owner_name, owner_email, error_fingerprint, gcs_link)
     
     payload = {
         "fields": {
@@ -242,6 +247,7 @@ if __name__ == "__main__":
     parser.add_argument("--file", help="Source file for blame")
     parser.add_argument("--line", type=int, default=1, help="Line number for blame")
     parser.add_argument("--log-file", help="Path to log file for ingestion")
+    parser.add_argument("--gcs-link", help="Link to GCS Archive")
     
     args = parser.parse_args()
     
@@ -251,4 +257,4 @@ if __name__ == "__main__":
         if not args.summary:
              if get_credentials(): print("[INFO] Auth Valid."); sys.exit(0)
              else: sys.exit(1)
-        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line, args.log_file)
+        create_ticket(args.summary, args.description or "No Desc", args.project, args.file, args.line, args.log_file, args.gcs_link)
