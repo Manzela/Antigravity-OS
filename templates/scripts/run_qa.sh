@@ -11,9 +11,9 @@ echo "========================================"
 # 1. Static Analysis (Dockerized ShellCheck)
 echo "[QA-1] Running ShellCheck (via Docker)..."
 if command -v docker >/dev/null 2>&1; then
-    # Linting build_product.sh and install.sh
-    # Excluding SC2016 (Expressions in single quotes) if necessary, but broadly standard
-    docker run --rm -v "$(pwd):/mnt" koalaman/shellcheck:stable         build_product.sh install.sh templates/scripts/*.sh         || echo "[WARN] ShellCheck found issues. Review output above."
+    docker run --rm -v "$(pwd):/mnt" koalaman/shellcheck:stable \
+        build_product.sh install.sh templates/scripts/*.sh \
+        || echo "[WARN] ShellCheck found issues. Review output above."
 else
     echo "[SKIP] Docker not found. Skipping ShellCheck."
 fi
