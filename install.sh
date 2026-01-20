@@ -1,15 +1,15 @@
 #!/bin/bash
-# Antigravity OS Installer (V2.4 Enterprise)
+# Antigravity OS Installer (V2.5.1 Golden Master)
 # Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
 REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 
-echo "[INFO] Installing Antigravity OS (V2.4)..."
+echo "[INFO] Installing Antigravity OS (V2.5.1 - Golden Master)..."
 
 # 1. Scaffold Directory Structure
 mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
 mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
-mkdir -p docs/Runbooks src tests
+mkdir -p docs/Runbooks src tests templates/tests
 
 # 2. Fetch Intelligence
 echo "[INFO] Fetching Intelligence..."
@@ -21,34 +21,42 @@ echo "[INFO] Initializing State Machine..."
 curl -s "$REPO_URL/templates/Flight_Recorder_Schema.json" > docs/Flight_Recorder_Schema.json
 curl -s "$REPO_URL/templates/docs/Agent_Handover_Contracts.md" > docs/Agent_Handover_Contracts.md
 curl -s "$REPO_URL/templates/docs/SDLC_Friction_Log.md" > docs/SDLC_Friction_Log.md
+# Fetch Package.json for CI
+curl -s "$REPO_URL/templates/tests/package.json" > package.json
+
 
 if [ ! -f docs/API_Contract.md ]; then
     curl -s "$REPO_URL/templates/docs/API_Contract.md" > docs/API_Contract.md
 fi
 
-# 4. Fetch Rules
+# 4. Fetch Rules (Including New Rule 08)
 echo "[INFO] Ratifying Constitution..."
 for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md 08-economic-safety.md; do
     curl -s "$REPO_URL/templates/rules/$rule" > .agent/rules/$rule
 done
 
-# 5. Fetch Scripts & Brain
+# 5. Fetch Scripts, Sentinel, and Observability
 curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
 curl -s "$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
 curl -s "$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
+# Updated Jira Bridge (Phase 4)
 curl -s "$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
+
+# 6. Workflows (Including Self-Healing)
 curl -s "$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workflows/antigravity-gatekeeper.yml
 curl -s "$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
+
 chmod +x scripts/sync_governance.sh
 
-# 6. Inject Bridge
+# 7. Inject Bridge
 cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.4)
+# Antigravity Compatibility Bridge (V2.5.1)
 SYSTEM_INSTRUCTION:
 "IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
 "Your Source of Truth is .agent/rules/."
 "You must output the Flight Recorder JSON at the start of every turn."
 "If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
+"Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
 EOT
 
-echo "[SUCCESS] Antigravity OS V2.4 Installed. System Online."
+echo "[SUCCESS] Antigravity OS V2.5.1 Installed. System Online."

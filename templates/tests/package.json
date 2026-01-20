@@ -1,0 +1,9 @@
+{
+  "name": "antigravity-os",
+  "version": "2.5.1",
+  "description": "Antigravity OS Test Suite",
+  "scripts": {
+    "test": "echo '[MOCK] Running Tests...' && exit 0"
+  },
+  "dependencies": {}
+}

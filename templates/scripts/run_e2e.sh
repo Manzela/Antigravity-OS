@@ -20,8 +20,8 @@ python3 templates/observability/jira_bridge.py "Fix [Build] Failure" "Trace: 999
 
 # 3. Log Fetch Verification
 # We verify that the ticket (fingerprint) was stored locally (or remote)
-echo "[TEST 3] Fetching Jira Logs (Waiting 5s for Indexing)..."
-sleep 5
+echo "[TEST 3] Fetching Jira Logs (Waiting 10s for Indexing)..."
+sleep 10
 python3 templates/observability/jira_bridge.py --fetch | grep -F "Fix [Build] Failure" && echo "[PASS] Log entry found." || { echo "[FAIL] Log entry missing"; exit 1; }
 
 echo "----------------------------------------"
