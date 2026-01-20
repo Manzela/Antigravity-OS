@@ -1,4 +1,4 @@
-# Antigravity Workforce Registry (V2.2)
+# Antigravity Workforce Registry (V2.4)
 
 ## 1. The Architect (Planner)
 * **Role:** Strategic Planning.
@@ -20,4 +20,4 @@
 
 ## 5. The Sentinel (SecOps)
 * **Role:** Security & Governance.
-* **Mandate:** Enforces Protocol C, scans for secrets, and maintains the `SDLC_Friction_Log.md`.
+* **Mandate:** Enforces Protocol C and runs `scripts/archive_telemetry.py`.

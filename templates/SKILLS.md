@@ -4,4 +4,4 @@
 - **run_tests**: Execute test suite.
 - **snapshot_ui**: Capture screenshots of the UI.
 - **scan_dependencies**: Check for CVEs (Sentinel).
-- **log_friction**: Append error details to the Friction Log.
+- **archive_telemetry**: Sync logs to Google Cloud Storage.

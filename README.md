@@ -1,4 +1,4 @@
-# Antigravity OS (V2.2 Enterprise)
+# Antigravity OS (V2.4 Enterprise)
 
 > **"High-Gravity Governance for a Weightless Developer Experience."**
 
@@ -32,6 +32,11 @@ Turn any repository into an Antigravity Project:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 ```
 
+## Configuration
+To enable Telemetry Archival (Rule 07), set these Env Vars:
+* `ANTIGRAVITY_LOG_BUCKET`: Name of your centralized GCS bucket.
+* `GCP_PROJECT_ID`: Your Google Cloud Project ID.
+
 ## Evolution & Updates
 
 To update your project's rules to the latest Antigravity Standard:
@@ -42,4 +47,4 @@ To update your project's rules to the latest Antigravity Standard:
 
 ---
 
-*Powered by the Antigravity SDLC V2.2 Standard.*
+*Powered by the Antigravity SDLC V2.4 Standard.*
