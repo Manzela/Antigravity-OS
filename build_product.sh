@@ -302,13 +302,36 @@ except ImportError:
 # Fetches monthly spend from GCP and persists to Redis as a verifiable baseline.
 
 def get_redis_client():
+    """Factory: Returns Real Redis if configured, else None."""
     url = os.getenv("REDIS_URL")
-    if not redis or not url:
+    host = os.getenv("REDIS_HOST")
+    port = int(os.getenv("REDIS_PORT", 6379))
+    user = os.getenv("REDIS_USER", "default")
+    password = os.getenv("REDIS_PASSWORD")
+    
+    if not redis:
         return None
+        
     try:
-        return redis.Redis.from_url(url, socket_timeout=5, decode_responses=True)
+        if url:
+            client = redis.Redis.from_url(url, socket_timeout=5, decode_responses=True)
+            client.ping()
+            return client
+        elif host:
+            client = redis.Redis(
+                host=host, 
+                port=port, 
+                username=user, 
+                password=password, 
+                db=0, 
+                socket_timeout=5, 
+                decode_responses=True
+            )
+            client.ping()
+            return client
     except:
         return None
+    return None
 
 def fetch_gcp_spend(billing_account=None):
     """
@@ -397,6 +420,7 @@ def get_redis_client():
     url = os.getenv("REDIS_URL")
     host = os.getenv("REDIS_HOST")
     port = int(os.getenv("REDIS_PORT", 6379))
+    user = os.getenv("REDIS_USER", "default")
     password = os.getenv("REDIS_PASSWORD")
     
     if not redis:
@@ -409,7 +433,15 @@ def get_redis_client():
             client.ping()
             return client
         elif host:
-            client = redis.Redis(host=host, port=port, password=password, db=0, socket_timeout=5, decode_responses=True)
+            client = redis.Redis(
+                host=host, 
+                port=port, 
+                username=user, 
+                password=password, 
+                db=0, 
+                socket_timeout=5, 
+                decode_responses=True
+            )
             client.ping()
             return client
     except Exception as e:
