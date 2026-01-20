@@ -48,7 +48,12 @@ curl -s "$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/
 
 chmod +x scripts/sync_governance.sh
 
-# 7. Inject Bridge
+# 8. Setup Hooks (Optional but Recommended)
+curl -s "$REPO_URL/templates/docs/Day2_Operations.md" > docs/Runbooks/Day2_Operations.md
+curl -s "$REPO_URL/templates/scripts/setup_hooks.sh" > scripts/setup_hooks.sh
+chmod +x scripts/setup_hooks.sh
+
+# 9. Inject Bridge
 cat <<EOT > .cursorrules
 # Antigravity Compatibility Bridge (V2.5.1)
 SYSTEM_INSTRUCTION:

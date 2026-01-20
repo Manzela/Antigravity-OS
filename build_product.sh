@@ -996,6 +996,7 @@ jobs:
   test-suite:
     needs: governance-gate
     runs-on: ubuntu-latest
+    # environment: Production  <-- Uncomment if you configured the Environment
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node
@@ -1007,9 +1008,11 @@ jobs:
           chmod +x install.sh
           ./install.sh
       - name: Run Tests
+        # We allow failure so the next step can capture the log
         run: npm test 2> ci_failure.log || echo "Tests Failed"
       - name: Jira Telemetry (Failure Hook)
-        if: failure() || hash ci_failure.log 2>/dev/null
+        # FIX: Use 'always()' to ensure this runs, then check file existence in shell
+        if: always()
         env:
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
@@ -1020,7 +1023,7 @@ jobs:
              echo "Triggering Jira Bridge..."
              
              # Phase 6: Archive to GCS (via Bridge Schema Enforcement)
-             GCS_BUCKET="gs://antigravity-logging-i-for-ai" # Hardcoded for this environment, could be secret
+             GCS_BUCKET="gs://antigravity-logging-i-for-ai"
              
              if [ -n "$GCP_SA_KEY" ]; then
                 echo "$GCP_SA_KEY" > gcp_key.json
