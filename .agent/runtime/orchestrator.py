@@ -67,7 +67,7 @@ def main():
     print(f"🧠 [BRAIN] Active. Trace: {TRACE_ID}")
 
     # The Loop
-    phases = [("Build & Test", "pytest tests/")]
+    phases = [("Build & Test", "python3 -m pytest tests/")]
     
     for name, cmd in phases:
         telemetry = run_phase(name, cmd)
