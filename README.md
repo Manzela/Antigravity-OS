@@ -1,129 +1,99 @@
-# Antigravity OS Installer (v2.7)
+# Antigravity OS V3.2 (The Connected Mind)
 
-## Overview
-The Antigravity OS Installer (`Upgrade-2.51V`) is an enterprise-grade orchestration system designed to deploy and manage the Antigravity Operating System infrastructure. It features hardened telemetry, real-time cost governance, and automated solvency enforcement.
+### **The Operating System for AI-Native Development**
 
-## Core Capabilities
+> *"Stop debugging. Start evolving."*
 
-### 1. Full-Stack Traceability
-We don't just log errors; we track the entire lifecycle of a bug.
-*   **OpenTelemetry Ready**: Built to integrate with standard tracing backends.
-*   **Unified Logging**: Centralized logs in Google Cloud Storage (GCS) for permanent retention.
-*   **Jira Integration**: Automated ticket creation with deep-links to git commits and system logs.
+**Antigravity OS** is not just a framework; it is a **Living System**. It is an autonomous, cloud-connected operating environment designed to enforce governance, ensure solvency, and self-heal using Generative AI. 
 
-### 2. Cost Visibility & Control
-Cloud costs should never be a surprise.
-*   **The Cost Guard**: A real-time sentinel that prevents budget overruns *before* they happen.
-*   **Live Billing Sync**: Automatically syncs your actual GCP spend to our governance engine daily.
-
-### 3. Enterprise Testing Suite
-Code is only as good as its verification.
-*   **Chaos Engineering**: We inject failures to ensure the system heals itself.
-*   **E2E Validation**: Full-scope testing from the CLI triggers to cloud deployment.
-*   **Strict Linting**: Pre-commit enforcement of "Clean Code" standards (`flake8`, `shellcheck`).
-
-### 4. Autonomous CI/CD
-A self-managing DevOps pipeline that works while you sleep.
-*   **Self-Healing**: If a deployment fails, the system automatically rolls back and alerts the team.
-*   **Multi-Agent Loops**: The system Plans -> Builds -> Tests -> Verifies. If verification fails, it autonomously loops back to Planning (up to 3 times) to attempt a fix before asking for human help.
-
-## System Prerequisites
-Before initializing the installer, ensure the following dependencies are met:
-
-### 1. Environment Secrets (CRITICAL)
-The following credentials must be configured in your CI/CD provider (GitHub Actions) or exported locally for development.
-
-| Secret Key | Description | Required Value (Production) |
-| :--- | :--- | :--- |
-| `GCP_BILLING_ACCOUNT_ID` | GCP Billing Account ID | `[REDACTED]` |
-| `REDIS_HOST` | Redis Cloud Endpoint | `[REDACTED]` |
-| `REDIS_PORT` | Redis Port | `[REDACTED]` |
-| `REDIS_USER` | Redis Username | `[REDACTED]` |
-| `REDIS_PASSWORD` | Redis Password | `[REDACTED]` |
-| `GCP_SA_KEY` | Service Account JSON | `[REDACTED]` |
-| `JIRA_USER_EMAIL` | Atlassian Account Email | `[REDACTED]` |
-| `JIRA_API_TOKEN` | Atlassian API Token | `[REDACTED]` |
-
-### 2. Required Software
-- **Python**: v3.9+ (`python3` with `pip`)
-- **Docker**: v20+ (for ShellCheck and containerized validation)
-- **Git**: v2.30+
-- **Google Cloud SDK**: v450+ (`gcloud`)
-- **Redis CLI** (Optional): For manual verification
-
-### 3. Library Dependencies
-The system relies on strict version pinning for stability.
-```bash
-# Automated install via validate_environment.sh or manual:
-pip install -r requirements.txt
-```
-*Includes: `redis>=5.0.1`, `google-cloud-storage>=2.14.0`, `pytest>=7.0.0`*
+In V3.2, we have broken the isolation. The system is no longer a local fortress. It is a **Connected Mind**, tethered to Google Cloud for global observability and powered by Gemini Pro for autonomous code repair.
 
 ---
 
-## Installation & Configuration
+## 🚀 The Vision: "Connected & Conscious"
 
-### Step 1: Clone Repository
-```bash
-git clone https://github.com/Manzela/Antigravity-OS.git
-cd Antigravity-OS
-```
+We built Antigravity OS V3.2 on three non-negotiable pillars:
 
-### Step 2: Environment Validation (The "System Rule")
-**STOP**: Before proceeding, you must execute the environment validation rule. This script verifies that all necessary dependencies and credentials are correctly configured.
-
-```bash
-chmod +x templates/scripts/validate_environment.sh
-./templates/scripts/validate_environment.sh
-```
-
-### Step 3: Deep Dive Verification (One-Time Setup)
-To ensure 100% flawless connectivity to Redis, GCP Billing, and Jira, run the Deep Dive suite. **Requires all secrets to be exported.**
-
-```bash
-./templates/scripts/verify_setup_DeepDive.sh
-```
-*This verifies Redis (read/write), Billing Sync (API), and GCS Archival logic.*
-
-### Step 4: MCP Server Configuration
-The system leverages the Model Context Protocol (MCP) for AI-assisted operations.
-
-#### Google Cloud Run MCP
-1.  Navigate to `.config/claude.json` (or equivalent).
-2.  Ensure `cloudrun` server is enabled.
-3.  Authentication: The server inherits credentials from `gcloud auth login` or the `GOOG_APPLICATION_CREDENTIALS` environment variable pointed to your SA Key.
-
-#### GitHub MCP
-1.  Requires `GITHUB_PERSONAL_ACCESS_TOKEN`.
-2.  Scopes needed: `repo`, `workflow`, `read:org`.
-
-#### Atlassian MCP
-1.  Requires `ATLASSIAN_API_TOKEN` and `ATLASSIAN_EMAIL`.
-2.  Base URL: `https://antigravity-os.atlassian.net`
+1.  **Identity is Governance:** No more `.env` file chaos. If you are not `@tngshopper.com`, you do not exist. We use Google Cloud Identity and Secret Manager as the single source of truth.
+2.  **Telemetry is Truth:** Errors are not just logged; they are traced globally. We pipe every span directly to **Google Cloud Trace** to visualize the heartbeat of the system across distributed architectures.
+3.  **Code is Alive:** When the system breaks, it doesn't just crash. It **Consults the Mind**. Using an integrated Vertex AI (Gemini Pro) connection, the Orchestrator analyzes the failure and proposes the exact code fix required to heal the system.
 
 ---
 
-## Development Workflow
+## 🏛 System Architecture (V3.2)
 
-### Build & Deploy
-To package the installer and generate the `Day2_Operations.md` runbook:
+### **1. The Identity Layer (Deep Auth)**
+*   **Mechanism:** `gcloud` Application Default Credentials (ADC).
+*   **Enforcement:** `install.sh` performs a mandatory organizational check (`@tngshopper.com`).
+*   **Secret Hydration:** API Keys (`JIRA_TOKEN`, `GEMINI_KEY`) are fetched dynamically from Google Secret Manager at runtime. Zero hardcoded secrets.
+
+### **2. The Nervous System (Observability)**
+*   **The Uplink:** A direct conduit using `opentelemetry-exporter-gcp-trace`. No sidecars, no friction. Traces appear instantly in the GCP Console.
+*   **The Sentinel (Governance):** An Open Policy Agent (OPA) container that audits every Git commit against strict `rego` policies before code usually leaves your machine.
+
+### **3. The Generative Brain (Self-Healing)**
+*   **The Mind:** Integrated `vertexai` client connected to **Gemini Pro 1.5**.
+*   **The Reflex:** Upon a test failure, the `orchestrator.py` captures the stack trace, sanitizes it (PII removal), and sends it to the Mind.
+*   **The Cure:** The AI returns a precise Python patch to fix the error, turning downtime into uptime.
+
+---
+
+## ⚡️ Quick Start
+
+**Prerequisites:**
+1.  **Docker Desktop** (Running)
+2.  **Google Cloud SDK** (`gcloud` installed)
+3.  **Identity**: You must have a `@tngshopper.com` Google Account.
+
+### **One-Shot Installation**
+
+We have removed the manual config steps. There is only one command:
+
 ```bash
-./build_product.sh
+./install.sh
 ```
 
-### Verification Suite
-Run the full "Enterprise Grade" QA suite before submitting any Pull Request:
-```bash
-./templates/scripts/run_qa.sh
-./templates/scripts/final_e2e_verification.sh
-```
+**What happens next?**
+1.  **Auth Check:** The script verifies your `gcloud` identity.
+2.  **Hydration:** It pulls production secrets from the Cloud.
+3.  **Boot:** It spins up the **Brain** (Redis) and **Sentinel** (OPA) containers.
+4.  **Wiring:** It installs the `pre-push` hook that guards your repo.
 
 ---
 
-## Support & Governance
-- **Telemetry**: Logs are shipped to `gs://antigravity-logging-i-for-ai`.
-- **Cost Guard**: Real-time solvency is checked against the Redis baseline (`global:current_spend`).
-- **Support**: Contact the DevOps Lead for credential rotation or access issues.
+## 🛠 Development Workflow
+
+### **1. Write Code**
+Work as usual. Focus on features, not plumbing.
+
+### **2. Verify Locally**
+The system is always watching.
+```bash
+# Run the verification suite manually if needed
+python3 .agent/runtime/orchestrator.py
+```
+
+### **3. Push to Deploy**
+The magic happens here.
+```bash
+git push origin feature/my-new-idea
+```
+The **Global Pre-Push Hook** intercepts the push:
+1.  **Governance Check:** OPA validates your changes.
+2.  **Build & Test:** The suite runs with OTel instrumentation.
+3.  **Trace Export:** Performance data is sent to Google Cloud Trace.
+4.  **Generative Heal:** If it fails, Gemini analyzes why and tells you how to fix it.
 
 ---
-*Generated by Antigravity AI - v2.7 Enterprise Edition*
+
+## 📊 Observability
+
+View your system's performance in real-time:
+*   [**Google Cloud Trace**](https://console.cloud.google.com/traces) - Distributed Request Tracing
+*   [**Secret Manager**](https://console.cloud.google.com/security/secret-manager) - Credential Governance
+
+---
+
+## © License & Credits
+**Antigravity OS** is a proprietary system of the TNG Infrastructure Team.
+*concept by Manzela | architecture by Antigravity AI*
