@@ -1,11 +1,10 @@
 redis
 requests
 jira
+pytest
+google-cloud-secret-manager
+google-cloud-aiplatform
 opentelemetry-distro
 opentelemetry-exporter-otlp
 opentelemetry-instrumentation
-pytest
-# V3.2: Connectivity & Intelligence Layer
-google-cloud-secret-manager
-google-cloud-aiplatform
 opentelemetry-exporter-gcp-trace
