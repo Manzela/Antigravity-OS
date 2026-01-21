@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 export PATH="$PATH:$(python3 -m site --user-base)/bin:$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')"
-echo "🪐 Initializing Antigravity OS V3.4.5 (Stability Patch)..."
+echo "🪐 Initializing Antigravity OS V3.5 (Recovery Patch)..."
 
 # 1. IDENTITY & AUTHENTICATION
 echo "🔍 Verifying @tngshopper.com Identity..."
@@ -27,8 +27,7 @@ GCP_SA_KEY=$(fetch_secret "GCP_SA_KEY")
 JIRA_TOKEN=$(fetch_secret "JIRA_API_TOKEN")
 JIRA_EMAIL=$(fetch_secret "JIRA_USER_EMAIL")
 
-# 3. CRITICAL FIX: SA KEY VALIDATION
-# Prevents JSONDecodeError by checking if key contains 'private_key'
+# 3. SA KEY VALIDATION
 SA_KEY_PATH=""
 if [ ! -z "$GCP_SA_KEY" ] && [[ "$GCP_SA_KEY" == *"private_key"* ]]; then
     mkdir -p .agent
@@ -44,15 +43,14 @@ else
     SA_KEY_PATH=""
 fi
 
-# 4. BRAIN STRATEGY
+# 4. INFRASTRUCTURE BOOT (Fixed Logic)
 USE_LOCAL_DB=true
 if [ ! -z "$REDIS_HOST" ] && [ "$REDIS_HOST" != "localhost" ]; then
-    # Test Connectivity
     if python3 -c "import socket; socket.create_connection(('$REDIS_HOST', int('${REDIS_PORT:-6379}')), timeout=2)" 2>/dev/null; then
         echo "   ✅ Connected to Remote Brain ($REDIS_HOST)."
         USE_LOCAL_DB=false
     else
-        echo "   ⚠️  Remote Brain Unreachable (Off VPN?). Fallback to Local."
+        echo "   ⚠️  Remote Brain Unreachable. Fallback to Local."
     fi
 fi
 
@@ -60,16 +58,17 @@ if [ "$USE_LOCAL_DB" = true ]; then
     REDIS_HOST="localhost"
     REDIS_PORT="6379"
     REDIS_PASS="" 
-    echo "   🔹 Booting Local Brain (Redis 7.2)..."
-    docker-compose down 2>/dev/null # Stop old container
-    docker-compose up -d antigravity-brain
+    echo "   🔹 Booting Local Brain & Sentinel..."
+    docker-compose down 2>/dev/null
+    # FIX: Boot BOTH Brain and Sentinel
+    docker-compose up -d antigravity-brain antigravity-sentinel
     until docker exec antigravity-brain redis-cli ping | grep PONG >/dev/null 2>&1; do sleep 1; done
 else
-    # Ensure Sentinel is running
+    echo "   🔹 Booting Sentinel (Policy Engine)..."
     docker-compose up -d antigravity-sentinel 2>/dev/null
 fi
 
-# 5. WRITE ENV (With TNG Project Key)
+# 5. WRITE ENV
 cat <<EOF > .env
 GCP_PROJECT_ID="${PROJECT_ID}"
 JIRA_API_TOKEN="${JIRA_TOKEN}"
@@ -81,15 +80,16 @@ GOOGLE_APPLICATION_CREDENTIALS="${SA_KEY_PATH}"
 JIRA_PROJECT_KEY="TNG"
 EOF
 
-# 6. INSTALL & WIRE
+# 6. WIRE HOOKS
 pip3 install -r requirements.txt >/dev/null
 opentelemetry-bootstrap -a install >/dev/null
 
 echo "#!/bin/sh
+export PATH=\"\$PATH:$(python3 -m site --user-base)/bin:$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')\"
 set -a
 . \"$(pwd)/.env\"
 set +a
 python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 
-echo "✅ V3.4.5 Installed. Tracing & Targeting Fixed."
+echo "✅ V3.5 Installed. System Fully Operational."

@@ -2,16 +2,23 @@ name: Self-Healing Integration Queue (Rule 4.3)
 on:
   pull_request:
     types: [opened, synchronize]
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   validate-and-heal:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -21,9 +28,10 @@ jobs:
         run: |
           echo "[CI] Hydrating from Local Source..."
           mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
-          cp templates/sentinel/cost_guard.py .agent/sentinel/
-          cp templates/observability/jira_bridge.py .agent/observability/
-          cp templates/rules/*.md .agent/rules/
+          # These copies create the "Dirty" state
+          cp templates/sentinel/cost_guard.py .agent/sentinel/ || true
+          cp templates/observability/jira_bridge.py .agent/observability/ || true
+          cp templates/rules/*.md .agent/rules/ || true
           cp templates/scripts/* scripts/ || true
           chmod +x scripts/*.sh || true
 
@@ -35,9 +43,24 @@ jobs:
       - name: Self-Healing Rollback
         if: steps.test.outputs.status == 'fail'
         run: |
-          echo "[HEAL] Reverting commit..."
-          git config user.email "manzela@tngshopper.com"
+          echo "🚨 [HEAL] Test Failed. Initiating Protocol A (Auto-Revert)..."
+
+          # CRITICAL FIX: SANITIZE WORKSPACE ("Wash Hands")
+          # Discard the 'cp' changes so git is clean for the Revert
+          git reset --hard HEAD
+          git clean -fd
+
+          # Configure Bot Identity
+          git config user.email "antigravity-bot@tngshopper.com"
           git config user.name "Antigravity CI"
+
+          # Execute Revert
+          echo "🔄 Reverting bad commit..."
           git revert HEAD --no-edit
-          # Push back to heal the PR branch
+
+          # Push the Heal
+          echo "🚀 Pushing Revert to origin..."
           git push origin HEAD:${{ github.head_ref }} --force-with-lease --no-verify
+
+          # Explicitly fail job to block PR merge until verified
+          exit 1
