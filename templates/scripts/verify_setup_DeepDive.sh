@@ -8,16 +8,29 @@ echo "===================================================="
 echo "   ANTIGRAVITY DEEP DIVE VERIFICATION (SETUP)       "
 echo "===================================================="
 
-# 1. Export User-Provided Credentials (Simulated Context)
-# In a real run, these would be loaded from the secure environment.
-export GCP_BILLING_ACCOUNT_ID='01FABE-89B1B2-4C704D'
-export REDIS_HOST='redis-17013.c1.us-central1-2.gce.cloud.redislabs.com'
-export REDIS_PORT='17013'
-export REDIS_USER='default'
-export REDIS_PASSWORD='Vi0Yu1Ho6LaoeiYAUlWrU8rRiAW8I73A'
-# Assumed based on bucket name 'antigravity-logging-i-for-ai'
-export GCP_PROJECT_ID='i-for-ai' 
-export ANTIGRAVITY_LOG_BUCKET='antigravity-logging-i-for-ai'
+# 1. Load Credentials securely
+if [ -f .env ]; then
+    export $(cat .env | xargs)
+fi
+
+# Ensure critical variables are set
+required_vars=(
+    "GCP_BILLING_ACCOUNT_ID"
+    "REDIS_HOST"
+    "REDIS_PORT"
+    "REDIS_USER"
+    "REDIS_PASSWORD"
+    "GCP_PROJECT_ID"
+    "ANTIGRAVITY_LOG_BUCKET"
+)
+
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+        echo "[ERROR] $var is not set. Please set it in your environment or a .env file."
+        echo "Required for Deep Dive Verification."
+        exit 1
+    fi
+done
 
 # Ensure logs exist for testing
 mkdir -p docs

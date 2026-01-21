@@ -35,14 +35,14 @@ The following credentials must be configured in your CI/CD provider (GitHub Acti
 
 | Secret Key | Description | Required Value (Production) |
 | :--- | :--- | :--- |
-| `GCP_BILLING_ACCOUNT_ID` | GCP Billing Account ID | `01FABE-89B1B2-4C704D` |
-| `REDIS_HOST` | Redis Cloud Endpoint | `redis-17013.c1.us-central1-2.gce.cloud.redislabs.com` |
-| `REDIS_PORT` | Redis Port | `17013` |
-| `REDIS_USER` | Redis Username | `default` |
-| `REDIS_PASSWORD` | Redis Password | `Vi0Yu1Ho6LaoeiYAUlWrU8rRiAW8I73A` |
-| `GCP_SA_KEY` | Service Account JSON | *(Base64 Encoded JSON content)* |
-| `JIRA_USER_EMAIL` | Atlassian Account Email | *(Your verified email)* |
-| `JIRA_API_TOKEN` | Atlassian API Token | *(Your verified token)* |
+| `GCP_BILLING_ACCOUNT_ID` | GCP Billing Account ID | `[REDACTED]` |
+| `REDIS_HOST` | Redis Cloud Endpoint | `[REDACTED]` |
+| `REDIS_PORT` | Redis Port | `[REDACTED]` |
+| `REDIS_USER` | Redis Username | `[REDACTED]` |
+| `REDIS_PASSWORD` | Redis Password | `[REDACTED]` |
+| `GCP_SA_KEY` | Service Account JSON | `[REDACTED]` |
+| `JIRA_USER_EMAIL` | Atlassian Account Email | `[REDACTED]` |
+| `JIRA_API_TOKEN` | Atlassian API Token | `[REDACTED]` |
 
 ### 2. Required Software
 - **Python**: v3.9+ (`python3` with `pip`)
