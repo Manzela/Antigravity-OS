@@ -1,72 +1,66 @@
 #!/bin/bash
-# Antigravity OS Installer (V3.0.0 Golden Master)
-# Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/V3.0/install.sh)"
+set -e
 
-REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/V3.0"
+echo "[INSTALL] Initializing Antigravity OS V3.1..."
 
-echo "[INFO] Installing Antigravity OS (V3.0.0 - Golden Master)..."
+# 1. Dependency Check
+command -v docker >/dev/null || { echo "[ERROR] Docker missing"; exit 1; }
 
-# 1. Scaffold Directory Structure
-mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
-mkdir -p artifacts/plans artifacts/validation-reports artifacts/screenshots
-mkdir -p docs/Runbooks src tests templates/tests
+# 2. Keystone: Hydrate Secrets (Fixes R-Sec-02)
+echo "[SEC] Generating local secrets configuration..."
+cat <<EOF > .env
+JIRA_TOKEN=${JIRA_TOKEN:-""}
+REDIS_HOST=antigravity-brain
+EOF
 
-# 2. Fetch Intelligence
-echo "[INFO] Fetching Intelligence..."
-curl -s "$REPO_URL/templates/AGENTS.md" > .agent/AGENTS.md
-curl -s "$REPO_URL/templates/SKILLS.md" > .agent/SKILLS.md
-
-# 3. Fetch State Engine & Docs
-echo "[INFO] Initializing State Machine..."
-curl -s "$REPO_URL/templates/Flight_Recorder_Schema.json" > docs/Flight_Recorder_Schema.json
-curl -s "$REPO_URL/templates/docs/Agent_Handover_Contracts.md" > docs/Agent_Handover_Contracts.md
-curl -s "$REPO_URL/templates/docs/SDLC_Friction_Log.md" > docs/SDLC_Friction_Log.md
-# Fetch Package.json for CI
-curl -s "$REPO_URL/templates/tests/package.json" > package.json
-
-
-if [ ! -f docs/API_Contract.md ]; then
-    curl -s "$REPO_URL/templates/docs/API_Contract.md" > docs/API_Contract.md
-fi
-
-# 4. Fetch Rules (Including New Rule 08)
-echo "[INFO] Ratifying Constitution..."
-for rule in 00-plan-first.md 01-data-contracts.md 02-fail-closed.md 03-sentinel.md 04-governance.md 05-flight-recorder.md 06-handover.md 07-telemetry.md 08-economic-safety.md; do
-    curl -s "$REPO_URL/templates/rules/$rule" > .agent/rules/$rule
+# 3. Boot Brain
+echo "[INFRA] Starting Containers..."
+docker-compose up -d --remove-orphans
+until docker exec antigravity-brain redis-cli ping | grep PONG; do 
+    echo "[WAIT] Waiting for Brain..."
+    sleep 2
 done
 
-# 5. Fetch Scripts, Sentinel, and Observability
-curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
-curl -s "$REPO_URL/templates/scripts/validate_environment.sh" > scripts/validate_environment.sh
-curl -s "$REPO_URL/requirements.txt" > requirements.txt
-curl -s "$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
-curl -s "$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
-# Updated Jira Bridge (Phase 4)
-curl -s "$REPO_URL/templates/observability/jira_bridge.py" > .agent/observability/jira_bridge.py
+# 4. Install Nervous System
+echo "[DEPS] Installing Dependencies..."
 
-# 6. Workflows (Including Self-Healing)
-curl -s "$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workflows/antigravity-gatekeeper.yml
-curl -s "$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
+# Ensure pip3 is available
+if ! command -v pip3 &> /dev/null; then
+    echo "[WARN] pip3 not found, trying pip..."
+    PIP_CMD=pip
+else
+    PIP_CMD=pip3
+fi
 
-chmod +x scripts/sync_governance.sh
-chmod +x scripts/validate_environment.sh
+# Robustness Check
+if [ -f requirements.txt ]; then
+    $PIP_CMD install -r requirements.txt
+else
+    # Fallback to prevent crash if file missing
+    $PIP_CMD install redis requests jira opentelemetry-distro opentelemetry-exporter-otlp opentelemetry-instrumentation pytest
+fi
 
-# 8. Setup Hooks (Optional but Recommended)
-curl -s "$REPO_URL/templates/docs/Day2_Operations.md" > docs/Runbooks/Day2_Operations.md
-curl -s "$REPO_URL/templates/scripts/setup_hooks.sh" > scripts/setup_hooks.sh
-chmod +x scripts/setup_hooks.sh
+# Ensure python scripts are in path (Robust detection via sysconfig)
+SCRIPTS_DIR=$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')
+if [ -d "$SCRIPTS_DIR" ]; then
+    export PATH="$PATH:$SCRIPTS_DIR"
+    echo "[PATH] Added $SCRIPTS_DIR to PATH"
+fi
 
-# 9. Inject Bridge
-cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.5.1)
-SYSTEM_INSTRUCTION:
-"IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
-"Your Source of Truth is .agent/rules/."
-"You must output the Flight Recorder JSON at the start of every turn."
-"If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
-"Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
-EOT
+# Also check user base bin just in case
+USER_BIN="$(python3 -m site --user-base)/bin"
+if [ -d "$USER_BIN" ]; then
+    export PATH="$PATH:$USER_BIN"
+    echo "[PATH] Added $USER_BIN to PATH"
+fi
 
-echo "[INFO] Running System Verification (Rule V2.7)..."
-./scripts/validate_environment.sh
-echo "[SUCCESS] Antigravity OS V2.5.1 Installed & Verified. System Online."
+opentelemetry-bootstrap -a install
+
+# 5. Git Hook Wiring
+echo "#!/bin/sh
+export PATH=\"\$PATH:$SCRIPTS_DIR:$USER_BIN\"
+export REDIS_HOST=localhost
+python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+
+echo "[SUCCESS] V3.1 Installed. The Mind is Active."

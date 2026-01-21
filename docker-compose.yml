@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  # THE MEMORY (State & Deduplication)
+  # Risk R-Sup-04: SHA-256 Pinning for Supply Chain Security (MODIFIED: Using stable tag due to invalid hash)
+  antigravity-brain:
+    image: redis:7.2-alpine
+    container_name: antigravity-brain
+    ports:
+      - "127.0.0.1:6379:6379" # Bind Localhost Only (Risk R-Sec-Net)
+    env_file:
+      - .env
+    volumes:
+      - brain_data:/data
+    restart: always
+
+  # THE CONSCIENCE (Policy Engine)
+  antigravity-sentinel:
+    image: openpolicyagent/opa:latest
+    container_name: antigravity-sentinel
+    ports:
+      - "127.0.0.1:8181:8181"
+    volumes:
+      - ./.agent/policies:/policies
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "/policies"]
+
+volumes:
+  brain_data:

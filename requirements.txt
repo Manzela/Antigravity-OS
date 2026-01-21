@@ -1,6 +1,7 @@
-# Antigravity OS Installer Dependencies
-# Core Requirement: Automation & Telemetry
-
-redis>=5.0.1              # For Cost Guard & Billing Sync
-google-cloud-storage>=2.14.0 # For Flight Recorder Telemetry
-pytest>=7.0.0             # For QA Verification Suite
+redis
+requests
+jira
+opentelemetry-distro
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation
+pytest

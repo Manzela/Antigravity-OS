@@ -1,0 +1,22 @@
+name: "Antigravity Night Watch"
+on: { schedule: [{ cron: "0 3 * * *" }] }
+jobs:
+    autonomous_maintenance:
+        runs-on: ubuntu-latest
+        services:
+            # SERVICE MIRRORS: Ephemeral Brain for CI
+            redis:
+                image: redis:alpine
+                ports: ["6379:6379"]
+            opa:
+                image: openpolicyagent/opa:latest
+                ports: ["8181:8181"]
+                options: --entrypoint /opa run --server --addr=0.0.0.0:8181
+        steps:
+            - uses: actions/checkout@v4
+            - name: Hydrate
+              run: |
+                  pip install -r requirements.txt
+                  echo "REDIS_HOST=localhost" >> $GITHUB_ENV
+            - name: Run Orchestrator
+              run: python3 .agent/runtime/orchestrator.py
