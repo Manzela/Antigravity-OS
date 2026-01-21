@@ -1,99 +1,127 @@
-# Antigravity OS V3.4.5 (Steady & Secure)
+# Antigravity OS (V3.5 Enterprise)
 
-### **The Operating System for AI-Native Development**
+"Stop debugging. Start evolving."
 
-> *"Stop debugging. Start evolving."*
+Antigravity OS is a governance kernel that transforms your integrated development environment into a deterministic software factory. It is an autonomous, cloud-connected operating environment designed to enforce governance, ensure financial solvency, and facilitate self-healing using Generative AI.
 
-**Antigravity OS** is not just a framework; it is a **Living System**. It is an autonomous, cloud-connected operating environment designed to enforce governance, ensure solvency, and self-heal using Generative AI. 
+In V3.5, the system transitions from a local isolation model to a Connected Mind architecture, tethered to Google Cloud for global observability and powered by Gemini Pro for autonomous code repair.
 
-In V3.2, we have broken the isolation. The system is no longer a local fortress. It is a **Connected Mind**, tethered to Google Cloud for global observability and powered by Gemini Pro for autonomous code repair.
+## Strategic Highlights (V3.5)
 
----
+*   **The Invariant Solvency Gate (Rule 08):** Automatically blocks build pipelines if projected cloud infrastructure costs exceed the monthly budget cap defined in the Cost Guard configuration.
+*   **Self-Healing CI/CD:** The integration-queue workflow automatically reverts unstable commits and consults Vertex AI to propose precise code fixes, reducing downtime.
+*   **Jira Bridge Telemetry:** Automated flight recording creates rich tickets in Jira. The system handles deduplication and performs "Smart Assignment" based on `git blame` data.
+*   **Identity as Governance:** Eliminates local configuration drift. Secrets and API keys are hydrated dynamically from Google Secret Manager at runtime, ensuring zero hardcoded secrets.
 
-## The Vision: "Connected & Conscious"
+## System Architecture
 
-We built Antigravity OS V3.4.5 on three non-negotiable pillars:
+Antigravity OS operates on three foundational pillars:
 
-1.  **Identity is Governance:** No more `.env` file chaos. If you are not `@tngshopper.com`, you do not exist. We use Google Cloud Identity and Secret Manager as the single source of truth.
-2.  **Telemetry is Truth:** Errors are not just logged; they are traced globally. We pipe every span directly to **Google Cloud Trace** to visualize the heartbeat of the system across distributed architectures.
-3.  **Code is Alive:** When the system breaks, it doesn't just crash. It **Consults the Mind**. Using an integrated Vertex AI (Gemini Pro) connection, the Orchestrator analyzes the failure and proposes the exact code fix required to heal the system.
+| Pillar | Component | Function |
+| :--- | :--- | :--- |
+| **1. The Sentinel** | Open Policy Agent (OPA) | Audits every commit against strict Rego policies before code leaves the local machine. |
+| **2. The Brain** | Redis 7.2 | Maintains state leases, budget locks, and the "Flight Recorder" session data for distributed state management. |
+| **3. The Uplink** | OTel + Jira Bridge | Pipes performance spans to Google Cloud Trace and creates friction logs in Jira and Confluence. |
 
----
+## Directory Structure
 
-## System Architecture (V3.2)
+The OS injects a standardized directory structure into the repository to enforce separation of concerns:
 
-### **1. The Identity Layer (Deep Auth)**
-*   **Mechanism:** `gcloud` Application Default Credentials (ADC).
-*   **Enforcement:** `install.sh` performs a mandatory organizational check (`@tngshopper.com`).
-*   **Secret Hydration:** API Keys (`JIRA_TOKEN`, `GEMINI_KEY`) are fetched dynamically from Google Secret Manager at runtime. Zero hardcoded secrets.
+```plaintext
+.
+├── .agent/                 # The Kernel (Hidden System Logic)
+│   ├── policies/           # Rego governance files (e.g., governance.rego)
+│   ├── sentinel/           # Cost Guard and Security logic
+│   └── observability/      # Jira Bridge and Telemetry connectors
+├── artifacts/              # Mandatory output directories (Plans, Reports)
+├── docs/                   # The Constitution (Rules 00-08)
+├── templates/              # Standardized patterns for Agents
+├── install.sh              # System hydration script
+└── docker-compose.yml      # Container orchestration for Brain and Sentinel
+```
 
-### **2. The Nervous System (Observability)**
-*   **The Uplink:** A direct conduit using `opentelemetry-exporter-gcp-trace`. No sidecars, no friction. Traces appear instantly in the GCP Console.
-*   **The Sentinel (Governance):** An Open Policy Agent (OPA) container that audits every Git commit against strict `rego` policies before code usually leaves your machine.
+## Installation and Setup
 
-### **3. The Generative Brain (Self-Healing)**
-*   **The Mind:** Integrated `vertexai` client connected to **Gemini Pro 1.5**.
-*   **The Reflex:** Upon a test failure, the `orchestrator.py` captures the stack trace, sanitizes it (PII removal), and sends it to the Mind.
-*   **The Cure:** The AI returns a precise Python patch to fix the error, turning downtime into uptime.
+### Prerequisites
 
----
+*   **Docker Desktop** (Active/Running)
+*   **Google Cloud SDK** (`gcloud` authenticated)
+*   **Python 3.10+**
+*   **Identity:** Access to an authorized Google Identity (e.g., `@tngshopper.com`) or a valid `GCP_SA_KEY`.
 
-## Quick Start
+### Quick Start / One-Shot Hydration
 
-**Prerequisites:**
-1.  **Docker Desktop** (Running)
-2.  **Google Cloud SDK** (`gcloud` installed)
-3.  **Identity**: You must have a `@tngshopper.com` Google Account.
-
-### **One-Shot Installation**
-
-We have removed the manual config steps. There is only one command:
+To setup or install Antigravity OS in any new or existing Google Antigravity IDE project, execute the following command:
 
 ```bash
+# One-shot Install via Curl
+curl -sSL https://raw.githubusercontent.com/Manzela/Antigravity-OS/main/install.sh | bash
+```
+
+*Alternatively, clone the repository and run the local installer:*
+
+```bash
+git clone https://github.com/Manzela/Antigravity-OS.git .
+chmod +x install.sh
 ./install.sh
 ```
 
-**What happens next?**
-1.  **Auth Check:** The script verifies your `gcloud` identity.
-2.  **Hydration:** It pulls production secrets from the Cloud.
-3.  **Boot:** It spins up the **Brain** (Redis) and **Sentinel** (OPA) containers.
-4.  **Wiring:** It installs the `pre-push` hook that guards your repo.
+### Installation Sequence:
 
----
+1.  **Authentication Verification:** Verifies the active `gcloud` identity.
+2.  **Secret Hydration:** Pulls `GCP_BILLING_ACCOUNT_ID`, `JIRA_API_TOKEN`, and `REDIS_CREDENTIALS` from Google Secret Manager.
+3.  **Boot:** Initializes the Brain (Redis) and Sentinel (OPA) containers via Docker Compose.
+4.  **Wiring:** Installs the `pre-push` hook that enforces the QA suite on every commit.
 
-## Development Workflow
+## The Constitution (Governance Rules)
 
-### **1. Write Code**
-Work as usual. Focus on features, not plumbing.
+Development is strictly governed by the rules located in `.agent/rules/`. Violations result in blocked pushes.
 
-### **2. Verify Locally**
-The system is always watching.
+| Rule ID | Name | Enforcement Mechanism |
+| :--- | :--- | :--- |
+| **Rule 00** | Plan First | Requires a ratified plan in `artifacts/plans/` before code creation. |
+| **Rule 02** | Fail Closed | The `pre-push` hook executes `scripts/run_qa.sh` to validate integrity. |
+| **Rule 05** | Flight Recorder | Every interaction must log a `trace_id` and `handover_manifest`. |
+| **Rule 08** | Economic Safety | The `cost_guard.py` script validates spend against the configured Monthly Cap (Default: $50.00). |
+
+## Operations Manual
+
+### Updating the OS ("The Genetic Update")
+
+Antigravity Rules evolve over time. To synchronize a project with the Master Kernel:
+
 ```bash
-# Run the verification suite manually if needed
-python3 .agent/runtime/orchestrator.py
+./scripts/sync_governance.sh
 ```
 
-### **3. Push to Deploy**
-The magic happens here.
+**Effect:** Fetches the latest rules from the Master OS repository to ensure compliance with the current Enterprise Standard.
+
+### Emergency Overrides
+
+If the Guardrails block a critical hotfix, the following override protocols exist:
+
+*   **Git Hook:** Execute `git push --no-verify` to bypass local checks.
+*   **Cost Guard:** Request a Human Override via Jira.
+
+*Note: All overrides are logged to `docs/SDLC_Friction_Log.md` (Rule 07) for audit purposes.*
+
+## Observability and Debugging
+
+The system runs a Jira Bridge that connects the local environment to the enterprise tracking system.
+
+*   **Automatic Ticket Creation:** Upon build failure, a Jira ticket is created in the designated project (Default: `TNG`).
+*   **Deduplication:** The system hashes the error stack trace. If the error repeats, it appends a comment to the existing ticket rather than creating duplicates.
+*   **Smart Assignment:** Uses `git blame` to automatically assign the ticket to the developer responsible for the code modification.
+
+### Manual Test Command:
 ```bash
-git push origin feature/my-new-idea
+python3 .agent/observability/jira_bridge.py "Manual Test Alert" "Testing the bridge connection" "TNG"
 ```
-The **Global Pre-Push Hook** intercepts the push:
-1.  **Governance Check:** OPA validates your changes.
-2.  **Build & Test:** The suite runs with OTel instrumentation.
-3.  **Trace Export:** Performance data is sent to Google Cloud Trace.
-4.  **Generative Heal:** If it fails, Gemini analyzes why and tells you how to fix it.
 
----
+## License and Credits
 
-## Observability
+Antigravity OS is a proprietary system of the TNG Infrastructure Team.
 
-View your system's performance in real-time:
-*   [**Google Cloud Trace**](https://console.cloud.google.com/traces) - Distributed Request Tracing
-*   [**Secret Manager**](https://console.cloud.google.com/security/secret-manager) - Credential Governance
-
----
-
-## © License & Credits
-**Antigravity OS** is a proprietary system of the TNG Infrastructure Team.
-*concept by Manzela | architecture by Manzela | development by Antigravity AI*
+*   **Concept:** Manzela
+*   **Architecture:** Manzela
+*   **Development:** Antigravity AI
