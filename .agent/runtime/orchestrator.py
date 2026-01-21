@@ -22,9 +22,11 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 def setup_telemetry():
     """Uplink to Google Cloud Trace with Fallback"""
     try:
-        # If GOOGLE_APPLICATION_CREDENTIALS points to a bad file, unset it to force ADC
+        # If GOOGLE_APPLICATION_CREDENTIALS is empty or points to a bad file, unset it to force ADC
         cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if cred_path and os.path.exists(cred_path):
+        if not cred_path:
+            os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
+        elif os.path.exists(cred_path):
              with open(cred_path, 'r') as f:
                  try:
                      json.load(f)
@@ -43,6 +45,27 @@ def setup_telemetry():
     except Exception as e:
         print(f"⚠️ [UPLINK] Offline: {e}")
 
+def consult_mind(error_log):
+    """Consult Gemini Pro for a fix"""
+    print(f"🧠 [MIND] Analyze Error...")
+    try:
+        vertexai.init(project=PROJECT_ID, location="us-central1")
+        model = GenerativeModel("gemini-pro")
+        
+        prompt = f"""
+        act as a Senior Python Engineer. Analyze this error trace and return a code patch to fix it.
+        Be concise. Return ONLY the code block.
+        
+        Error Trace:
+        {error_log}
+        """
+        
+        response = model.generate_content(prompt)
+        print(f"\n💡 [MIND] Proposed Fix:\n{response.text}\n")
+        return response.text
+    except Exception as e:
+        print(f"⚠️ [MIND] Silent: {e}")
+
 def main():
     setup_telemetry()
     # ... (Rest of logic remains consistent)
@@ -59,6 +82,7 @@ def main():
             # ADAPTED: Importing from correct module path
             from observability import jira_bridge
             jira_bridge.handle_failure(name, safe_log, TRACE_ID)
+            consult_mind(safe_log)
             sys.exit(1)
         else:
             print(f"✅ [PASS] {name}")
