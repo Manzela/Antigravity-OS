@@ -10,7 +10,7 @@ In V3.2, we have broken the isolation. The system is no longer a local fortress.
 
 ---
 
-## 🚀 The Vision: "Connected & Conscious"
+## The Vision: "Connected & Conscious"
 
 We built Antigravity OS V3.2 on three non-negotiable pillars:
 
@@ -20,7 +20,7 @@ We built Antigravity OS V3.2 on three non-negotiable pillars:
 
 ---
 
-## 🏛 System Architecture (V3.2)
+## System Architecture (V3.2)
 
 ### **1. The Identity Layer (Deep Auth)**
 *   **Mechanism:** `gcloud` Application Default Credentials (ADC).
@@ -38,7 +38,7 @@ We built Antigravity OS V3.2 on three non-negotiable pillars:
 
 ---
 
-## ⚡️ Quick Start
+## Quick Start
 
 **Prerequisites:**
 1.  **Docker Desktop** (Running)
@@ -61,7 +61,7 @@ We have removed the manual config steps. There is only one command:
 
 ---
 
-## 🛠 Development Workflow
+## Development Workflow
 
 ### **1. Write Code**
 Work as usual. Focus on features, not plumbing.
@@ -86,7 +86,7 @@ The **Global Pre-Push Hook** intercepts the push:
 
 ---
 
-## 📊 Observability
+## Observability
 
 View your system's performance in real-time:
 *   [**Google Cloud Trace**](https://console.cloud.google.com/traces) - Distributed Request Tracing
