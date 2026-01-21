@@ -3,30 +3,76 @@
   "title": "Flight Recorder State Object",
   "description": "The deterministic state object for Antigravity V3.4.5",
   "type": "object",
-  "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
+  "required": [
+    "trace_id",
+    "status",
+    "loop_count",
+    "owner",
+    "handover_manifest"
+  ],
   "properties": {
-    "trace_id": { "type": "string" },
-    "git_commit_hash": { "type": "string" },
-    "jira_ticket_id": { "type": "string" },
-    "gcp_trace_id": { "type": "string" },
-    "ci_build_id": { "type": "string" },
+    "trace_id": {
+      "type": "string"
+    },
+    "git_commit_hash": {
+      "type": "string"
+    },
+    "jira_ticket_id": {
+      "type": "string"
+    },
+    "gcp_trace_id": {
+      "type": "string"
+    },
+    "ci_build_id": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
-      "enum": ["PLANNING", "PLAN_APPROVED", "COST_VALIDATED", "BUILDING", "BUILD_COMPLETE", "NEEDS_REVISION", "READY_FOR_MERGE", "PROD_ALERT"]
+      "enum": [
+        "PLANNING",
+        "PLAN_APPROVED",
+        "COST_VALIDATED",
+        "BUILDING",
+        "BUILD_COMPLETE",
+        "NEEDS_REVISION",
+        "READY_FOR_MERGE",
+        "PROD_ALERT"
+      ]
     },
-    "loop_count": { "type": "integer", "description": "Max 5 before human intervention." },
-    "owner": { "type": "string" },
-    "cost_estimate": { "type": "number", "description": "Projected cost in USD" },
+    "loop_count": {
+      "type": "integer",
+      "description": "Max 5 before human intervention."
+    },
+    "owner": {
+      "type": "string"
+    },
+    "cost_estimate": {
+      "type": "number",
+      "description": "Projected cost in USD"
+    },
     "handover_manifest": {
       "type": "object",
       "description": "Critical metadata enforcing Rule 06.",
       "properties": {
-        "build_image_digest": { "type": "string" },
-        "plan_md_path": { "type": "string" },
-        "api_contract_version": { "type": "string" },
-        "test_suite_id": { "type": "string" },
-        "preview_url": { "type": "string" },
-        "solvency_token": { "type": "string", "description": "Proof of passed Rule 08 gate" }
+        "build_image_digest": {
+          "type": "string"
+        },
+        "plan_md_path": {
+          "type": "string"
+        },
+        "api_contract_version": {
+          "type": "string"
+        },
+        "test_suite_id": {
+          "type": "string"
+        },
+        "preview_url": {
+          "type": "string"
+        },
+        "solvency_token": {
+          "type": "string",
+          "description": "Proof of passed Rule 08 gate"
+        }
       }
     },
     "feedback_chain": {
@@ -34,9 +80,19 @@
       "items": {
         "type": "object",
         "properties": {
-          "from": { "type": "string" },
-          "verdict": { "type": "string", "enum": ["PASS", "FAIL"] },
-          "reason": { "type": "string" }
+          "from": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
         }
       }
     }
