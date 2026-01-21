@@ -57,7 +57,7 @@ if [ ! -z "$REDIS_HOST" ] && [ "$REDIS_HOST" != "localhost" ]; then
 fi
 
 if [ "$USE_LOCAL_DB" = true ]; then
-    REDIS_HOST="antigravity-brain"
+    REDIS_HOST="localhost"
     REDIS_PORT="6379"
     REDIS_PASS="" 
     echo "   🔹 Booting Local Brain (Redis 7.2)..."
