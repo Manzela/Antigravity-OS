@@ -10,11 +10,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Integration Test
         id: test
-        run: ./scripts/run_integration_suite.sh || echo "::set-output name=status::fail"
-      
+        run: |
+          ./scripts/run_integration_suite.sh || echo "status=fail" >> $GITHUB_OUTPUT
+
       - name: Self-Healing Rollback
         if: steps.test.outputs.status == 'fail'
         run: |
           echo "[HEAL] Reverting commit..."
+          git config user.email "manzela@tngshopper.com"
+          git config user.name "Antigravity CI"
           git revert HEAD --no-edit
           # In real life, push back or close PR
