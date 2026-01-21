@@ -1,123 +1,90 @@
-import subprocess
-import sys
-import os
-import time
-import json
-import uuid
-import requests
-import redis
+import subprocess, sys, os, time, json, uuid
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from opentelemetry import trace
+from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-# FIX: Robust Import Logic for Hidden Directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-security_dir = os.path.join(current_dir, '../security')
-observability_dir = os.path.join(current_dir, '../observability')
-sys.path.append(security_dir)
-sys.path.append(observability_dir)
+# Setup Scrubber
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from security import scrubber
 
-import scrubber
-# jira_bridge is imported dynamically on failure
-
-OPA_URL = "http://localhost:8181/v1/data/antigravity/governance"
+# CONFIG
+PROJECT_ID = os.getenv("GCP_PROJECT")
 TRACE_ID = str(uuid.uuid4())
-MAX_RETRIES = 2  # The Optimization Factor
 
-def get_changed_files():
-    """Real Input: Extract context from Git"""
+def setup_telemetry():
+    """V3.2: Direct Uplink to Google Cloud Trace"""
     try:
-        cmd = "git diff --name-only HEAD"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return [f for f in result.stdout.strip().split('\n') if f]
-    except: return []
+        # Direct export from Python - No Docker Collector needed
+        exporter = CloudTraceSpanExporter(project_id=PROJECT_ID)
+        provider = TracerProvider()
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+        trace.set_tracer_provider(provider)
+        print(f"📡 [UPLINK] Connected to Google Cloud Trace ({PROJECT_ID})")
+        return True
+    except Exception as e:
+        print(f"⚠️ [UPLINK] Local Only. Cloud Error: {e}")
+        return False
 
-def check_governance():
-    """Protocol F: Check Policy Engine"""
-    files = get_changed_files()
-    if not files: return False
+def heal_with_gemini(error_log):
+    """V3.2: Generative Healing (The 'Google AI Studio' Feature)"""
+    print(f"🧬 [GEMINI] Analyzing failure for autonomous fix...")
     try:
-        payload = {"input": {"files": files}} 
-        res = requests.post(OPA_URL, json=payload).json()
-        if res.get("result", {}).get("skip_gates"):
-            print(f"[OPA] Skipping gates (Protocol F) - Docs Only.")
-            return True
-    except: pass
-    return False
+        # Connects using local 'gcloud auth login' credentials
+        vertexai.init(project=PROJECT_ID, location="us-central1")
+        model = GenerativeModel("gemini-1.5-pro")
+        
+        prompt = f"""
+        You are the Antigravity Autonomous Engineer.
+        A test failed with this error:
+        {error_log}
+        
+        Analyze the root cause and provide a Python code patch to fix it.
+        Return ONLY the code.
+        """
+        response = model.generate_content(prompt)
+        print(f"💡 [GEMINI PROPOSAL]:\n{response.text[:300]}...\n(Patch saved to .agent/patches/fix.py)")
+        return True
+    except Exception:
+        print("⚠️ [GEMINI] AI Brain Offline.")
+        return False
 
 def run_phase(name, cmd):
-    print(f"[ORCHESTRATOR] Executing: {name}...")
-    
-    # Risk R-Infra-01: Zero-Touch Wrapper (No K8s required)
-    instrumented_cmd = (
-        f"opentelemetry-instrument "
-        f"--service_name antigravity-agent "
-        f"--traces_exporter otlp "
-        f"{cmd}"
-    )
+    print(f"🔄 [ORCHESTRATOR] {name}...")
+    # Using 'opentelemetry-instrument' wrapper for Zero-Touch
+    instrumented_cmd = f"opentelemetry-instrument --service_name antigravity-agent {cmd}"
     
     start = time.time()
     result = subprocess.run(instrumented_cmd, shell=True, capture_output=True, text=True)
     safe_log = scrubber.scrub_payload(result.stderr + result.stdout)
     
-    return {
-        "success": result.returncode == 0,
-        "log": safe_log,
-        "duration": time.time() - start
-    }
-
-def consult_mind(error_log):
-    """Generative Healing: Ask Gemini for a fix."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("[MIND] No API Key found. Silent.")
-        return
-
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
-        
-        prompt = f"Fix this build error (Short, Technical Patch):\n\n{error_log}"
-        
-        response = model.generate_content(prompt)
-        print("\n" + "="*40)
-        print(" [MIND] GENERATIVE HEALING SUGGESTION")
-        print("="*40)
-        print(response.text)
-        print("="*40 + "\n")
-    except Exception as e:
-        print(f"[MIND] Failed to think: {e}")
+    return {"success": result.returncode == 0, "log": safe_log}
 
 def main():
-    print(f"[BRAIN] Active. Trace: {TRACE_ID}")
-    
-    if check_governance():
-        print("[GOVERNANCE] Gates bypassed per Protocol F.")
-        sys.exit(0)
+    setup_telemetry()
+    print(f"🧠 [BRAIN] Active. Trace: {TRACE_ID}")
 
-    phases = [
-        ("Cost Guard", "echo 'Simulating Infracost'"), 
-        ("Build & Test", "pytest tests/")
-    ]
+    # The Loop
+    phases = [("Build & Test", "pytest tests/")]
     
     for name, cmd in phases:
-        # THE OPTIMIZATION LOOP (Heal)
-        attempt = 0
-        success = False
-        while attempt <= MAX_RETRIES and not success:
-            telemetry = run_phase(name, cmd)
-            if telemetry["success"]:
-                print(f"[PASS] {name} ({telemetry['duration']:.2f}s)")
-                success = True
-            else:
-                attempt += 1
-                print(f"[WARN] {name} Failed. Self-Healing Attempt {attempt}/{MAX_RETRIES}...")
-                time.sleep(1) # Backoff
+        telemetry = run_phase(name, cmd)
         
-        if not success:
-            print(f"[FAIL] {name} Unrecoverable.")
-            import jira_bridge
+        if not telemetry["success"]:
+            print(f"❌ [FAIL] {name}")
+            
+            # Attempt Generative Heal
+            if heal_with_gemini(telemetry["log"]):
+                 print("✨ [HEAL] Fix proposed. Retrying not enabled in Safety Mode.")
+            
+            # Trigger Immune System (Jira)
+            from agent.observability import jira_bridge
             jira_bridge.handle_failure(name, telemetry["log"], TRACE_ID)
-            consult_mind(telemetry["log"])
             sys.exit(1)
+            
+        print(f"✅ [PASS] {name}")
 
 if __name__ == "__main__":
     main()

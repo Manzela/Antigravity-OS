@@ -1,102 +1,52 @@
 #!/bin/bash
 set -e
+echo "🪐 Initializing Antigravity OS V3.2 (The Connected Mind)..."
 
-echo "[INSTALL] Initializing Antigravity OS V3.1..."
+# 1. IDENTITY CHECK (The Ultimate Objective)
+echo "🔍 Verifying @tngshopper.com Identity..."
+# Ensure gcloud is installed
+command -v gcloud >/dev/null || { echo "❌ gcloud missing. Install Google Cloud SDK."; exit 1; }
 
-# 1. Dependency Checks including ADC
-if ! command -v docker &> /dev/null; then
-    echo "❌ Docker not found! Install Docker Desktop."
+# Force Login if not authenticated
+gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login
+
+# Verify Organization
+ACCOUNT=$(gcloud config get-value account 2>/dev/null)
+if [[ "$ACCOUNT" != *"@tngshopper.com"* ]]; then
+    echo "❌ [AUTH FAIL] You must use a @tngshopper.com account. Current: $ACCOUNT"
     exit 1
 fi
-if ! command -v gcloud &> /dev/null; then
-    echo "❌ gcloud CLI not found! Install Google Cloud SDK."
-    exit 1
-fi
+PROJECT_ID=$(gcloud config get-value project)
+echo "✅ Authenticated as: $ACCOUNT ($PROJECT_ID)"
 
-ADC_FILE="$HOME/.config/gcloud/application_default_credentials.json"
-if [ ! -f "$ADC_FILE" ]; then
-    echo "❌ GCP Application Default Credentials not found!"
-    echo "📣 Please run: 'gcloud auth application-default login'"
-    echo "   (Required for OTel Trace Export)"
-    exit 1
-fi
-echo "✅ Dependencies & Auth Verified."
+# 2. KEYSTONE: Cloud Hydration
+echo "☁️  Fetching Secrets from Google Secret Manager..."
+# Fetches the token. Fails gracefully if secret doesn't exist (mocking for new projects)
+JIRA_TOKEN=$(gcloud secrets versions access latest --secret="antigravity-jira-token" --quiet 2>/dev/null || echo "MOCK_TOKEN_FOR_DEV")
 
-# 2. Keystone: Hydrate Secrets (Secure Fetch)
-echo "[SEC] Fetching secrets from Google Secret Manager..."
-PROJECT_ID="i-for-ai"
-
-# Try to fetch secrets (suppress errors if not logged in or secret missing)
-JIRA_TOKEN=$(gcloud secrets versions access latest --secret="antigravity-jira-token" --project="$PROJECT_ID" --quiet 2>/dev/null || echo "")
-GEMINI_KEY=$(gcloud secrets versions access latest --secret="antigravity-gemini-key" --project="$PROJECT_ID" --quiet 2>/dev/null || echo "")
-
-if [ -z "$JIRA_TOKEN" ]; then
-    echo "[WARN] Jira Token not found in Secret Manager."
-fi
-if [ -z "$GEMINI_KEY" ]; then
-    echo "[WARN] Gemini API Key not found in Secret Manager."
-    # Non-blocking fallback for automation safe-fail
-    GEMINI_KEY=""
-fi
-
-echo "[SEC] generating local secrets configuration..."
 cat <<EOF > .env
-JIRA_TOKEN=$JIRA_TOKEN
-GEMINI_API_KEY=$GEMINI_KEY
+JIRA_TOKEN=${JIRA_TOKEN}
+GCP_PROJECT=${PROJECT_ID}
 REDIS_HOST=antigravity-brain
 EOF
 
-# 3. Boot Brain
-echo "[INFRA] Starting Containers..."
-docker-compose up -d --remove-orphans
-until docker exec antigravity-brain redis-cli ping | grep PONG; do 
-    echo "[WAIT] Waiting for Brain..."
-    sleep 2
-done
+# 3. BOOT BRAIN (Infrastructure)
+echo "🧠 Starting Local State Machine..."
+command -v docker >/dev/null || { echo "❌ Docker missing"; exit 1; }
+docker-compose up -d
+until docker exec antigravity-brain redis-cli ping | grep PONG; do sleep 1; done
 
-# 4. Install Nervous System
-echo "[DEPS] Installing Dependencies..."
-
-# Ensure pip3 is available
-if ! command -v pip3 &> /dev/null; then
-    echo "[WARN] pip3 not found, trying pip..."
-    PIP_CMD=pip
-else
-    PIP_CMD=pip3
-fi
-
-# Robustness Check
-if [ -f requirements.txt ]; then
-    $PIP_CMD install -r requirements.txt
-else
-    # Fallback to prevent crash if file missing
-    $PIP_CMD install redis requests jira opentelemetry-distro opentelemetry-exporter-otlp opentelemetry-instrumentation pytest
-fi
-
-# Ensure python scripts are in path (Robust detection via sysconfig)
-SCRIPTS_DIR=$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')
-if [ -d "$SCRIPTS_DIR" ]; then
-    export PATH="$PATH:$SCRIPTS_DIR"
-    echo "[PATH] Added $SCRIPTS_DIR to PATH"
-fi
-
-# Also check user base bin just in case
-USER_BIN="$(python3 -m site --user-base)/bin"
-if [ -d "$USER_BIN" ]; then
-    export PATH="$PATH:$USER_BIN"
-    echo "[PATH] Added $USER_BIN to PATH"
-fi
-
+# 4. INSTALL NERVOUS SYSTEM (Dependencies)
+echo "📦 Installing Dependencies..."
+pip3 install -r requirements.txt
+export PATH="$PATH:/Library/Frameworks/Python.framework/Versions/3.13/bin:/Users/danielmanzela/Library/Python/3.13/bin"
 opentelemetry-bootstrap -a install
 
-# 5. Git Hook Wiring
-# 5. Git Hook Wiring
+# 5. WIRE HOOKS
 echo "#!/bin/sh
-export PATH=\"\$PATH:$SCRIPTS_DIR:$USER_BIN\"
 export REDIS_HOST=localhost
-export GEMINI_API_KEY=\"$GEMINI_KEY\"
-export JIRA_TOKEN=\"$JIRA_TOKEN\"
+export GCP_PROJECT=${PROJECT_ID}
 python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 
-echo "[SUCCESS] V3.1 Installed. The Mind is Active."
+echo "✅ V3.2 Installed. System is Autonomous & Connected."

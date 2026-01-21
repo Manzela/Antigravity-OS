@@ -5,4 +5,7 @@ opentelemetry-distro
 opentelemetry-exporter-otlp
 opentelemetry-instrumentation
 pytest
-google-generativeai
+# V3.2: Connectivity & Intelligence Layer
+google-cloud-secret-manager
+google-cloud-aiplatform
+opentelemetry-exporter-gcp-trace
