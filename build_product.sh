@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "[INFO] Packaging Antigravity OS (V2.5.1 - Golden Master - Self-Healing Edition)..."
+echo "[INFO] Packaging Antigravity OS (V3.0.0 - Golden Master - Self-Healing Edition)..."
 
 # 1. Create Product Structure
 mkdir -p templates/rules templates/workflows templates/docs templates/scripts

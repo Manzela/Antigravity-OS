@@ -7,8 +7,9 @@ import base64
 import argparse
 import time
 import random
+import datetime
 
-# Antigravity Jira Bridge V2.5.1 (Enterprise Edition)
+# Antigravity Jira Bridge V3.0 (Enterprise Edition)
 # Connects Flight Recorder to Atlassian Jira (Cloud)
 # Implements Real-Time Telemetry, Deduplication, Smart Assignment, and ADF Reporting
 
@@ -20,7 +21,7 @@ def detect_environment():
     """R 2.5 Dynamic Environment Detection"""
     if os.getenv("GITHUB_ACTIONS") == "true":
         ref = os.getenv("GITHUB_REF_NAME", "unknown")
-        return "production" if ref == "main" else f"ci-{ref}"
+        return "production" if ref == "main" else f"staging" if ref == "staging" else f"ci-{ref}"
     return "local-development"
 
 def get_credentials():
@@ -121,8 +122,6 @@ def get_git_info(filepath, line_number):
 
 def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, status_code="Error"):
     """R 6.5 Advanced Schema Enforcement: OpenTelemetry-style Flight Recorder."""
-    import datetime
-    import time
     import uuid
     
     # Generate Spans
@@ -145,7 +144,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
       "status": { "code": status_code },
       "resource": {
         "service.name": "flight-recorder-service",
-        "service.version": "2.1.0",
+        "service.version": "3.0.0",
         "deployment.environment.name": detect_environment(),
         
         # VCS
@@ -159,9 +158,9 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
         
         # Artifact
         "artifact.name": "antigravity-installer",
-        "artifact.version": "2.5.1",
+        "artifact.version": "3.0.0",
         "container.image.name": "flight-recorder",
-        "container.image.tags": ["v2.5.1", "latest"]
+        "container.image.tags": ["v3.0.0", "latest"]
       },
       "attributes": {
         "test.suite.name": "antigravity-e2e",
@@ -170,7 +169,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
       },
       "logs": [
         { 
-          "timestamp": datetime.datetime.now(datetime.UTC).isoformat() + "Z", 
+          "timestamp": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"), 
           "body": log_content, 
           "severity": "ERROR",
           "attributes": { "exception.type": "RuntimeError" } 
@@ -281,6 +280,19 @@ def create_rich_description(summary, description, log_content, owner_name, owner
     
     return {"type": "doc", "version": 1, "content": content}
 
+# Helper for deduplication
+def find_duplicate_issue(headers, fingerprint, project_key):
+    jql = f"project = {project_key} AND labels = \"fp:{fingerprint}\""
+    payload = {
+        "jql": jql,
+        "maxResults": 1,
+        "fields": ["key", "summary", "status"]
+    }
+    resp = make_request("POST", "/rest/api/3/search/jql", headers, payload)
+    if resp and "issues" in resp and len(resp["issues"]) > 0:
+        return resp["issues"][0]
+    return None
+
 def create_ticket(summary, description, project_id, filepath=None, line=1, log_file=None, gcs_bucket=None):
     headers = get_credentials()
     
@@ -322,9 +334,6 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
             f.write(f"[{project_id}] {summary} (Owner: {owner_email}) | FP: {error_fingerprint}\n")
         return "MOCK-123"
 
-    # Smart Assignment
-    assignee_id = find_user_by_email(headers, owner_email)
-    
     # Deduplication
     print(f"[JIRA] Checking for duplicates in {project_id}...")
     existing = find_duplicate_issue(headers, error_fingerprint, project_id)
@@ -332,24 +341,42 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         key = existing["key"]
         print(f"[INFO] Duplicate found: {key}. Adding comment.")
         
-        comment_text = f"Recurrence detected. Trace ID: {trace_id}"
+        timestamp_iso = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+        run_url = f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/actions/runs/{os.getenv('GITHUB_RUN_ID')}"
+        
+        header_text = f"[RECURRENCE DETECTED - {timestamp_iso}] Trace: {trace_id} | Run: {run_url}"
+        
+        comment_content = [
+            {
+                "type": "paragraph",
+                "content": [
+                    {"type": "text", "text": header_text, "marks": [{"type": "strong"}]}
+                ]
+            }
+        ]
+        
         if gcs_link:
-            comment_text += f"\nFull Log Archive: {gcs_link}"
-            
+             comment_content.append({
+                "type": "paragraph",
+                "content": [
+                    {"type": "text", "text": "Full Log Archive", "marks": [{"type": "link", "attrs": {"href": gcs_link}}]}
+                ]
+            })
+
         comment_body = {
             "body": {
                 "type": "doc",
                 "version": 1,
-                "content": [{
-                    "type": "paragraph",
-                    "content": [{"type": "text", "text": comment_text}]
-                }]
+                "content": comment_content
             }
         }
         make_request("POST", f"/rest/api/3/issue/{key}/comment", headers, comment_body)
         return key
 
     # Create Issue Payload
+    # Smart Assignment
+    assignee_id = find_user_by_email(headers, owner_email)
+
     desc_doc = create_rich_description(summary, description, log_content, owner_name, owner_email, error_fingerprint, gcs_link)
     
     payload = {
@@ -377,15 +404,6 @@ def create_ticket(summary, description, project_id, filepath=None, line=1, log_f
         print(f"[DEBUG] API Response: {json.dumps(resp, indent=2)}") 
         sys.exit(1)
 
-# Helper for deduplication
-def find_duplicate_issue(headers, fingerprint, project_key):
-    import urllib.parse
-    jql = f"project = {project_key} AND labels = \"fp:{fingerprint}\""
-    resp = make_request("GET", f"/rest/api/3/search?jql={urllib.parse.quote(jql)}", headers)
-    if resp and resp.get("total", 0) > 0:
-        return resp["issues"][0]
-    return None
-
 def fetch_logs(headers, project_key):
     """R 2.4 Fetch Capability: Fetch recent issues from project."""
     if not headers:
@@ -396,11 +414,16 @@ def fetch_logs(headers, project_key):
         return
 
     print(f"[JIRA] Fetching recent errors from {JIRA_BASE_URL}/projects/{project_key}...")
-    import urllib.parse
     jql = f"project = {project_key} ORDER BY created DESC"
-    query = f"/rest/api/3/search?jql={urllib.parse.quote(jql)}&maxResults=5"
     
-    resp = make_request("GET", query, headers)
+    payload = {
+        "jql": jql,
+        "maxResults": 5,
+        "fields": ["summary", "status", "assignee", "created"]
+    }
+    
+    # Using POST search
+    resp = make_request("POST", "/rest/api/3/search/jql", headers, payload)
     if resp and "issues" in resp:
         for issue in resp["issues"]:
             key = issue["key"]

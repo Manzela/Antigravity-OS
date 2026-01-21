@@ -1,10 +1,10 @@
 #!/bin/bash
-# Antigravity OS Installer (V2.5.1 Golden Master)
-# Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
+# Antigravity OS Installer (V3.0.0 Golden Master)
+# Usage: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/V3.0/install.sh)"
 
-REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
+REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/V3.0"
 
-echo "[INFO] Installing Antigravity OS (V2.5.1 - Golden Master)..."
+echo "[INFO] Installing Antigravity OS (V3.0.0 - Golden Master)..."
 
 # 1. Scaffold Directory Structure
 mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
