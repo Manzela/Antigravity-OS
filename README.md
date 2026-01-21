@@ -1,52 +1,89 @@
-# Antigravity OS (V2.5.1 Enterprise)
- 
-> **"High-Gravity Governance for a Weightless Developer Experience."**
- 
-**Antigravity OS** is a governance kernel that transforms your IDE into a **deterministic software factory**. It forces AI Agents to adhere to strict SDLC protocols, ensuring that generated code is planned, secure, and tested.
- 
----
- 
-## Core Features
- 
-### 1. The Flight Recorder Protocol
-We pass a **Flight Recorder Object**—a deterministic JSON state ledger that tracks `trace_id`, `status`, and `handover_manifest`.
- 
-### 2. The Workforce (Roles)
-* **Architect (Planner)**: Generates Plans.
-* **Builder (Full-Stack)**: Writes code per Contract.
-* **Sentinel (SecOps)**: Enforces Security & Telemetry.
-* **Cost Guard**: Enforces Rule 08 (Solvency).
- 
-### 3. The Constitution (Rules)
-* **Rule 00 (Plan First)**: No code without a Plan.
-* **Rule 01 (Data Contracts)**: API Contract is Truth.
-* **Rule 06 (Strict Handover)**: Validated Manifests required.
-* **Rule 07 (Telemetry)**: Automated Friction Logging.
-* **Rule 08 (Economic Safety)**: Invariant Solvency Gate.
+# Antigravity OS Installer (v2.7)
+
+## Overview
+The Antigravity OS Installer (`Upgrade-2.51V`) is an enterprise-grade orchestration system designed to deploy and manage the Antigravity Operating System infrastructure. It features hardened telemetry, real-time cost governance, and automated solvency enforcement.
+
+## System Prerequisites
+Before initializing the installer, ensure the following dependencies are met:
+
+### 1. Environment Secrets (CRITICAL)
+The following credentials must be configured in your CI/CD provider (GitHub Actions) or exported locally for development.
+
+| Secret Key | Description | Required Value (Production) |
+| :--- | :--- | :--- |
+| `GCP_BILLING_ACCOUNT_ID` | GCP Billing Account ID | `01FABE-89B1B2-4C704D` |
+| `REDIS_HOST` | Redis Cloud Endpoint | `redis-17013.c1.us-central1-2.gce.cloud.redislabs.com` |
+| `REDIS_PORT` | Redis Port | `17013` |
+| `REDIS_USER` | Redis Username | `default` |
+| `REDIS_PASSWORD` | Redis Password | `Vi0Yu1Ho6LaoeiYAUlWrU8rRiAW8I73A` |
+| `GCP_SA_KEY` | Service Account JSON | *(Base64 Encoded JSON content)* |
+| `JIRA_USER_EMAIL` | Atlassian Account Email | *(Your verified email)* |
+| `JIRA_API_TOKEN` | Atlassian API Token | *(Your verified token)* |
+
+### 2. Required Software
+- **Python**: v3.9+ (`python3`)
+- **Docker**: v20+ (for ShellCheck and containerized validation)
+- **Git**: v2.30+
+- **Redis CLI** (Optional): For manual verification
 
 ---
 
-## Installation
+## Installation & Configuration
 
-Turn any repository into an Antigravity Project:
-
+### Step 1: Clone Repository
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
+git clone https://github.com/Manzela/Antigravity-OS.git
+cd Antigravity-OS
 ```
 
-## Configuration
-To enable Telemetry Archival (Rule 07), set these Env Vars:
-* `ANTIGRAVITY_LOG_BUCKET`: Name of your centralized GCS bucket.
-* `GCP_PROJECT_ID`: Your Google Cloud Project ID.
-
-## Evolution & Updates
-
-To update your project's rules to the latest Antigravity Standard:
+### Step 2: Environment Validation (The "System Rule")
+**STOP**: Before proceeding, you must execute the environment validation rule. This script verifies that all necessary dependencies and credentials are correctly configured.
 
 ```bash
-./scripts/sync_governance.sh
+chmod +x templates/scripts/validate_environment.sh
+./templates/scripts/validate_environment.sh
+```
+*If this script fails, do not proceed. Resolve the missing configurations reported by the tool.*
+
+### Step 3: MCP Server Configuration
+The system leverages the Model Context Protocol (MCP) for AI-assisted operations.
+
+#### Google Cloud Run MCP
+1.  Navigate to `.config/claude.json` (or equivalent).
+2.  Ensure `cloudrun` server is enabled.
+3.  Authentication: The server inherits credentials from `gcloud auth login` or the `GOOG_APPLICATION_CREDENTIALS` environment variable pointed to your SA Key.
+
+#### GitHub MCP
+1.  Requires `GITHUB_PERSONAL_ACCESS_TOKEN`.
+2.  Scopes needed: `repo`, `workflow`, `read:org`.
+
+#### Atlassian MCP
+1.  Requires `ATLASSIAN_API_TOKEN` and `ATLASSIAN_EMAIL`.
+2.  Base URL: `https://antigravity-os.atlassian.net`
+
+---
+
+## Development Workflow
+
+### Build & Deploy
+To package the installer and generate the `Day2_Operations.md` runbook:
+```bash
+./build_product.sh
+```
+
+### Verification Suite
+Run the full "Enterprise Grade" QA suite before submitting any Pull Request:
+```bash
+./templates/scripts/run_qa.sh
+./templates/scripts/final_e2e_verification.sh
 ```
 
 ---
 
-*Powered by the Antigravity SDLC V2.5.1 Standard.*
+## Support & Governance
+- **Telemetry**: Logs are shipped to `gs://antigravity-logging-i-for-ai`.
+- **Cost Guard**: Real-time solvency is checked against the Redis baseline (`global:current_spend`).
+- **Support**: Contact the DevOps Lead for credential rotation or access issues.
+
+---
+*Generated by Antigravity AI - v2.7 Enterprise Edition*
