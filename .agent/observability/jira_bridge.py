@@ -11,7 +11,7 @@ JIRA_TOKEN = os.getenv('JIRA_API_TOKEN')
 PROJECT_KEY = os.getenv('JIRA_PROJECT_KEY', 'TNG') # Enforced TNG
 
 def get_redis():
-    return redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, db=0)
+    return redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
 
 def handle_failure(source, error_log, trace_id):
     r = get_redis()
