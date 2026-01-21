@@ -52,9 +52,16 @@ cd Antigravity-OS
 chmod +x templates/scripts/validate_environment.sh
 ./templates/scripts/validate_environment.sh
 ```
-*If this script fails, do not proceed. Resolve the missing configurations reported by the tool.*
 
-### Step 3: MCP Server Configuration
+### Step 3: Deep Dive Verification (One-Time Setup)
+To ensure 100% flawless connectivity to Redis, GCP Billing, and Jira, run the Deep Dive suite. **Requires all secrets to be exported.**
+
+```bash
+./templates/scripts/verify_setup_DeepDive.sh
+```
+*This verifies Redis (read/write), Billing Sync (API), and GCS Archival logic.*
+
+### Step 4: MCP Server Configuration
 The system leverages the Model Context Protocol (MCP) for AI-assisted operations.
 
 #### Google Cloud Run MCP

@@ -56,6 +56,8 @@ fi
 
 echo "--- 3. Credential Configuration ---"
 check_env "GCP_BILLING_ACCOUNT_ID"
+check_env "GCP_PROJECT_ID"
+check_env "ANTIGRAVITY_LOG_BUCKET"
 check_env "REDIS_HOST"
 check_env "REDIS_PORT"
 check_env "REDIS_USER"
