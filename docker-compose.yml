@@ -1,12 +1,12 @@
 version: '3.8'
 services:
   # THE MEMORY (State & Deduplication)
-  # Risk R-Sup-04: SHA-256 Pinning for Supply Chain Security (MODIFIED: Using stable tag due to invalid hash)
+  # UPGRADE: Locked to Redis 7.2 Alpine to fix "RDB format version 11" error
   antigravity-brain:
     image: redis:7.2-alpine
     container_name: antigravity-brain
     ports:
-      - "127.0.0.1:6379:6379" # Bind Localhost Only (Risk R-Sec-Net)
+      - "127.0.0.1:6379:6379"
     env_file:
       - .env
     volumes:
@@ -22,21 +22,6 @@ services:
     volumes:
       - ./.agent/policies:/policies
     command: ["run", "--server", "--addr=0.0.0.0:8181", "/policies"]
-
-  # THE TETHER (Cloud Connectivity)
-  antigravity-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    container_name: antigravity-collector
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./.agent/config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ~/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json # Pass Host Creds
-    ports:
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
-    environment:
-      - GOOGLE_CLOUD_PROJECT=i-for-ai
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
 
 volumes:
   brain_data:
