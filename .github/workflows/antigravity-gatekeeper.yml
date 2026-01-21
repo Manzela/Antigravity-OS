@@ -1,29 +1,32 @@
 name: Antigravity Gatekeeper (Rule 08 & 02)
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   governance-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Install Antigravity OS (Local Source)
         run: |
           # CI FIX: Install from local templates instead of fetching from 'main'
           # This ensures we test the code in the current PR/Branch.
-          
+
           echo "[CI] Hydrating from Local Source..."
           mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
-          
+
           # Copy Brain & Rules
           cp templates/sentinel/cost_guard.py .agent/sentinel/
           cp templates/observability/jira_bridge.py .agent/observability/
           cp templates/rules/*.md .agent/rules/
-          
+
           # Copy Scripts
           cp templates/scripts/* scripts/ || true
           chmod +x scripts/*.sh || true
-          
+
           echo "[CI] Installation Complete."
 
       - name: Cost Guard (Rule 08)
@@ -36,7 +39,7 @@ jobs:
           fi
       - name: Security Scan (Rule 03)
         run: echo "Running Trivy Scan..."
-  
+
   test-suite:
     needs: governance-gate
     runs-on: ubuntu-latest
@@ -46,7 +49,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          
+
       - name: Install Antigravity OS (Local Source)
         run: |
           echo "[CI] Hydrating from Local Source..."
