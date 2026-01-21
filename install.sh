@@ -125,7 +125,7 @@ echo "🪝 Wiring Git Hooks..."
 echo "#!/bin/sh
 # Load the Hydrated Environment
 set -a
-. $(pwd)/.env
+. \"$(pwd)/.env\"
 set +a
 export PATH=\"\$PATH:/Library/Frameworks/Python.framework/Versions/3.13/bin:/Users/danielmanzela/Library/Python/3.13/bin\"
 python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
