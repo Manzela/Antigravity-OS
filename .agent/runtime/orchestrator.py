@@ -80,7 +80,8 @@ def main():
                  print("✨ [HEAL] Fix proposed. Retrying not enabled in Safety Mode.")
             
             # Trigger Immune System (Jira)
-            from agent.observability import jira_bridge
+            sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+            from observability import jira_bridge
             jira_bridge.handle_failure(name, telemetry["log"], TRACE_ID)
             sys.exit(1)
             
