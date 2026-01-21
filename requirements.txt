@@ -5,3 +5,4 @@ opentelemetry-distro
 opentelemetry-exporter-otlp
 opentelemetry-instrumentation
 pytest
+google-generativeai

@@ -63,6 +63,29 @@ def run_phase(name, cmd):
         "duration": time.time() - start
     }
 
+def consult_mind(error_log):
+    """Generative Healing: Ask Gemini for a fix."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        print("[MIND] No API Key found. Silent.")
+        return
+
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        
+        prompt = f"Fix this build error (Short, Technical Patch):\n\n{error_log}"
+        
+        response = model.generate_content(prompt)
+        print("\n" + "="*40)
+        print(" [MIND] GENERATIVE HEALING SUGGESTION")
+        print("="*40)
+        print(response.text)
+        print("="*40 + "\n")
+    except Exception as e:
+        print(f"[MIND] Failed to think: {e}")
+
 def main():
     print(f"[BRAIN] Active. Trace: {TRACE_ID}")
     
@@ -93,6 +116,7 @@ def main():
             print(f"[FAIL] {name} Unrecoverable.")
             import jira_bridge
             jira_bridge.handle_failure(name, telemetry["log"], TRACE_ID)
+            consult_mind(telemetry["log"])
             sys.exit(1)
 
 if __name__ == "__main__":
