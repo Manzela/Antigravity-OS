@@ -9,8 +9,9 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 # Local Imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from agent.security import scrubber
+# Add .agent to sys.path to allow imports from security/observability
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from security import scrubber
 
 # CONFIG
 PROJECT_ID = os.getenv("GCP_PROJECT_ID")
