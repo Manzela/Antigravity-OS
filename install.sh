@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 export PATH="$PATH:$(python3 -m site --user-base)/bin:$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')"
-echo "🪐 Initializing Antigravity OS V3.4 (Stability Patch)..."
+echo "🪐 Initializing Antigravity OS V3.4.5 (Stability Patch)..."
 
 # 1. IDENTITY & AUTHENTICATION
 echo "🔍 Verifying @tngshopper.com Identity..."
@@ -92,4 +92,4 @@ set +a
 python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 
-echo "✅ V3.4 Installed. Tracing & Targeting Fixed."
+echo "✅ V3.4.5 Installed. Tracing & Targeting Fixed."
