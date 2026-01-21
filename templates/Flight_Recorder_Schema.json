@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Flight Recorder State Object",
-  "description": "The deterministic state object for Antigravity V2.5.1",
+  "description": "The deterministic state object for Antigravity V3.4.5",
   "type": "object",
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {

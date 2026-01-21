@@ -1,5 +1,5 @@
 #!/bin/bash
-# End-to-End Verification Suite for Antigravity OS V2.5.1
+# End-to-End Verification Suite for Antigravity OS V3.4.5
 # Scenarios: Cost Guard -> Build Failure -> Jira Ticket -> Log Fetch
 
 set -e

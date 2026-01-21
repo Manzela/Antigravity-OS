@@ -7,7 +7,7 @@ This repository is the **Master Kernel**. To start a new Antigravity project:
 2.  Click **"Use this template"**.
 3.  Clone your new repository.
 4.  Run `./install.sh` to hydrate the environment.
-    *   *Effect*: Your new project immediately inherits the V2.5.1 Schema, Gates, and Workflows.
+    *   *Effect*: Your new project immediately inherits the V3.4.5 Schema, Gates, and Workflows.
 
 ## 2. Updating Existing Projects ("The Genetic Update")
 Antigravity Rules evolve. To sync your project with the Master Kernel:

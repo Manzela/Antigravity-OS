@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "[INFO] Packaging Antigravity OS (V3.0.0 - Golden Master - Self-Healing Edition)..."
+echo "[INFO] Packaging Antigravity OS (V3.4.5 - Golden Master - Self-Healing Edition)..."
 
 # 1. Create Product Structure
 mkdir -p templates/rules templates/workflows templates/docs templates/scripts
@@ -126,7 +126,7 @@ cat <<EOF > templates/Flight_Recorder_Schema.json
 {
   "\$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Flight Recorder State Object",
-  "description": "The deterministic state object for Antigravity V2.5.1",
+  "description": "The deterministic state object for Antigravity V3.4.5",
   "type": "object",
   "required": ["trace_id", "status", "loop_count", "owner", "handover_manifest"],
   "properties": {
@@ -225,7 +225,7 @@ This repository is the **Master Kernel**. To start a new Antigravity project:
 2.  Click **"Use this template"**.
 3.  Clone your new repository.
 4.  Run \`./install.sh\` to hydrate the environment.
-    *   *Effect*: Your new project immediately inherits the V2.5.1 Schema, Gates, and Workflows.
+    *   *Effect*: Your new project immediately inherits the V3.4.5 Schema, Gates, and Workflows.
 
 ## 2. Updating Existing Projects ("The Genetic Update")
 Antigravity Rules evolve. To sync your project with the Master Kernel:
@@ -517,7 +517,7 @@ import argparse
 import time
 import random
 
-# Antigravity Jira Bridge V2.5.1 (Enterprise Edition)
+# Antigravity Jira Bridge V3.4.5 (Enterprise Edition)
 # Connects Flight Recorder to Atlassian Jira (Cloud)
 # Implements Real-Time Telemetry, Deduplication, Smart Assignment, and ADF Reporting
 
@@ -668,7 +668,7 @@ def construct_flight_recorder_payload(trace_id, git_hash, log_content, owner, st
         
         # Artifact
         "artifact.name": "antigravity-installer",
-        "artifact.version": "2.5.1",
+        "artifact.version": "3.4.5",
         "container.image.name": "flight-recorder",
         "container.image.tags": ["v2.5.1", "latest"]
       },
@@ -1027,7 +1027,7 @@ cat <<EOF > templates/scripts/run_qa.sh
 set -e
 
 echo "========================================"
-echo "   ANTIGRAVITY QA SUITE (V2.5.1)        "
+echo "   ANTIGRAVITY QA SUITE (V3.4.5)        "
 echo "========================================"
 
 # 1. Static Analysis (Dockerized ShellCheck)
@@ -1059,7 +1059,7 @@ chmod +x templates/scripts/run_qa.sh
 # 2. End-to-End Test Suite (run_e2e.sh)
 cat <<EOF > templates/scripts/run_e2e.sh
 #!/bin/bash
-# End-to-End Verification Suite for Antigravity OS V2.5.1
+# End-to-End Verification Suite for Antigravity OS V3.4.5
 # Scenarios: Cost Guard -> Build Failure -> Jira Ticket -> Log Fetch
 
 set -e
@@ -1285,28 +1285,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Install Antigravity OS (Local Source)
+        run: |
+          echo "[CI] Hydrating from Local Source..."
+          mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
+          cp templates/sentinel/cost_guard.py .agent/sentinel/
+          cp templates/observability/jira_bridge.py .agent/observability/
+          cp templates/rules/*.md .agent/rules/
+          cp templates/scripts/* scripts/ || true
+          chmod +x scripts/*.sh || true
+
       - name: Integration Test
         id: test
-        run: ./scripts/run_integration_suite.sh || echo "::set-output name=status::fail"
+        run: |
+          ./scripts/run_integration_suite.sh || echo "status=fail" >> \$GITHUB_OUTPUT
       
       - name: Self-Healing Rollback
         if: steps.test.outputs.status == 'fail'
         run: |
           echo "[HEAL] Reverting commit..."
+          git config user.email "manzela@tngshopper.com"
+          git config user.name "Antigravity CI"
           git revert HEAD --no-edit
-          # In real life, push back or close PR
+          git push origin HEAD:\${{ github.head_ref }} --force-with-lease --no-verify
 EOF
 
 # --- INSTALLER SCRIPT ---
 
 cat <<EOF > install.sh
 #!/bin/bash
-# Antigravity OS Installer (V2.5.1 Golden Master)
+# Antigravity OS Installer (V3.4.5 Golden Master)
 # Usage: /bin/bash -c "\$(curl -fsSL https://raw.githubusercontent.com/manzela/Antigravity-OS/main/install.sh)"
 
 REPO_URL="https://raw.githubusercontent.com/manzela/Antigravity-OS/main"
 
-echo "[INFO] Installing Antigravity OS (V2.5.1 - Golden Master)..."
+echo "[INFO] Installing Antigravity OS (V3.4.5 - Golden Master)..."
 
 # 1. Scaffold Directory Structure
 mkdir -p .agent/rules .agent/workflows .agent/sentinel .agent/observability scripts
@@ -1357,7 +1379,7 @@ chmod +x scripts/setup_hooks.sh
 
 # 9. Inject Bridge
 cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V2.5.1)
+# Antigravity Compatibility Bridge (V3.4.5)
 SYSTEM_INSTRUCTION:
 "IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
 "Your Source of Truth is .agent/rules/."
@@ -1366,7 +1388,7 @@ SYSTEM_INSTRUCTION:
 "Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
 EOT
 
-echo "[SUCCESS] Antigravity OS V2.5.1 Installed. System Online."
+echo "[SUCCESS] Antigravity OS V3.4.5 Installed. System Online."
 EOF
 
 chmod +x install.sh
@@ -1374,7 +1396,7 @@ chmod +x install.sh
 # --- README ---
 
 cat <<EOF > README.md
-# Antigravity OS (V2.5.1 Enterprise)
+# Antigravity OS (V3.4.5 Enterprise)
  
 > **"High-Gravity Governance for a Weightless Developer Experience."**
  
@@ -1425,7 +1447,7 @@ To update your project's rules to the latest Antigravity Standard:
 
 ---
 
-*Powered by the Antigravity SDLC V2.5.1 Standard.*
+*Powered by the Antigravity SDLC V3.4.5 Standard.*
 EOF
 
-echo "[SUCCESS] Product Re-Build Complete. Ready to push V2.5.1 to GitHub."
+echo "[SUCCESS] Product Re-Build Complete. Ready to push V3.4.5 to GitHub."

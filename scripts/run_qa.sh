@@ -5,7 +5,7 @@
 set -e
 
 echo "========================================"
-echo "   ANTIGRAVITY QA SUITE (V2.5.1)        "
+echo "   ANTIGRAVITY QA SUITE (V3.4.5)        "
 echo "========================================"
 
 # 1. Static Analysis (Dockerized ShellCheck)
