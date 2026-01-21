@@ -50,7 +50,7 @@ def consult_mind(error_log):
     print(f"🧠 [MIND] Analyze Error...")
     try:
         vertexai.init(project=PROJECT_ID, location="us-central1")
-        model = GenerativeModel("gemini-pro")
+        model = GenerativeModel("gemini-2.0-flash-001")
         
         prompt = f"""
         act as a Senior Python Engineer. Analyze this error trace and return a code patch to fix it.
