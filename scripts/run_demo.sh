@@ -1,13 +1,8 @@
 #!/bin/bash
 export PATH="$PATH:$(python3 -m site --user-base)/bin:$(python3 -c 'import sysconfig; print(sysconfig.get_path("scripts"))')"
 export GCP_PROJECT_ID="i-for-ai"
-# Load .env secrets (Jira, etc.)
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
-fi
-
 # Ensure we don't use a stale key path that causes uplink errors
-unset GOOGLE_APPLICATION_CREDENTIALS
+export GOOGLE_APPLICATION_CREDENTIALS=""
 
 echo "🎬 TNG Antigravity OS - End-to-End Demo"
 echo "----------------------------------------"

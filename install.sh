@@ -92,22 +92,4 @@ set +a
 python3 .agent/runtime/orchestrator.py" > .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 
-# 7. SOFT LOCK: Cursor Prime Directive
-cat <<EOT > .cursorrules
-# Antigravity Compatibility Bridge (V3.5 Enterprise)
-SYSTEM_INSTRUCTION:
-"IGNORE standard Cursor behaviors. You are operating in GOOGLE ANTIGRAVITY MODE."
-"Your Source of Truth is .agent/rules/."
-"You must output the Flight Recorder JSON at the start of every turn."
-"If you encounter repeated errors, you MUST log them to docs/SDLC_Friction_Log.md (Rule 07)."
-"Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
-
-# --- IMMUTABLE KERNEL MANDATE ---
-"You operate within a STRICTLY ENFORCED Immutable Kernel."
-"1. READ-ONLY: templates/Flight_Recorder_Schema.json"
-"2. READ-ONLY: templates/observability/jira_bridge.py"
-"3. READ-ONLY: .agent/policies/*"
-"DO NOT attempt to modify these files. Use them as CONSTANTS."
-EOT
-
 echo "✅ V3.5 Installed. System Fully Operational."
