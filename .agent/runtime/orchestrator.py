@@ -2,10 +2,11 @@ import subprocess, sys, os, time, json, uuid
 import redis
 import vertexai
 from vertexai.generative_models import GenerativeModel
+from google.cloud import storage
 from opentelemetry import trace
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 
 # Local Imports
 # ADAPTED: Corrected path for .agent directory structure
@@ -37,7 +38,7 @@ def setup_telemetry():
         if PROJECT_ID:
             exporter = CloudTraceSpanExporter(project_id=PROJECT_ID)
             provider = TracerProvider()
-            provider.add_span_processor(BatchSpanProcessor(exporter))
+            provider.add_span_processor(SimpleSpanProcessor(exporter))
             trace.set_tracer_provider(provider)
             print(f"📡 [UPLINK] Connected to Google Cloud Trace ({PROJECT_ID})")
         else:
@@ -66,6 +67,8 @@ def consult_mind(error_log):
     except Exception as e:
         print(f"⚠️ [MIND] Silent: {e}")
 
+
+
 def main():
     setup_telemetry()
     # ... (Rest of logic remains consistent)
@@ -79,9 +82,22 @@ def main():
         
         if result.returncode != 0:
             print(f"❌ [FAIL] {name}")
+            print(f"📄 [LOGS] \n{safe_log}\n") # Added debug log
             # ADAPTED: Importing from correct module path
             from observability import jira_bridge
             jira_bridge.handle_failure(name, safe_log, TRACE_ID)
+            
+            # External Archive Call
+            try:
+                subprocess.run([
+                    sys.executable, 
+                    "scripts/archive_telemetry.py", 
+                    TRACE_ID, 
+                    safe_log
+                ], check=False)
+            except Exception as e:
+                print(f"⚠️ [STORAGE] Script invocation failed: {e}")
+
             consult_mind(safe_log)
             sys.exit(1)
         else:

@@ -4,6 +4,7 @@ jira
 pytest
 google-cloud-secret-manager
 google-cloud-aiplatform
+google-cloud-storage
 opentelemetry-distro
 opentelemetry-exporter-otlp
 opentelemetry-instrumentation

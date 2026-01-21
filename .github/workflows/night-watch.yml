@@ -1,5 +1,8 @@
 name: "Antigravity Night Watch"
 on: { schedule: [{ cron: "0 3 * * *" }] }
+
+permissions:
+    contents: read
 jobs:
     autonomous_maintenance:
         runs-on: ubuntu-latest

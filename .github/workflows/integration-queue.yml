@@ -56,7 +56,13 @@ jobs:
 
           # Execute Revert
           echo "🔄 Reverting bad commit..."
-          git revert HEAD --no-edit
+          if git rev-parse --verify HEAD^2 >/dev/null 2>&1; then
+             echo "Merge commit detected. Reverting with -m 1..."
+             git revert -m 1 HEAD --no-edit
+          else
+             echo "Regular commit detected."
+             git revert HEAD --no-edit
+          fi
 
           # Push the Heal
           echo "🚀 Pushing Revert to origin..."
