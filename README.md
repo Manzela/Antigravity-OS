@@ -3,6 +3,30 @@
 ## Overview
 The Antigravity OS Installer (`Upgrade-2.51V`) is an enterprise-grade orchestration system designed to deploy and manage the Antigravity Operating System infrastructure. It features hardened telemetry, real-time cost governance, and automated solvency enforcement.
 
+## Core Capabilities
+
+### 1. Full-Stack Traceability
+We don't just log errors; we track the entire lifecycle of a bug.
+*   **OpenTelemetry Ready**: Built to integrate with standard tracing backends.
+*   **Unified Logging**: Centralized logs in Google Cloud Storage (GCS) for permanent retention.
+*   **Jira Integration**: Automated ticket creation with deep-links to git commits and system logs.
+
+### 2. Cost Visibility & Control
+Cloud costs should never be a surprise.
+*   **The Cost Guard**: A real-time sentinel that prevents budget overruns *before* they happen.
+*   **Live Billing Sync**: Automatically syncs your actual GCP spend to our governance engine daily.
+
+### 3. Enterprise Testing Suite
+Code is only as good as its verification.
+*   **Chaos Engineering**: We inject failures to ensure the system heals itself.
+*   **E2E Validation**: Full-scope testing from the CLI triggers to cloud deployment.
+*   **Strict Linting**: Pre-commit enforcement of "Clean Code" standards (`flake8`, `shellcheck`).
+
+### 4. Autonomous CI/CD
+A self-managing DevOps pipeline that works while you sleep.
+*   **Self-Healing**: If a deployment fails, the system automatically rolls back and alerts the team.
+*   **Multi-Agent Loops**: The system Plans -> Builds -> Tests -> Verifies. If verification fails, it autonomously loops back to Planning (up to 3 times) to attempt a fix before asking for human help.
+
 ## System Prerequisites
 Before initializing the installer, ensure the following dependencies are met:
 
