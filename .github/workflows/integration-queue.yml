@@ -8,6 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Install Antigravity OS (Local Source)
+        run: |
+          echo "[CI] Hydrating from Local Source..."
+          mkdir -p .agent/rules .agent/sentinel .agent/observability .agent/workflows scripts
+          cp templates/sentinel/cost_guard.py .agent/sentinel/
+          cp templates/observability/jira_bridge.py .agent/observability/
+          cp templates/rules/*.md .agent/rules/
+          cp templates/scripts/* scripts/ || true
+          chmod +x scripts/*.sh || true
+
       - name: Integration Test
         id: test
         run: |
@@ -20,4 +39,5 @@ jobs:
           git config user.email "manzela@tngshopper.com"
           git config user.name "Antigravity CI"
           git revert HEAD --no-edit
-          # In real life, push back or close PR
+          # Push back to heal the PR branch
+          git push origin HEAD:${{ github.head_ref }} --force-with-lease --no-verify
