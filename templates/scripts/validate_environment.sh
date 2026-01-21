@@ -36,14 +36,34 @@ echo "--- 1. Software Dependencies ---"
 check_cmd python3
 check_cmd docker
 check_cmd git
+check_cmd curl
+check_cmd gcloud
 
-echo "--- 2. Credential Configuration ---"
+echo "--- 2. Python Libraries (Pip) ---"
+# Check if requirements are installed
+if python3 -m pip freeze | grep -q 'redis' && python3 -m pip freeze | grep -q 'google-cloud-storage'; then
+    echo "[OK] Critical Python Libraries verified."
+else
+    echo "[WARN] Missing Python dependencies. Installing..."
+    # Attempt install if missing (to make it frictionless)
+    if [ -f "requirements.txt" ]; then
+        python3 -m pip install -r requirements.txt
+    else
+        echo "[FAIL] requirements.txt not found!"
+        FAILURES=$((FAILURES + 1))
+    fi
+fi
+
+echo "--- 3. Credential Configuration ---"
 check_env "GCP_BILLING_ACCOUNT_ID"
 check_env "REDIS_HOST"
+check_env "REDIS_PORT"
+check_env "REDIS_USER"
 check_env "REDIS_PASSWORD"
 check_env "JIRA_API_TOKEN"
+check_env "GCP_SA_KEY"
 
-echo "--- 3. Network Connectivity ---"
+echo "--- 4. Network Connectivity ---"
 # Simple connectivity check to Google (confirming internet access)
 if curl -s --connect-timeout 3 https://www.google.com > /dev/null; then
     echo "[OK] Internet Connectivity Verified."

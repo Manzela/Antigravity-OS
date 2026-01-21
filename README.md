@@ -21,10 +21,19 @@ The following credentials must be configured in your CI/CD provider (GitHub Acti
 | `JIRA_API_TOKEN` | Atlassian API Token | *(Your verified token)* |
 
 ### 2. Required Software
-- **Python**: v3.9+ (`python3`)
+- **Python**: v3.9+ (`python3` with `pip`)
 - **Docker**: v20+ (for ShellCheck and containerized validation)
 - **Git**: v2.30+
+- **Google Cloud SDK**: v450+ (`gcloud`)
 - **Redis CLI** (Optional): For manual verification
+
+### 3. Library Dependencies
+The system relies on strict version pinning for stability.
+```bash
+# Automated install via validate_environment.sh or manual:
+pip install -r requirements.txt
+```
+*Includes: `redis>=5.0.1`, `google-cloud-storage>=2.14.0`, `pytest>=7.0.0`*
 
 ---
 
