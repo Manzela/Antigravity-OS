@@ -96,4 +96,4 @@ View your system's performance in real-time:
 
 ## © License & Credits
 **Antigravity OS** is a proprietary system of the TNG Infrastructure Team.
-*concept by Manzela | architecture by Antigravity AI*
+*concept by Manzela | architecture by Manzela | development by Antigravity AI*
