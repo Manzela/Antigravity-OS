@@ -37,6 +37,8 @@ done
 
 # 5. Fetch Scripts, Sentinel, and Observability
 curl -s "$REPO_URL/templates/scripts/sync_governance.sh" > scripts/sync_governance.sh
+curl -s "$REPO_URL/templates/scripts/validate_environment.sh" > scripts/validate_environment.sh
+curl -s "$REPO_URL/requirements.txt" > requirements.txt
 curl -s "$REPO_URL/templates/scripts/archive_telemetry.py" > scripts/archive_telemetry.py
 curl -s "$REPO_URL/templates/sentinel/cost_guard.py" > .agent/sentinel/cost_guard.py
 # Updated Jira Bridge (Phase 4)
@@ -47,6 +49,7 @@ curl -s "$REPO_URL/.github/workflows/antigravity-gatekeeper.yml" > .github/workf
 curl -s "$REPO_URL/.github/workflows/integration-queue.yml" > .github/workflows/integration-queue.yml
 
 chmod +x scripts/sync_governance.sh
+chmod +x scripts/validate_environment.sh
 
 # 8. Setup Hooks (Optional but Recommended)
 curl -s "$REPO_URL/templates/docs/Day2_Operations.md" > docs/Runbooks/Day2_Operations.md
@@ -64,4 +67,6 @@ SYSTEM_INSTRUCTION:
 "Solvency Check (Rule 08) is ACTIVE. Do not bypass cost gates."
 EOT
 
-echo "[SUCCESS] Antigravity OS V2.5.1 Installed. System Online."
+echo "[INFO] Running System Verification (Rule V2.7)..."
+./scripts/validate_environment.sh
+echo "[SUCCESS] Antigravity OS V2.5.1 Installed & Verified. System Online."
