@@ -98,7 +98,8 @@ echo "0" > "$TMP_COUNTER"
 
 simulated_recoverable_fail() {
     local counter_file=$1
-    local count=$(cat "$counter_file")
+    local count
+    count=$(cat "$counter_file")
     if [ "$count" -eq 0 ]; then
         echo "1" > "$counter_file"
         echo "[MOCK] Temporary system glitch..."

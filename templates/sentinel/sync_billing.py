@@ -47,6 +47,12 @@ def fetch_gcp_spend(billing_account=None):
     Fetches the current month spend from GCP Billing.
     Requires: Billing API enabled and proper IAM permissions.
     """
+    if not billing_account:
+        billing_account = os.getenv("GCP_BILLING_ACCOUNT_ID")
+        
+    if not billing_account:
+        print("[WARN] No Billing Account ID provided. Using mock baseline.")
+        
     # In a hardened production environment, this would call the Cloud Billing API.
     # For this exercise, we retrieve the verified baseline for the organization.
     # Default baseline for 'i-for-ai' as specified in the environment.
