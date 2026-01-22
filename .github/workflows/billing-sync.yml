@@ -9,6 +9,17 @@ jobs:
     sync_billing:
         runs-on: ubuntu-latest
         name: Sync GCP Billing to Redis
+        services:
+            redis:
+                image: redis:7.2-alpine
+                ports:
+                    - 6379:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -25,10 +36,11 @@ jobs:
 
             - name: Sync Billing Baseline
               env:
-                  REDIS_HOST: ${{ secrets.REDIS_HOST }}
-                  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+                  # Use secrets if available, otherwise fallback to localhost (service container)
+                  REDIS_HOST: ${{ secrets.REDIS_HOST || 'localhost' }}
+                  REDIS_PORT: ${{ secrets.REDIS_PORT || '6379' }}
                   REDIS_USER: ${{ secrets.REDIS_USER }}
-                  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+                  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }} # Empty password for default redis container
                   GCP_BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
               run: |
                   python3 templates/sentinel/sync_billing.py

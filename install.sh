@@ -43,7 +43,19 @@ else
     SA_KEY_PATH=""
 fi
 
-# 4. INFRASTRUCTURE BOOT (Fixed Logic)
+# 4. WRITE ENV
+cat <<EOF > .env
+GCP_PROJECT_ID="${PROJECT_ID}"
+JIRA_API_TOKEN="${JIRA_TOKEN}"
+JIRA_USER_EMAIL="${JIRA_EMAIL}"
+REDIS_HOST="${REDIS_HOST}"
+REDIS_PORT="${REDIS_PORT:-6379}"
+REDIS_PASSWORD="${REDIS_PASS}"
+GOOGLE_APPLICATION_CREDENTIALS="${SA_KEY_PATH}"
+JIRA_PROJECT_KEY="TNG"
+EOF
+
+# 5. INFRASTRUCTURE BOOT (Fixed Logic)
 USE_LOCAL_DB=true
 if [ ! -z "$REDIS_HOST" ] && [ "$REDIS_HOST" != "localhost" ]; then
     if python3 -c "import socket; socket.create_connection(('$REDIS_HOST', int('${REDIS_PORT:-6379}')), timeout=2)" 2>/dev/null; then
@@ -67,18 +79,6 @@ else
     echo "   🔹 Booting Sentinel (Policy Engine)..."
     docker-compose up -d antigravity-sentinel 2>/dev/null
 fi
-
-# 5. WRITE ENV
-cat <<EOF > .env
-GCP_PROJECT_ID="${PROJECT_ID}"
-JIRA_API_TOKEN="${JIRA_TOKEN}"
-JIRA_USER_EMAIL="${JIRA_EMAIL}"
-REDIS_HOST="${REDIS_HOST}"
-REDIS_PORT="${REDIS_PORT:-6379}"
-REDIS_PASSWORD="${REDIS_PASS}"
-GOOGLE_APPLICATION_CREDENTIALS="${SA_KEY_PATH}"
-JIRA_PROJECT_KEY="TNG"
-EOF
 
 # 6. WIRE HOOKS
 pip3 install -r requirements.txt >/dev/null
