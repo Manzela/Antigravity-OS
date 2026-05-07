@@ -221,9 +221,13 @@ def handle_demo():
 
     with console.status("[dim]Logging state transitions to Flight Recorder...[/]"):
         recorder = FlightRecorder(config=config)
-        recorder.transition("demo-operation", "PLANNING")
-        recorder.transition("demo-operation", "BUILDING")
-        recorder.transition("demo-operation", "COMPLETE")
+        import uuid
+        demo_op = f"demo-op-{uuid.uuid4().hex[:6]}"
+        recorder.transition(demo_op, "PLANNING")
+        recorder.transition(demo_op, "PLAN_APPROVED")
+        recorder.transition(demo_op, "BUILDING")
+        recorder.transition(demo_op, "VERIFYING")
+        recorder.transition(demo_op, "COMPLETE")
         time.sleep(1)
     console.print("  [green]✔[/] State Machine Traversed Successfully")
 
