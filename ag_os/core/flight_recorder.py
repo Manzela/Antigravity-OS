@@ -60,10 +60,17 @@ class FlightRecorder:
     def __init__(self, config: dict | None = None):
         self._config = config or load_config()
         provider_name = self._config.get("providers", {}).get("state", "sqlite")
-        self._state = get_provider("state", provider_name)
+        try:
+            self._state = get_provider("state", provider_name)
+        except ValueError:
+            # Graceful fallback: configured provider not installed
+            self._state = get_provider("state", "sqlite")
 
         telemetry_name = self._config.get("providers", {}).get("telemetry", "console")
-        self._telemetry = get_provider("telemetry", telemetry_name)
+        try:
+            self._telemetry = get_provider("telemetry", telemetry_name)
+        except ValueError:
+            self._telemetry = get_provider("telemetry", "console")
 
     def get_current_state(self, operation: str) -> str:
         """Get the current state for an operation."""

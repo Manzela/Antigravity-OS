@@ -1,13 +1,13 @@
 version: '1.0'
-monthly_cap: 50.0
+monthly_cap: 50000.0
 max_loop_count: 5
 providers:
   secrets: local
-  issues: console
+  issues: linear
   cost: local
-  state: sqlite
-  telemetry: console
+  state: redis
+  telemetry: otlp
   policy: builtin
 ci:
-  platform: local
+  platform: github
   self_healing: true

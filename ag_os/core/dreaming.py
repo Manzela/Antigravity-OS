@@ -104,7 +104,10 @@ class DreamEngine:
     def _get_state_provider(self):
         """Get the configured state provider."""
         provider_name = self._config.get("providers", {}).get("state", "sqlite")
-        return get_provider("state", provider_name)
+        try:
+            return get_provider("state", provider_name)
+        except ValueError:
+            return get_provider("state", "sqlite")
 
     def _query_all_flight_records(self) -> dict[str, list[dict]]:
         """Query the SQLite state store for all flight records.

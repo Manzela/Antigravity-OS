@@ -11,7 +11,7 @@ from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
 from ag_os import __version__
@@ -23,6 +23,14 @@ from ag_os.cli import (
 )
 from ag_os.config import _DEFAULT_CONFIG, load_config
 from ag_os.core.cost_guard import check_solvency
+from ag_os.core.credentials import (
+    delete_credential,
+    get_credential,
+    get_credential_status,
+    get_required_credentials,
+    store_credential,
+    validate_credential,
+)
 from ag_os.core.dreaming import DreamEngine
 from ag_os.core.flight_recorder import FlightRecorder
 from ag_os.core.rules_engine import evaluate_governance
@@ -36,6 +44,7 @@ COMMANDS = {
     "/check": "Run a solvency check against the budget cap",
     "/dream": "Run the self-improvement cycle (analyze & patch)",
     "/status": "Show current configuration and providers",
+    "/auth": "Manage provider credentials (view, add, revoke)",
     "/init": "Setup or reconfigure Antigravity OS for this project",
     "/exit": "Exit the shell",
     "/clear": "Clear the terminal screen",
@@ -139,11 +148,159 @@ def run_ftux_wizard():
     _install_git_hook()
     console.print("  [green]✔[/] Installed pre-push git hook")
 
+    # Ensure .env is in .gitignore (defense-in-depth)
+    _ensure_gitignore()
+
+    # ── Phase 2: Provider Authentication ──────────────────────────────────
+    required_creds = get_required_credentials(config)
+    if required_creds:
+        console.print()
+        console.rule("[bold cyan]Provider Authentication[/]")
+        console.print(
+            "[dim]Credentials are stored in your OS keychain (macOS Keychain / "
+            "Linux Secret Service / Windows Credential Locker).[/]\n"
+        )
+
+        for i, spec in enumerate(required_creds, 1):
+            existing = get_credential(spec.key)
+            if existing:
+                console.print(
+                    f"  [green]✔[/] [bold]{spec.label}[/] — already configured"
+                )
+                continue
+
+            if spec.hint:
+                console.print(f"  [dim]Hint: {spec.hint}[/]")
+
+            try:
+                value = Prompt.ask(
+                    f"  [{i}/{len(required_creds)}] {spec.label}",
+                    password=spec.is_password,
+                )
+
+                if not value.strip():
+                    console.print("  [yellow]⚠ Skipped (empty input)[/]")
+                    continue
+
+                value = value.strip()
+
+                # Store first (needed for cross-credential validation like Jira)
+                store_credential(spec.key, value)
+
+                # Validate
+                with console.status("[dim]Validating...[/]"):
+                    ok, msg = validate_credential(spec.key, value)
+
+                if ok:
+                    console.print(f"  [green]✔[/] {msg}")
+                else:
+                    console.print(f"  [yellow]⚠ {msg}[/]")
+                    console.print(
+                        "  [dim]Credential stored anyway. You can re-authenticate with /auth.[/]"
+                    )
+
+            except KeyboardInterrupt:
+                console.print("\n  [yellow]Skipped remaining credentials.[/]")
+                break
+    else:
+        console.print(
+            "\n  [dim]All selected providers work offline — no credentials needed.[/]"
+        )
+
     console.print("\n[bold green]Setup complete![/] You are ready to use Antigravity OS.\n")
     return True
 
 
+def _ensure_gitignore():
+    """Ensure .env is listed in .gitignore (defense-in-depth)."""
+    gitignore = Path(".gitignore")
+    entries_to_add = [".env", ".env.*", "credentials.json"]
+
+    existing = ""
+    if gitignore.is_file():
+        existing = gitignore.read_text(encoding="utf-8")
+
+    additions = [e for e in entries_to_add if e not in existing]
+    if additions:
+        with open(gitignore, "a", encoding="utf-8") as f:
+            f.write("\n# Antigravity OS — never commit secrets\n")
+            for entry in additions:
+                f.write(f"{entry}\n")
+
+
+def handle_auth():
+    """Manage provider credentials — view, add, revoke."""
+    config = load_config()
+    required = get_required_credentials(config)
+    status = get_credential_status(config)
+
+    if not required:
+        console.print(
+            "[dim]All selected providers work offline — no credentials needed.[/]"
+        )
+        return
+
+    # Display current status
+    table = Table(box=None, show_header=True, padding=(0, 2))
+    table.add_column("Credential", style="cyan bold")
+    table.add_column("Status", style="white")
+
+    for spec in required:
+        is_set = status.get(spec.key, False)
+        status_str = "[green]✔ Configured[/]" if is_set else "[red]✘ Missing[/]"
+        table.add_row(f"{spec.label} ({spec.key})", status_str)
+
+    console.print(
+        Panel(table, title="[bold]Provider Credentials[/]", border_style="cyan", expand=False)
+    )
+    console.print(
+        "[dim]Credentials are stored in your OS keychain (macOS Keychain / "
+        "Linux Secret Service / Windows Credential Locker).[/]\n"
+    )
+
+    # Offer actions
+    action = Prompt.ask(
+        "Action",
+        choices=["add", "revoke", "done"],
+        default="done",
+    )
+
+    if action == "add":
+        missing = [s for s in required if not status.get(s.key, False)]
+        if not missing:
+            console.print("[green]All credentials are already configured.[/]")
+            return
+
+        for spec in missing:
+            if spec.hint:
+                console.print(f"  [dim]Hint: {spec.hint}[/]")
+            value = Prompt.ask(f"  {spec.label}", password=spec.is_password)
+            if not value.strip():
+                console.print("  [yellow]⚠ Skipped[/]")
+                continue
+
+            store_credential(spec.key, value.strip())
+            with console.status("[dim]Validating...[/]"):
+                ok, msg = validate_credential(spec.key, value.strip())
+            if ok:
+                console.print(f"  [green]✔[/] {msg}")
+            else:
+                console.print(f"  [yellow]⚠ {msg}[/]")
+
+    elif action == "revoke":
+        stored = [s for s in required if status.get(s.key, False)]
+        if not stored:
+            console.print("[dim]No credentials to revoke.[/]")
+            return
+
+        for spec in stored:
+            if Confirm.ask(f"  Revoke [bold]{spec.key}[/]?", default=False):
+                delete_credential(spec.key)
+                console.print(f"  [red]✘[/] Revoked {spec.key}")
+
+
 def handle_help():
+
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column("Command", style="cyan bold")
     table.add_column("Description", style="white")
@@ -317,6 +474,8 @@ def interactive_main():
                 handle_demo()
             elif text == "/dream":
                 handle_dream()
+            elif text == "/auth":
+                handle_auth()
             elif text == "/init":
                 run_ftux_wizard()
             elif text == "/clear":

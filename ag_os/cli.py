@@ -508,7 +508,19 @@ def _install_git_hook():
 # Runs solvency verification before allowing push
 
 echo "  Running Antigravity OS pre-push check..."
-ag-os check 1.0 --tier standard_cpu
+
+# Locate ag-os: prefer venv, then PATH, then skip gracefully
+AGOS=""
+if [ -x ".venv/bin/ag-os" ]; then
+    AGOS=".venv/bin/ag-os"
+elif command -v ag-os >/dev/null 2>&1; then
+    AGOS="ag-os"
+else
+    echo "  ⚠ ag-os not found (activate venv or install globally). Skipping check."
+    exit 0
+fi
+
+$AGOS check 1.0 --tier standard_cpu
 exit $?
 """
     hook_path.write_text(hook_content, encoding="utf-8")

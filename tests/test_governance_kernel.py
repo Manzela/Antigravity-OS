@@ -81,7 +81,9 @@ class TestCostGuard:
         assert result.margin > 0
 
     def test_insolvent_with_large_allocation(self):
-        result = check_solvency(units=100, tier="gpu_large")
+        config = load_config()
+        config["monthly_cap"] = 50.0  # Explicit low cap for deterministic test
+        result = check_solvency(units=100, tier="gpu_large", config=config)
         assert result.is_solvent is False
         assert result.margin < 0
 
@@ -108,6 +110,7 @@ class TestFlightRecorder:
     @pytest.fixture()
     def recorder(self):
         config = load_config()
+        config["providers"]["state"] = "sqlite"  # Force sqlite for test isolation
         r = FlightRecorder(config=config)
         yield r
         # Cleanup
