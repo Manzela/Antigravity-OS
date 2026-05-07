@@ -12,7 +12,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: pypi
+    environment:
+      name: Production
+      url: https://pypi.org/project/ag-os/
 
     steps:
       - uses: actions/checkout@v4

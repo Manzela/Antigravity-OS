@@ -5,5 +5,5 @@ Cost enforcement, policy-as-code, deterministic state tracking,
 and self-healing CI. Provider-agnostic, one install.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 __package_name__ = "ag-os"
