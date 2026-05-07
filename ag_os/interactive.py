@@ -187,7 +187,7 @@ def handle_check():
         console.print(
             Panel(
                 "[green]Solvency Check Passed[/]\n"
-                f"Spend: ${result.projected_spend:.4f} / ${result.budget_cap:.2f}",
+                f"Spend: ${result.projected_cost:.4f} / ${result.monthly_cap:.2f}",
                 border_style="green",
             )
         )
@@ -195,7 +195,7 @@ def handle_check():
         console.print(
             Panel(
                 "[red]Solvency Check Failed[/]\n"
-                f"Spend: ${result.projected_spend:.4f} / ${result.budget_cap:.2f}",
+                f"Spend: ${result.projected_cost:.4f} / ${result.monthly_cap:.2f}",
                 border_style="red",
             )
         )
@@ -217,7 +217,7 @@ def handle_demo():
     with console.status("[dim]Evaluating Solvency Gate (Rule 08)...[/]"):
         time.sleep(1)
         sol = check_solvency(units=1.0, tier="standard_cpu", config=config)
-    console.print(f"  [green]✔[/] Solvency Check Passed (Projected: ${sol.projected_spend:.4f})")
+    console.print(f"  [green]✔[/] Solvency Check Passed (Projected: ${sol.projected_cost:.4f})")
 
     with console.status("[dim]Logging state transitions to Flight Recorder...[/]"):
         recorder = FlightRecorder(config=config)
