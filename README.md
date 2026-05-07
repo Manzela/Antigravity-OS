@@ -10,6 +10,10 @@
   <a href="https://pypi.org/project/ag-os/"><img src="https://img.shields.io/pypi/pyversions/ag-os" alt="Python" /></a>
 </p>
 
+<p align="center">
+  <a href="https://manzela.github.io/Antigravity-OS/"><strong>🔬 Pipeline Observatory (Interactive Demo)</strong></a>
+</p>
+
 ---
 
 ## The Problem
