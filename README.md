@@ -32,6 +32,7 @@ Antigravity OS is an **integrated, opinionated governance kernel** that combines
 - **Policy-as-Code** -- 9 governance rules ("The Constitution") enforced at every state transition.
 - **Deterministic State Tracking** -- Flight Recorder state machine with full audit trail.
 - **Self-Healing CI** -- Pre-push hooks and CI gates that prevent broken deployments.
+- **Dreaming Module** -- Self-improvement loop that analyzes friction and proposes governance patches.
 
 All provider-agnostic. All in one install. No cloud accounts required.
 
@@ -108,6 +109,8 @@ ag-os serve
 | `evaluate_policy` | Execute governance rules against operation context |
 | `get_status` | Return current configuration and providers |
 | `get_history` | Retrieve the Flight Recorder audit trail |
+| `dream` | Run the Dreaming Module self-improvement cycle |
+| `recall_dreams` | Retrieve past Dream Reports from long-term memory |
 
 ### Client Configuration
 
@@ -123,6 +126,41 @@ Add to your MCP client configuration (e.g. Claude Desktop, Cursor):
   }
 }
 ```
+
+---
+
+## Dreaming Module
+
+The Dreaming Module gives any LLM agent a **sleep cycle** — a model-agnostic,
+zero-dependency self-improvement loop that analyzes past execution friction and
+proposes governance improvements. No fine-tuning. No RAG. No vector database.
+
+```bash
+# Run the dream cycle (analyzes friction, proposes improvements)
+ag-os dream
+
+# Recall past learnings (long-term memory)
+ag-os dream --recall 5
+
+# Output as JSON for programmatic consumption
+ag-os dream --json-output
+
+# See it in action (simulates failure → dream → self-improvement)
+ag-os demo --dream
+```
+
+### How It Works
+
+1. **Friction Scan** — Queries the Flight Recorder for operations that looped,
+   rolled back, exceeded budgets, or got stuck.
+2. **Pattern Detection** — Classifies friction into 5 archetypes: loop detection,
+   rollback cycles, budget overruns, blocked terminals, excessive transitions.
+3. **Dream Report** — Synthesizes a structured report with root-cause diagnoses
+   and proposed governance patches (new rules, config changes, threshold adjustments).
+4. **Long-Term Memory** — Persists Dream Reports to `~/.antigravity/dreams/` as
+   YAML files that accumulate across sessions.
+
+Any AI agent that reads `ag-os dream` output gains self-improvement capabilities.
 
 ---
 
@@ -207,6 +245,7 @@ ag-os/
 │   ├── config.py               # antigravity.yaml loader
 │   ├── core/
 │   │   ├── cost_guard.py       # Solvency logic (Rule 08)
+│   │   ├── dreaming.py         # Dreaming Module (self-improvement)
 │   │   ├── flight_recorder.py  # State machine (Rule 05)
 │   │   └── rules_engine.py     # Policy evaluator
 │   └── providers/

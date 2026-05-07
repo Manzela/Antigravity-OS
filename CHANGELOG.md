@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-05-07
+
+### Added
+
+- **Dreaming Module** — Self-improvement loop for AI agents.
+  - `ag-os dream` CLI command with `--recall`, `--json-output`, `--dry-run` flags.
+  - `ag-os demo --dream` flag for simulated failure → self-improvement demo.
+  - `dream` and `recall_dreams` MCP tools for AI agent integration.
+  - Friction scanning: 5 detection archetypes (loop, rollback, budget, blocked, excessive).
+  - Dream Reports: structured YAML with root-cause diagnosis and governance patches.
+  - Long-term memory: persistent storage in `~/.antigravity/dreams/`.
+  - 20 new unit tests covering scan, synthesis, persistence, recall, MCP tools.
+
+---
+
 ## [1.1.0] - 2026-05-07
 
 ### Added

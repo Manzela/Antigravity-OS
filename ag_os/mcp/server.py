@@ -155,6 +155,107 @@ def get_history(operation: str) -> dict:
     }
 
 
+@mcp.tool()
+def dream(dry_run: bool = False) -> dict:
+    """Run the Dreaming Module self-improvement cycle.
+
+    Analyzes the Flight Recorder for friction patterns (loops, rollbacks,
+    budget failures), generates a Dream Report with proposed governance
+    patches, and persists the report to long-term memory.
+
+    Args:
+        dry_run: If True, analyze friction but don't persist the report.
+    """
+    from ag_os.core.dreaming import DreamEngine
+
+    config = load_config()
+    engine = DreamEngine(config=config)
+
+    friction = engine.scan_friction()
+    report = engine.synthesize(friction)
+
+    if not dry_run:
+        path = engine.persist(report)
+        persisted_to = str(path)
+    else:
+        persisted_to = None
+
+    return {
+        "dream_id": report.dream_id,
+        "timestamp": report.timestamp,
+        "operations_analyzed": report.operations_analyzed,
+        "friction_detected": report.friction_detected,
+        "summary": report.summary,
+        "persisted_to": persisted_to,
+        "friction_events": [
+            {
+                "operation": e.operation,
+                "archetype": e.archetype,
+                "severity": e.severity,
+                "diagnosis": e.diagnosis,
+            }
+            for e in report.friction_events
+        ],
+        "proposed_patches": [
+            {
+                "patch_type": p.patch_type,
+                "target": p.target,
+                "description": p.description,
+                "yaml_content": p.yaml_content,
+            }
+            for p in report.proposed_patches
+        ],
+    }
+
+
+@mcp.tool()
+def recall_dreams(n: int = 5) -> dict:
+    """Retrieve recent Dream Reports from long-term memory.
+
+    Returns the N most recent Dream Reports stored in
+    ~/.antigravity/dreams/, ordered newest first.
+
+    Args:
+        n: Number of recent dream reports to retrieve.
+    """
+    from ag_os.core.dreaming import DreamEngine
+
+    config = load_config()
+    engine = DreamEngine(config=config)
+    reports = engine.recall(n=n)
+
+    return {
+        "count": len(reports),
+        "reports": [
+            {
+                "dream_id": r.dream_id,
+                "timestamp": r.timestamp,
+                "operations_analyzed": r.operations_analyzed,
+                "friction_detected": r.friction_detected,
+                "summary": r.summary,
+                "friction_events": [
+                    {
+                        "operation": e.operation,
+                        "archetype": e.archetype,
+                        "severity": e.severity,
+                        "diagnosis": e.diagnosis,
+                    }
+                    for e in r.friction_events
+                ],
+                "proposed_patches": [
+                    {
+                        "patch_type": p.patch_type,
+                        "target": p.target,
+                        "description": p.description,
+                    }
+                    for p in r.proposed_patches
+                ],
+            }
+            for r in reports
+        ],
+    }
+
+
 def run_server():
     """Entry point for the MCP server."""
     mcp.run(transport="stdio")

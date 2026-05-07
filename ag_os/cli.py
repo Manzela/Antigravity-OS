@@ -5,7 +5,9 @@ Subcommands:
     ag-os init     Initialize a new project with antigravity.yaml
     ag-os check    Run a solvency check against the budget cap
     ag-os demo     Run the 60-second governance demo
+    ag-os dream    Run the Dreaming Module self-improvement cycle
     ag-os status   Show current provider configuration
+    ag-os serve    Start the MCP server for AI agent integration
 """
 
 import json
@@ -154,7 +156,12 @@ def check(units, tier):
 
 
 @main.command()
-def demo():
+@click.option(
+    "--dream",
+    is_flag=True,
+    help="Include Dreaming Module demo (simulated failure).",
+)
+def demo(dream):
     """Run the 60-second governance demo."""
     from ag_os.core.cost_guard import check_solvency, print_solvency_report
     from ag_os.core.flight_recorder import FlightRecorder
@@ -200,10 +207,67 @@ def demo():
     blocked = check_solvency(units=100.0, tier="gpu_large", config=config)
     print_solvency_report(blocked)
 
+    if dream:
+        # Step 5: Dreaming Module — simulated failure → self-improvement
+        _run_dream_demo(config, recorder)
+
     print("  ================================================")
     print("  Demo complete. All governance gates operational.")
     print("  ================================================")
     print()
+
+
+def _run_dream_demo(config: dict, recorder):
+    """Simulate a failing agent and invoke the Dreaming Module."""
+    import uuid
+
+    from ag_os.core.dreaming import DreamEngine, print_dream_report
+
+    print("  Step 5: Dreaming Module (Self-Improvement Loop)")
+    print("  ────────────────────────────────────────────────")
+    print()
+    print("  Simulating a failing agent that loops and gets stuck...")
+    print()
+
+    # Create a unique operation that will exhibit multiple friction patterns
+    op_id = f"demo-failing-agent-{uuid.uuid4().hex[:8]}"
+
+    # Simulate: agent loops through PLANNING → BUILDING → VERIFYING → ROLLED_BACK
+    # multiple times, demonstrating excessive transitions and rollback cycles.
+    for cycle in range(3):
+        recorder.transition(op_id, "PLANNING")
+        recorder.transition(op_id, "PLAN_APPROVED")
+        recorder.transition(op_id, "BUILDING", metadata={"attempt": cycle + 1})
+        recorder.transition(op_id, "VERIFYING")
+        recorder.transition(
+            op_id,
+            "ROLLED_BACK",
+            error="Tests failed: assertion error in integration suite",
+        )
+        recorder.transition(op_id, "PLANNING")  # Retry from ROLLED_BACK
+
+    # Final attempt ends in BLOCKED
+    recorder.transition(op_id, "PLAN_APPROVED")
+    recorder.transition(op_id, "BUILDING", metadata={"attempt": 4, "desperate": True})
+    recorder.transition(
+        op_id,
+        "BLOCKED",
+        error="Max retries exhausted. Agent cannot resolve integration failures.",
+    )
+
+    print(f"  Simulated operation: {op_id}")
+    print("  Result: 3 rollback cycles → BLOCKED (terminal failure)")
+    print()
+    print("  Now invoking the Dream Engine to analyze friction...")
+    print()
+
+    # Run the Dream Engine
+    engine = DreamEngine(config=config)
+    report = engine.dream()
+    print_dream_report(report)
+
+    # Clean up the simulated operation
+    recorder.reset(op_id)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -252,6 +316,70 @@ def serve():
 
     print("  [OK] Starting Antigravity OS MCP Server (stdio)...", file=sys.stderr)
     run_server()
+
+
+# ──────────────────────────────────────────────────────────────
+# ag-os dream
+# ──────────────────────────────────────────────────────────────
+
+
+@main.command()
+@click.option("--recall", default=0, type=int, help="Recall the N most recent dream reports.")
+@click.option("--json-output", "use_json", is_flag=True, help="Output as JSON.")
+@click.option("--dry-run", is_flag=True, help="Analyze friction but don't persist.")
+def dream(recall, use_json, dry_run):
+    """Run the Dreaming Module self-improvement cycle.
+
+    Analyzes the Flight Recorder for friction patterns (loops, rollbacks,
+    budget failures) and generates a Dream Report with proposed governance
+    patches. Reports are persisted to ~/.antigravity/dreams/ as long-term
+    memory.
+    """
+    from ag_os.core.dreaming import DreamEngine, print_dream_report
+
+    config = load_config()
+    engine = DreamEngine(config=config)
+
+    if recall > 0:
+        # Recall mode: retrieve past dream reports
+        reports = engine.recall(n=recall)
+        if not reports:
+            print()
+            print("  No dream reports found in memory.")
+            print("  Run 'ag-os dream' to generate the first dream cycle.")
+            print()
+            return
+
+        if use_json:
+            import json as json_mod
+            from dataclasses import asdict
+
+            output = [asdict(r) for r in reports]
+            print(json_mod.dumps(output, indent=2, default=str))
+        else:
+            for report in reports:
+                print_dream_report(report)
+        return
+
+    # Dream cycle: scan → synthesize → (optionally persist)
+    friction = engine.scan_friction()
+    report = engine.synthesize(friction)
+
+    if not dry_run:
+        path = engine.persist(report)
+        report_path_msg = f"  Persisted to: {path}"
+    else:
+        report_path_msg = "  [DRY RUN] Report not persisted."
+
+    if use_json:
+        import json as json_mod
+        from dataclasses import asdict
+
+        print(json_mod.dumps(asdict(report), indent=2, default=str))
+    else:
+        print_dream_report(report)
+        print(report_path_msg)
+        print()
 
 
 # ──────────────────────────────────────────────────────────────
