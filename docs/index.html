@@ -1,436 +1,657 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Antigravity OS — Pipeline Observatory</title>
-<meta name="description" content="Interactive visualization of the Antigravity OS self-improvement loop. Watch an AI agent fail, dream, and evolve.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fafafa;--surface:#fff;--surface2:#f5f5f7;--border:#e5e5ea;
-  --text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;
-  --blue:#0071e3;--blue-light:#e8f2fe;
-  --red:#ff3b30;--red-light:#fff0f0;
-  --orange:#ff9500;--orange-light:#fff8ee;
-  --green:#34c759;--green-light:#edfcf2;
-  --purple:#af52de;--purple-light:#f6eeff;
-  --radius:12px;--shadow:0 1px 3px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04);
-  --font-mono:'JetBrains Mono',monospace;
-}
-html{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);
-  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
-body{min-height:100vh}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Observatory | Antigravity OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #0d0d0d;
+            --border: #1f1f1f;
+            --text-main: #f0f0f0;
+            --text-dim: #888;
+            --cyan: #00e5ff;
+            --gold: #ffb74d;
+            --red: #ff453a;
+            --green: #32d74b;
+            --font-serif: 'Instrument Serif', serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
 
-/* Navigation */
-nav{position:sticky;top:0;z-index:100;background:rgba(250,250,250,.85);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);padding:0 32px;height:52px;
-  display:flex;align-items:center;justify-content:space-between}
-nav .logo{font-weight:700;font-size:.9rem;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-nav .logo span{opacity:.4}
-nav .links{display:flex;gap:20px}
-nav .links a{color:var(--text2);text-decoration:none;font-size:.8rem;font-weight:500;transition:color .2s}
-nav .links a:hover{color:var(--blue)}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
 
-/* Layout */
-.page{max-width:960px;margin:0 auto;padding:48px 24px 80px}
-section{margin-bottom:56px}
-h1{font-size:1.8rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
-h2{font-size:1.1rem;font-weight:600;letter-spacing:-.01em;margin-bottom:16px;color:var(--text)}
-p.subtitle{color:var(--text2);font-size:.9rem;line-height:1.7;max-width:640px;margin-bottom:32px}
-.label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px}
+        /* Nav */
+        nav {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            z-index: 100;
+        }
+        nav h1 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        nav p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
 
-/* Card */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:24px;box-shadow:var(--shadow)}
+        /* Observatory Canvas */
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #111 0%, #050505 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-/* Phase indicator */
-.phase-indicator{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-.phase-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;
-  transition:background .4s}
-.phase-dot.active{background:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
-.phase-dot.done{background:var(--green)}
-.phase-dot.error{background:var(--red)}
-.phase-text{font-size:.8rem;font-weight:500;color:var(--text2);transition:color .3s}
-.phase-text.active{color:var(--text)}
+        svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
 
-/* State machine */
-.sm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.sm-node{padding:16px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);
-  text-align:center;transition:all .4s cubic-bezier(.4,0,.2,1);cursor:default;position:relative}
-.sm-node .name{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--text2);transition:color .3s}
-.sm-node .meta{font-size:.65rem;color:var(--text3);margin-top:2px}
-.sm-node.current{border-color:var(--blue);background:var(--blue-light)}
-.sm-node.current .name{color:var(--blue)}
-.sm-node.error{border-color:var(--red);background:var(--red-light)}
-.sm-node.error .name{color:var(--red)}
-.sm-node.success{border-color:var(--green);background:var(--green-light)}
-.sm-node.success .name{color:var(--green)}
-.sm-node.visited{border-color:var(--text3)}
-.sm-node.visited .name{color:var(--text2)}
+        .path-line {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 1.5;
+            stroke-dasharray: 4 4;
+            transition: stroke 0.3s;
+        }
+        .path-active {
+            stroke: var(--cyan);
+            stroke-dasharray: none;
+            filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));
+        }
+        .path-error {
+            stroke: var(--red);
+            stroke-dasharray: none;
+            filter: drop-shadow(0 0 8px rgba(255,69,58,0.4));
+        }
 
-/* Transition log */
-.log{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;
-  background:var(--surface2);padding:4px 0;font-family:var(--font-mono);font-size:.7rem}
-.log-entry{padding:4px 12px;display:flex;gap:8px;align-items:baseline;
-  opacity:0;transform:translateY(4px);transition:all .3s ease}
-.log-entry.visible{opacity:1;transform:none}
-.log-entry .ts{color:var(--text3);flex-shrink:0;font-size:.65rem}
-.log-entry .arrow{color:var(--text3)}
-.log-entry .state{font-weight:500}
-.log-entry .state.err{color:var(--red)}
+        /* Particles */
+        .particle {
+            fill: var(--cyan);
+            filter: drop-shadow(0 0 10px var(--cyan));
+            opacity: 0;
+        }
+        .particle.gold {
+            fill: var(--gold);
+            filter: drop-shadow(0 0 12px var(--gold));
+        }
+        .particle.red {
+            fill: var(--red);
+            filter: drop-shadow(0 0 10px var(--red));
+        }
 
-/* Controls */
-.controls{display:flex;gap:10px;margin-top:20px}
-.btn{height:36px;padding:0 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
-  color:var(--text);font-family:inherit;font-size:.8rem;font-weight:500;cursor:pointer;
-  transition:all .2s;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{border-color:var(--text3);background:var(--surface2)}
-.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn.primary:hover{background:#005ec4}
-.btn:disabled{opacity:.35;cursor:default;pointer-events:none}
+        /* Nodes */
+        .node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(20,20,20,0.8);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            backdrop-filter: blur(10px);
+            transform: translate(-50%, -50%);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+        
+        /* Node fluid effect overlay */
+        .node::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.5s;
+            z-index: -1;
+        }
 
-/* Dream report */
-.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-.metric{padding:16px;border-radius:10px;background:var(--surface2);text-align:center}
-.metric .val{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;color:var(--text)}
-.metric .key{font-size:.65rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--text3);margin-top:2px}
+        .node.active {
+            color: #fff;
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+        .node.active::before {
+            border-color: var(--cyan);
+            transform: scale(1.15);
+            opacity: 0.4;
+            filter: blur(4px);
+            animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
 
-/* Friction events */
-.friction-event{padding:14px 16px;border-radius:8px;border:1px solid var(--border);
-  margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;
-  opacity:0;transform:translateY(6px);transition:all .4s ease;background:var(--surface)}
-.friction-event.show{opacity:1;transform:none}
-.sev-dot{width:7px;height:7px;border-radius:50%;margin-top:7px;flex-shrink:0}
-.sev-dot.high{background:var(--red)}
-.sev-dot.medium{background:var(--orange)}
-.sev-dot.critical{background:var(--red);box-shadow:0 0 0 2px var(--red-light)}
-.friction-event .tag{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
-  color:var(--text2);margin-bottom:3px}
-.friction-event .diagnosis{font-size:.8rem;color:var(--text2);line-height:1.55}
+        .node.error {
+            color: #fff;
+            border-color: var(--red);
+            box-shadow: 0 0 20px rgba(255, 69, 58, 0.15);
+        }
+        .node.error::before {
+            border-color: var(--red);
+            transform: scale(1.15);
+            opacity: 0.5;
+            filter: blur(4px);
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
 
-/* Governance patches */
-.patch{padding:14px 16px;border-radius:8px;border:1px solid var(--border);
-  margin-bottom:8px;opacity:0;transform:translateY(6px);transition:all .4s ease;background:var(--surface)}
-.patch.show{opacity:1;transform:none}
-.patch-badge{display:inline-block;font-size:.6rem;font-weight:600;padding:2px 7px;
-  border-radius:4px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
-.patch-badge.rule{background:var(--purple-light);color:var(--purple)}
-.patch-badge.config{background:var(--blue-light);color:var(--blue)}
-.patch-badge.threshold{background:var(--orange-light);color:var(--orange)}
-.patch .target{font-family:var(--font-mono);font-size:.72rem;color:var(--text);margin-bottom:4px}
-.patch .rationale{font-size:.8rem;color:var(--text2);line-height:1.55}
+        .node.dreaming {
+            border-color: var(--gold);
+            color: var(--gold);
+            box-shadow: 0 0 30px rgba(255, 183, 77, 0.15);
+        }
+        .node.dreaming::before {
+            border-color: var(--gold);
+            transform: scale(1.2);
+            opacity: 0.6;
+            filter: blur(6px);
+            animation: pulse-ring 1.5s infinite;
+        }
 
-/* Memory */
-.mem-entry{padding:10px 14px;border-radius:8px;background:var(--surface2);
-  margin-bottom:6px;display:flex;gap:10px;align-items:center;font-size:.78rem;
-  border-left:3px solid var(--purple);opacity:0;transform:translateY(6px);transition:all .4s ease}
-.mem-entry.show{opacity:1;transform:none}
-.mem-entry .stamp{font-family:var(--font-mono);font-size:.65rem;color:var(--text3);flex-shrink:0}
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
 
-/* Progress */
-.progress{height:3px;background:var(--surface2);border-radius:2px;margin-bottom:24px;overflow:hidden}
-.progress-bar{height:100%;background:var(--blue);border-radius:2px;width:0;
-  transition:width .5s cubic-bezier(.4,0,.2,1)}
+        .node-val {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 2px;
+        }
 
-/* Install */
-.install{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;
-  background:var(--surface);border:1px solid var(--border);font-family:var(--font-mono);
-  font-size:.8rem;margin-top:24px;max-width:480px}
-.install code{flex:1;color:var(--text)}
-.install button{background:none;border:1px solid var(--border);padding:4px 10px;
-  border-radius:6px;font-size:.7rem;cursor:pointer;color:var(--text2);font-family:inherit}
-.install button:hover{border-color:var(--blue);color:var(--blue)}
+        /* Right Panel */
+        aside {
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow-y: auto;
+        }
 
-/* Sections hide */
-.hidden{display:none}
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header h2 {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+        
+        .controls button {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .controls button:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        .controls button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
 
-/* Footer */
-footer{text-align:center;padding:32px;font-size:.75rem;color:var(--text3);border-top:1px solid var(--border)}
-footer a{color:var(--text2);text-decoration:none}
-footer a:hover{color:var(--blue)}
+        /* Telemetry Log */
+        .log-section {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .section-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
 
-@media(max-width:640px){
-  .sm-grid{grid-template-columns:repeat(2,1fr)}
-  .metrics-row{grid-template-columns:repeat(2,1fr)}
-  nav{padding:0 16px}
-  .page{padding:32px 16px 64px}
-}
-</style>
+        .telemetry-feed {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tel-row {
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            animation: fade-in 0.3s forwards;
+        }
+        @keyframes fade-in { to { opacity: 1; } }
+        .tel-ts { color: #555; }
+        .tel-msg { color: #bbb; }
+        .tel-msg.highlight { color: var(--cyan); }
+        .tel-msg.warn { color: var(--gold); }
+        .tel-msg.error { color: var(--red); }
+
+        /* Dream Report */
+        .report-section {
+            padding: 24px;
+            background: rgba(255, 183, 77, 0.02);
+            border-top: 1px solid rgba(255, 183, 77, 0.1);
+            display: none;
+        }
+        .report-section.visible {
+            display: block;
+            animation: slide-up 0.5s ease;
+        }
+        @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .patch-item {
+            background: rgba(20,20,20,0.8);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+        .patch-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+        .patch-type { color: var(--gold); }
+        .patch-target { color: var(--text-dim); }
+        .patch-desc { color: #ccc; line-height: 1.4; }
+
+        /* Memory */
+        .memory-section {
+            padding: 24px;
+            display: none;
+        }
+        .memory-section.visible { display: block; }
+        .mem-file {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(50, 215, 75, 0.05);
+            border: 1px solid rgba(50, 215, 75, 0.2);
+            border-radius: 6px;
+        }
+
+    </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo">Antigravity OS <span>/</span> Pipeline Observatory</div>
-  <div class="links">
-    <a href="https://github.com/Manzela/Antigravity-OS">GitHub</a>
-    <a href="https://pypi.org/project/ag-os/">PyPI</a>
-    <a href="https://github.com/Manzela/Antigravity-OS/blob/main/README.md">Docs</a>
-  </div>
+    <h1>Pipeline Observatory</h1>
+    <p>Mechanistic Interpretability · v1.2.0</p>
 </nav>
 
-<main class="page">
-
-<!-- Header -->
-<section>
-  <p class="label">Interactive Visualization</p>
-  <h1>The Dreaming Module</h1>
-  <p class="subtitle">
-    A model-agnostic self-improvement loop. The Dream Engine scans execution telemetry
-    for friction patterns, synthesizes root-cause diagnoses, and proposes governance
-    patches — then persists everything as long-term memory. No LLM required.
-  </p>
-</section>
-
-<!-- State Machine -->
-<section>
-  <h2>State Machine</h2>
-  <div class="progress"><div class="progress-bar" id="pbar"></div></div>
-
-  <div class="phase-indicator" id="phases">
-    <div class="phase-dot" id="pd1"></div><span class="phase-text" id="pt1">Simulate</span>
-    <div class="phase-dot" id="pd2"></div><span class="phase-text" id="pt2">Scan</span>
-    <div class="phase-dot" id="pd3"></div><span class="phase-text" id="pt3">Synthesize</span>
-    <div class="phase-dot" id="pd4"></div><span class="phase-text" id="pt4">Persist</span>
-  </div>
-
-  <div class="card">
-    <div class="sm-grid" id="smGrid">
-      <div class="sm-node" data-state="idle"><div class="name">Idle</div><div class="meta">awaiting task</div></div>
-      <div class="sm-node" data-state="planning"><div class="name">Planning</div><div class="meta">analyzing scope</div></div>
-      <div class="sm-node" data-state="approved"><div class="name">Approved</div><div class="meta">plan accepted</div></div>
-      <div class="sm-node" data-state="building"><div class="name">Building</div><div class="meta">executing code</div></div>
-      <div class="sm-node" data-state="verifying"><div class="name">Verifying</div><div class="meta">running tests</div></div>
-      <div class="sm-node" data-state="rolledback"><div class="name">Rolled Back</div><div class="meta">tests failed</div></div>
-      <div class="sm-node" data-state="blocked"><div class="name">Blocked</div><div class="meta">terminal failure</div></div>
-      <div class="sm-node" data-state="complete"><div class="name">Complete</div><div class="meta">success</div></div>
-      <div class="sm-node" data-state="dreaming"><div class="name">Dreaming</div><div class="meta">self-improving</div></div>
+<main id="canvas-container">
+    <svg id="connections">
+        <!-- SVG paths will be generated by JS -->
+    </svg>
+    
+    <!-- Organic Nodes -->
+    <div class="node" id="node-idle" style="left: 20%; top: 50%;">
+        <div class="node-val">IDLE</div>
+        State
     </div>
-
-    <p class="label" style="margin-top:16px">Transition Log</p>
-    <div class="log" id="log"></div>
-
-    <div class="controls">
-      <button class="btn primary" id="startBtn" onclick="run()">Start dream cycle</button>
-      <button class="btn" id="resetBtn" onclick="reset()" disabled>Reset</button>
+    <div class="node" id="node-planning" style="left: 40%; top: 30%;">
+        <div class="node-val">PLAN</div>
+        State
     </div>
-  </div>
-</section>
-
-<!-- Dream Report -->
-<section id="reportSection" class="hidden">
-  <h2>Dream Report</h2>
-  <div class="metrics-row" id="metricsRow">
-    <div class="metric"><div class="val" id="mOps">—</div><div class="key">Operations</div></div>
-    <div class="metric"><div class="val" id="mFriction">—</div><div class="key">Friction Events</div></div>
-    <div class="metric"><div class="val" id="mPatches">—</div><div class="key">Patches</div></div>
-    <div class="metric"><div class="val" id="mSeverity">—</div><div class="key">Max Severity</div></div>
-  </div>
-
-  <div class="card" style="margin-bottom:16px">
-    <p class="label">Detected Friction</p>
-    <div id="frictionList"></div>
-  </div>
-
-  <div class="card">
-    <p class="label">Proposed Governance Patches</p>
-    <div id="patchList"></div>
-  </div>
-</section>
-
-<!-- Memory -->
-<section id="memorySection" class="hidden">
-  <h2>Long-Term Memory</h2>
-  <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">
-    Reports persist as YAML to <code style="font-family:var(--font-mono);font-size:.78rem;color:var(--blue)">~/.antigravity/dreams/</code>. 
-    Any agent can recall with <code style="font-family:var(--font-mono);font-size:.78rem;color:var(--blue)">ag-os dream --recall</code>.
-  </p>
-  <div id="memList"></div>
-
-  <div class="install">
-    <code>pip install ag-os && ag-os demo --dream</code>
-    <button onclick="navigator.clipboard.writeText('pip install ag-os && ag-os demo --dream');this.textContent='Copied'">Copy</button>
-  </div>
-</section>
-
+    <div class="node" id="node-building" style="left: 60%; top: 30%;">
+        <div class="node-val">ACT</div>
+        State
+    </div>
+    <div class="node" id="node-verifying" style="left: 80%; top: 50%;">
+        <div class="node-val">EVAL</div>
+        State
+    </div>
+    <div class="node" id="node-rolledback" style="left: 60%; top: 70%;">
+        <div class="node-val">FAIL</div>
+        State
+    </div>
+    <div class="node" id="node-blocked" style="left: 80%; top: 70%;">
+        <div class="node-val">HALT</div>
+        State
+    </div>
+    
+    <!-- The Dream Engine (RLHF / Improvement Layer) -->
+    <div class="node" id="node-dream" style="left: 50%; top: 90%; width: 100px; height: 100px;">
+        <div class="node-val" style="color:var(--gold)">DREAM</div>
+        Engine
+    </div>
 </main>
 
-<footer>
-  <a href="https://github.com/Manzela/Antigravity-OS">Antigravity OS</a> · v1.2.0 · MIT License
-</footer>
+<aside>
+    <div class="panel-header">
+        <h2>Telemetry</h2>
+        <div class="controls">
+            <button id="btn-run" onclick="runSimulation()">Initialize Loop</button>
+        </div>
+    </div>
+
+    <div class="log-section">
+        <div class="section-title">Execution Trace</div>
+        <div class="telemetry-feed" id="telemetry">
+            <!-- Logs go here -->
+            <div class="tel-row"><span class="tel-ts">00:00:00.000</span><span class="tel-msg">System initialized. Awaiting input.</span></div>
+        </div>
+    </div>
+
+    <div class="report-section" id="report-section">
+        <div class="section-title" style="color:var(--gold)">Synthesized Governance Patches</div>
+        <div id="patch-container"></div>
+    </div>
+
+    <div class="memory-section" id="memory-section">
+        <div class="section-title">Long-Term Memory</div>
+        <div class="mem-file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            ~/.antigravity/dreams/patch-001.yaml
+        </div>
+    </div>
+</aside>
 
 <script>
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-let running = false;
+// Graph positions
+const nodes = {
+    idle: { x: 20, y: 50 },
+    planning: { x: 40, y: 30 },
+    building: { x: 60, y: 30 },
+    verifying: { x: 80, y: 50 },
+    rolledback: { x: 60, y: 70 },
+    blocked: { x: 80, y: 70 },
+    dream: { x: 50, y: 90 }
+};
 
-const FRICTION = [
-  {type:'Loop Detected',sev:'high',desc:'Agent executed 20 state transitions — exceeding the threshold of 10. It was stuck retrying the same failing approach.'},
-  {type:'Rollback Cycle',sev:'high',desc:'Agent rolled back 3 times. Repeated rollbacks indicate a systemic integration failure that retry alone cannot fix.'},
-  {type:'Blocked Terminal',sev:'medium',desc:'Agent terminated in BLOCKED state. No further transitions possible without human intervention.'},
-  {type:'Excessive Transitions',sev:'medium',desc:'20 transitions accumulated without reaching COMPLETE. The operation was abandoned mid-execution.'}
-];
-const PATCHES = [
-  {badge:'threshold',label:'Threshold',target:'antigravity.yaml → max_loop_count',desc:'Reduce from 5 → 3. Earlier circuit-breaking prevents compute waste during retry loops.'},
-  {badge:'rule',label:'New Rule',target:'.agent/rules/09-rollback-breaker.md',desc:'After 2 rollbacks on the same operation, halt and escalate to human review before retrying.'},
-  {badge:'config',label:'Config',target:'.agent/rules/10-blocked-escalation.md',desc:'Auto-create a governance issue when an operation enters BLOCKED state with no exit path.'}
-];
+// SVG Drawing
+const svg = document.getElementById('connections');
+let paths = {};
 
-function setNode(state, cls) {
-  const n = document.querySelector(`[data-state="${state}"]`);
-  if (n) { n.className = 'sm-node ' + cls; }
-}
-function clearNodes() {
-  document.querySelectorAll('.sm-node').forEach(n => n.className = 'sm-node');
-}
-function addLog(from, to, isErr) {
-  const log = document.getElementById('log');
-  const t = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const e = document.createElement('div');
-  e.className = 'log-entry';
-  e.innerHTML = `<span class="ts">${t}</span><span class="arrow">→</span><span class="state${isErr?' err':''}">${to}</span>`;
-  log.appendChild(e);
-  requestAnimationFrame(() => { e.classList.add('visible'); log.scrollTop = log.scrollHeight; });
-}
-function setPhase(n, cls) {
-  document.getElementById('pd'+n).className = 'phase-dot ' + cls;
-  document.getElementById('pt'+n).className = 'phase-text ' + (cls==='active'?'active':'');
-}
-function setProg(p) { document.getElementById('pbar').style.width = p+'%'; }
-
-async function transition(from, to, ms=400, err=false) {
-  if (from) setNode(from, 'visited');
-  setNode(to, err ? 'error' : 'current');
-  addLog(from||'—', to, err);
-  await sleep(ms);
+function createPath(id, from, to) {
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    // Curved path
+    const d = `M ${from.x} ${from.y} C ${(from.x+to.x)/2} ${from.y}, ${(from.x+to.x)/2} ${to.y}, ${to.x} ${to.y}`;
+    p.setAttribute('d', d);
+    p.setAttribute('class', 'path-line');
+    p.setAttribute('id', 'path-' + id);
+    svg.appendChild(p);
+    paths[id] = p;
 }
 
-async function run() {
-  if (running) return;
-  running = true;
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('resetBtn').disabled = true;
-  document.getElementById('reportSection').classList.add('hidden');
-  document.getElementById('memorySection').classList.add('hidden');
-  document.getElementById('log').innerHTML = '';
-  clearNodes();
-
-  // Phase 1: Simulate failing agent
-  setPhase(1,'active');
-  setProg(5);
-
-  for (let c = 0; c < 3; c++) {
-    setProg(5 + c*15);
-    await transition(null,'idle',200);
-    await transition('idle','planning',350);
-    await transition('planning','approved',300);
-    await transition('approved','building',350);
-    await transition('building','verifying',350);
-    await transition('verifying','rolledback',400,true);
-    await sleep(200);
-  }
-  setProg(50);
-  await transition('rolledback','planning',300);
-  await transition('planning','approved',250);
-  await transition('approved','building',300);
-  await transition('building','blocked',500,true);
-  await sleep(400);
-
-  setPhase(1,'done');
-
-  // Phase 2: Scan
-  setPhase(2,'active');
-  setProg(60);
-  setNode('blocked','visited');
-  setNode('dreaming','current');
-  addLog('blocked','DREAMING (scan)',false);
-  await sleep(800);
-  setPhase(2,'done');
-
-  // Phase 3: Synthesize
-  setPhase(3,'active');
-  setProg(75);
-
-  document.getElementById('reportSection').classList.remove('hidden');
-  await sleep(200);
-  document.getElementById('mOps').textContent = '1';
-  await sleep(150);
-  document.getElementById('mFriction').textContent = '4';
-  await sleep(150);
-  document.getElementById('mPatches').textContent = '3';
-  await sleep(150);
-  document.getElementById('mSeverity').textContent = 'HIGH';
-  setProg(82);
-
-  const fl = document.getElementById('frictionList');
-  fl.innerHTML = '';
-  for (const f of FRICTION) {
-    const d = document.createElement('div');
-    d.className = 'friction-event';
-    d.innerHTML = `<div class="sev-dot ${f.sev}"></div><div><div class="tag">${f.type}</div><div class="diagnosis">${f.desc}</div></div>`;
-    fl.appendChild(d);
-    await sleep(180);
-    d.classList.add('show');
-  }
-  setProg(88);
-
-  const pl = document.getElementById('patchList');
-  pl.innerHTML = '';
-  for (const p of PATCHES) {
-    const d = document.createElement('div');
-    d.className = 'patch';
-    d.innerHTML = `<span class="patch-badge ${p.badge}">${p.label}</span><div class="target">${p.target}</div><div class="rationale">${p.desc}</div>`;
-    pl.appendChild(d);
-    await sleep(220);
-    d.classList.add('show');
-  }
-
-  setPhase(3,'done');
-  setProg(94);
-
-  // Phase 4: Persist
-  setPhase(4,'active');
-  document.getElementById('memorySection').classList.remove('hidden');
-  const ml = document.getElementById('memList');
-  ml.innerHTML = '';
-  const mems = [
-    'Dream Report synthesized → 4 friction events, 3 governance patches',
-    'Persisted to ~/.antigravity/dreams/dream-20260507-203914.yaml',
-    'Long-term memory updated — retrievable via ag-os dream --recall'
-  ];
-  const now = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  for (const m of mems) {
-    const d = document.createElement('div');
-    d.className = 'mem-entry';
-    d.innerHTML = `<span class="stamp">${now}</span><span>${m}</span>`;
-    ml.appendChild(d);
-    await sleep(250);
-    d.classList.add('show');
-  }
-
-  setProg(100);
-  setPhase(4,'done');
-  setNode('dreaming','success');
-  addLog('DREAMING','COMPLETE (self-improved)',false);
-
-  document.getElementById('resetBtn').disabled = false;
-  running = false;
+function updatePaths() {
+    svg.innerHTML = '';
+    const w = window.innerWidth - 400; // subtract aside width
+    const h = window.innerHeight;
+    
+    // Helper to get absolute coords
+    const getCoords = (n) => ({ x: (nodes[n].x / 100) * w, y: (nodes[n].y / 100) * h });
+    
+    createPath('idle-plan', getCoords('idle'), getCoords('planning'));
+    createPath('plan-act', getCoords('planning'), getCoords('building'));
+    createPath('act-eval', getCoords('building'), getCoords('verifying'));
+    createPath('eval-fail', getCoords('verifying'), getCoords('rolledback'));
+    createPath('fail-plan', getCoords('rolledback'), getCoords('planning'));
+    createPath('act-halt', getCoords('building'), getCoords('blocked'));
+    createPath('fail-dream', getCoords('rolledback'), getCoords('dream'));
+    createPath('halt-dream', getCoords('blocked'), getCoords('dream'));
+    createPath('dream-all', getCoords('dream'), {x: w/2, y: h/2}); // A glow path back to center
 }
 
-function reset() {
-  running = false;
-  clearNodes();
-  document.getElementById('log').innerHTML = '';
-  document.getElementById('reportSection').classList.add('hidden');
-  document.getElementById('memorySection').classList.add('hidden');
-  [1,2,3,4].forEach(i => setPhase(i,''));
-  setProg(0);
-  document.getElementById('startBtn').disabled = false;
-  document.getElementById('resetBtn').disabled = true;
-  ['mOps','mFriction','mPatches','mSeverity'].forEach(id => document.getElementById(id).textContent = '—');
+window.addEventListener('resize', updatePaths);
+updatePaths();
+
+// Utilities
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+function log(msg, type='normal') {
+    const feed = document.getElementById('telemetry');
+    const now = new Date();
+    const ts = now.toISOString().substring(11, 23);
+    const div = document.createElement('div');
+    div.className = 'tel-row';
+    div.innerHTML = `<span class="tel-ts">${ts}</span><span class="tel-msg ${type}">${msg}</span>`;
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+}
+
+function setNodeState(id, state) {
+    const el = document.getElementById('node-' + id);
+    el.className = 'node ' + state;
+}
+
+function setPathState(id, state) {
+    const el = document.getElementById('path-' + id);
+    if(el) el.className = `path-line ${state}`;
+}
+
+async function emitParticle(pathId, colorClass) {
+    const path = document.getElementById('path-' + pathId);
+    if (!path) return;
+    
+    const len = path.getTotalLength();
+    const pt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    pt.setAttribute('r', '4');
+    pt.setAttribute('class', `particle ${colorClass}`);
+    svg.appendChild(pt);
+    
+    pt.animate([
+        { offsetDistance: '0%', opacity: 1 },
+        { offsetDistance: '100%', opacity: 1 }
+    ], {
+        duration: 600,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards'
+    });
+    
+    // We have to use a polyfill approach for animating along path in basic SVG without external libs,
+    // actually CSS motion-path is better but SVG animateMotion is perfectly standard.
+    pt.innerHTML = `<animateMotion dur="0.6s" repeatCount="1" fill="freeze"><mpath href="#path-${pathId}"/></animateMotion>`;
+    pt.style.opacity = 1;
+    
+    await sleep(600);
+    pt.style.opacity = 0;
+    setTimeout(() => pt.remove(), 300);
+}
+
+// Simulation Sequence
+let isRunning = false;
+
+async function runSimulation() {
+    if (isRunning) return;
+    isRunning = true;
+    document.getElementById('btn-run').disabled = true;
+    
+    // Reset UI
+    document.querySelectorAll('.node').forEach(n => n.className = 'node');
+    document.querySelectorAll('.path-line').forEach(p => p.className = 'path-line');
+    document.getElementById('telemetry').innerHTML = '';
+    document.getElementById('report-section').classList.remove('visible');
+    document.getElementById('memory-section').classList.remove('visible');
+    
+    log('System initialized. Beginning execution trace.', 'highlight');
+    await sleep(500);
+
+    // The Failing Loop
+    for (let i = 1; i <= 3; i++) {
+        log(`[Cycle ${i}] Operation dispatched.`, 'highlight');
+        
+        setNodeState('idle', 'active');
+        await emitParticle('idle-plan', 'cyan');
+        setNodeState('idle', '');
+        
+        setPathState('idle-plan', 'path-active');
+        setNodeState('planning', 'active');
+        log(`[Cycle ${i}] Planning context window loaded.`);
+        await sleep(300);
+        
+        await emitParticle('plan-act', 'cyan');
+        setPathState('idle-plan', '');
+        setPathState('plan-act', 'path-active');
+        setNodeState('planning', '');
+        setNodeState('building', 'active');
+        log(`[Cycle ${i}] Executing generated tool calls.`);
+        await sleep(400);
+        
+        await emitParticle('act-eval', 'cyan');
+        setPathState('plan-act', '');
+        setPathState('act-eval', 'path-active');
+        setNodeState('building', '');
+        setNodeState('verifying', 'active');
+        log(`[Cycle ${i}] Evaluating output variance.`);
+        await sleep(400);
+        
+        // Failure
+        log(`[Cycle ${i}] Evaluation failed: context threshold exceeded.`, 'error');
+        setNodeState('verifying', 'error');
+        await emitParticle('eval-fail', 'red');
+        setPathState('act-eval', '');
+        setPathState('eval-fail', 'path-error');
+        setNodeState('verifying', '');
+        setNodeState('rolledback', 'error');
+        await sleep(500);
+        
+        // Loop back
+        await emitParticle('fail-plan', 'red');
+        setPathState('eval-fail', '');
+        setPathState('fail-plan', 'path-error');
+        setNodeState('rolledback', '');
+        await sleep(200);
+        setPathState('fail-plan', '');
+    }
+    
+    // Terminal Block
+    log(`[Cycle 4] Heuristic loop breaker triggered.`, 'warn');
+    setNodeState('planning', 'active');
+    await sleep(300);
+    await emitParticle('plan-act', 'cyan');
+    setNodeState('planning', '');
+    setNodeState('building', 'error');
+    log(`[Cycle 4] Agent halted.`, 'error');
+    await emitParticle('act-halt', 'red');
+    setNodeState('building', '');
+    setNodeState('blocked', 'error');
+    log(`[Cycle 4] Terminal state reached.`, 'error');
+    await sleep(1000);
+
+    // Trigger Dream Sequence
+    log('--- INITIATING SELF-IMPROVEMENT LOOP ---', 'warn');
+    setPathState('halt-dream', 'path-error');
+    await emitParticle('halt-dream', 'red');
+    setPathState('halt-dream', '');
+    
+    setNodeState('blocked', '');
+    setNodeState('dream', 'dreaming');
+    log('Dream Engine engaged. Scanning SQLite telemetry traces.', 'highlight');
+    await sleep(800);
+    
+    log('Friction detected: [ROLLBACK_CYCLE x3], [EXCESSIVE_TRANSITIONS x12], [BLOCKED]', 'error');
+    await sleep(600);
+    
+    log('Synthesizing governance patches using constitutional heuristics.', 'highlight');
+    
+    // Organic Pulse effect: nodes shifting slightly
+    document.querySelectorAll('.node:not(#node-dream)').forEach(n => {
+        n.style.boxShadow = '0 0 20px rgba(255,183,77,0.3)';
+        n.style.borderColor = 'rgba(255,183,77,0.5)';
+    });
+    
+    await sleep(1000);
+    
+    // Show Report
+    document.getElementById('report-section').classList.add('visible');
+    const pc = document.getElementById('patch-container');
+    pc.innerHTML = `
+        <div class="patch-item" style="animation: fade-in 0.3s forwards">
+            <div class="patch-header">
+                <span class="patch-type">[THRESHOLD]</span>
+                <span class="patch-target">antigravity.yaml</span>
+            </div>
+            <div class="patch-desc">Reduce max_loop_count from 5 to 3 to prevent compute exhaustion.</div>
+        </div>
+        <div class="patch-item" style="animation: fade-in 0.3s forwards; animation-delay: 0.2s; opacity:0">
+            <div class="patch-header">
+                <span class="patch-type">[RULE]</span>
+                <span class="patch-target">rules/09-circuit-breaker.md</span>
+            </div>
+            <div class="patch-desc">Halt execution after 2 identical rollbacks and request human intervention.</div>
+        </div>
+    `;
+    
+    log('Patches synthesized successfully. System rules updated.', 'highlight');
+    await sleep(800);
+    
+    // Memory
+    document.getElementById('memory-section').classList.add('visible');
+    log('Long-term memory consolidated.', 'highlight');
+    setNodeState('dream', '');
+    document.querySelectorAll('.node').forEach(n => {
+        n.style.boxShadow = '';
+        n.style.borderColor = '';
+    });
+    
+    document.getElementById('btn-run').disabled = false;
+    document.getElementById('btn-run').innerText = 'Restart Simulation';
+    isRunning = false;
 }
 </script>
 </body>
