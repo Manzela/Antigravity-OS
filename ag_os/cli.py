@@ -235,7 +235,10 @@ def _run_dream_demo(config: dict, recorder):
     # Simulate: agent loops through PLANNING → BUILDING → VERIFYING → ROLLED_BACK
     # multiple times, demonstrating excessive transitions and rollback cycles.
     for cycle in range(3):
-        recorder.transition(op_id, "PLANNING")
+        if cycle == 0:
+            # First cycle starts from IDLE → PLANNING
+            recorder.transition(op_id, "PLANNING")
+        # else: we are already in PLANNING from the ROLLED_BACK → PLANNING at end of prev cycle
         recorder.transition(op_id, "PLAN_APPROVED")
         recorder.transition(op_id, "BUILDING", metadata={"attempt": cycle + 1})
         recorder.transition(op_id, "VERIFYING")
@@ -246,7 +249,7 @@ def _run_dream_demo(config: dict, recorder):
         )
         recorder.transition(op_id, "PLANNING")  # Retry from ROLLED_BACK
 
-    # Final attempt ends in BLOCKED
+    # Final attempt ends in BLOCKED (already in PLANNING from last cycle)
     recorder.transition(op_id, "PLAN_APPROVED")
     recorder.transition(op_id, "BUILDING", metadata={"attempt": 4, "desperate": True})
     recorder.transition(
