@@ -1,0 +1,216 @@
+<p align="center">
+  <h1 align="center">Antigravity OS</h1>
+  <p align="center">The governance kernel for AI agents.</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Manzela/Antigravity-OS/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Manzela/Antigravity-OS" alt="License" /></a>
+  <a href="https://pypi.org/project/ag-os/"><img src="https://img.shields.io/pypi/v/ag-os" alt="PyPI" /></a>
+  <a href="https://pypi.org/project/ag-os/"><img src="https://img.shields.io/pypi/pyversions/ag-os" alt="Python" /></a>
+</p>
+
+---
+
+## The Problem
+
+AI agents can write code. But who stops them from:
+
+- Burning $10,000 on GPU instances overnight?
+- Deploying broken code to production without a plan?
+- Looping forever on a failed task?
+
+## The Solution
+
+```bash
+pip install ag-os && ag-os init && ag-os demo
+```
+
+Antigravity OS is an **integrated, opinionated governance kernel** that combines:
+
+- **Cost Enforcement** -- Block execution when projected spend exceeds budget.
+- **Policy-as-Code** -- 9 governance rules ("The Constitution") enforced at every state transition.
+- **Deterministic State Tracking** -- Flight Recorder state machine with full audit trail.
+- **Self-Healing CI** -- Pre-push hooks and CI gates that prevent broken deployments.
+
+All provider-agnostic. All in one install. No cloud accounts required.
+
+---
+
+## Quick Start
+
+```bash
+# Install
+pip install ag-os
+
+# Initialize (creates antigravity.yaml, Constitution rules, git hooks)
+ag-os init --defaults
+
+# See it in action (60-second governance demo)
+ag-os demo
+
+# Check solvency before allocating resources
+ag-os check 1.0 --tier standard_cpu
+
+# View configured providers
+ag-os status
+```
+
+---
+
+## How It Works
+
+Antigravity OS operates through **6 provider surfaces**, each with a
+swappable backend:
+
+| Surface | Default | What It Does |
+|:---|:---|:---|
+| **Secrets** | `.env` file | Hydrate credentials at runtime |
+| **Issues** | Console + JSONL | Create and deduplicate governance issues |
+| **Cost** | Local JSON | Track spend, enforce budget caps |
+| **State** | SQLite | Persist flight recorder state and leases |
+| **Telemetry** | Console | Emit traces and metrics |
+| **Policy** | Built-in | Evaluate governance rules (The Constitution) |
+
+### Zero-Dependency Defaults
+
+The default stack requires **nothing but Python**. No Docker, no cloud
+accounts, no API tokens. Value in 60 seconds.
+
+### Upgrade When Ready
+
+```bash
+pip install ag-os[gcp]     # GCP Secret Manager, Billing API, Cloud Trace
+pip install ag-os[aws]     # AWS Secrets Manager, Cost Explorer
+pip install ag-os[jira]    # Jira issue tracking
+pip install ag-os[redis]   # Redis state store
+```
+
+---
+
+## The Constitution
+
+Antigravity OS enforces 9 governance rules, installed as Markdown files
+in `.agent/rules/`:
+
+| Rule | Name | What It Enforces |
+|:---|:---|:---|
+| 00 | Plan First | No code changes without an approved plan |
+| 01 | Data Contracts | All data exchange uses explicit, validated contracts |
+| 02 | Fail Closed | Unknown states halt execution and escalate |
+| 03 | Zero Trust Dependencies | All external inputs/outputs are validated |
+| 04 | Governance Gate | All state transitions pass through the gate |
+| 05 | Flight Recorder | Every operation is tracked through the state machine |
+| 06 | Agent Handover | Structured handover contracts for agent transfers |
+| 07 | Loop Detection | Max retry loops enforced with human escalation |
+| 08 | Economic Safety | The Solvency Gate -- block if over budget |
+
+---
+
+## Configuration
+
+All settings live in `antigravity.yaml`:
+
+```yaml
+version: "1.0"
+
+monthly_cap: 50.00
+max_loop_count: 5
+
+providers:
+  secrets: local         # local | env | gcp | aws | vault
+  issues: console        # console | github | linear | jira
+  cost: local            # local | gcp | aws | azure | litellm
+  state: sqlite          # sqlite | redis | file
+  telemetry: console     # console | file | otlp | gcp | datadog
+  policy: builtin        # builtin | opa | cedar
+
+ci:
+  platform: local        # local | github | gitlab | bitbucket
+  self_healing: true
+```
+
+Environment variable overrides (highest precedence):
+
+```bash
+export AG_OS_MONTHLY_CAP=100.00
+export AG_OS_MAX_LOOPS=10
+```
+
+---
+
+## Writing a Custom Provider
+
+Every provider is a Python class with a `@register` decorator:
+
+```python
+from ag_os.providers.registry import register
+from ag_os.providers.cost import CostProvider
+
+@register("cost", "my_cloud")
+class MyCloudCostProvider(CostProvider):
+    def get_current_spend(self) -> float:
+        return self._client.get_month_to_date()
+
+    def get_tier_rate(self, tier: str) -> float:
+        return self._rates[tier]
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full provider development guide.
+
+---
+
+## Project Structure
+
+```
+ag-os/
+├── ag_os/
+│   ├── cli.py                  # ag-os CLI (init, check, demo, status)
+│   ├── config.py               # antigravity.yaml loader
+│   ├── core/
+│   │   ├── cost_guard.py       # Solvency logic (Rule 08)
+│   │   ├── flight_recorder.py  # State machine (Rule 05)
+│   │   └── rules_engine.py     # Policy evaluator
+│   └── providers/
+│       ├── registry.py         # @register + get_provider()
+│       ├── secrets/            # SecretsProvider ABC + local, env
+│       ├── issues/             # IssueProvider ABC + console
+│       ├── cost/               # CostProvider ABC + local
+│       ├── state/              # StateProvider ABC + sqlite
+│       ├── telemetry/          # TelemetryProvider ABC + console
+│       └── policy/             # PolicyProvider ABC + builtin
+├── antigravity.yaml
+├── pyproject.toml
+├── LICENSE
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CHANGELOG.md
+└── ROADMAP.md
+```
+
+---
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Key areas where help is needed:
+
+- New providers (AWS, GCP, Linear, Datadog, OPA)
+- CI template generators (GitLab, Bitbucket)
+- Documentation and tutorials
+- Unit tests
+
+---
+
+## License
+
+[MIT](LICENSE) -- Daniel Manzela, 2026.
+
+---
+
+## Links
+
+- [Changelog](CHANGELOG.md)
+- [Roadmap](ROADMAP.md)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)

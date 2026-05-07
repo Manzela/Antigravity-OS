@@ -1,0 +1,59 @@
+name: New Provider
+description: Propose or submit a new provider implementation.
+labels: ["provider", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a new provider for one of the
+        6 integration surfaces.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Integration Surface
+      description: Which surface does this provider target?
+      options:
+        - Secrets
+        - Issues
+        - Cost
+        - State
+        - Telemetry
+        - Policy
+    validations:
+      required: true
+
+  - type: input
+    id: provider-name
+    attributes:
+      label: Provider Name
+      description: The registration name (e.g., "gcp", "datadog", "linear").
+      placeholder: "my_provider"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What backend does this provider integrate with? What value does it add?
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What Python packages does this provider require?
+      placeholder: |
+        - google-cloud-secret-manager >= 2.0
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      options:
+        - label: I have read the [Contributing Guide](../../CONTRIBUTING.md)
+        - label: I have implemented all abstract methods from the ABC
+        - label: I have added the `@register()` decorator
+        - label: I have added unit tests

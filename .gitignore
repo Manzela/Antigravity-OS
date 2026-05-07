@@ -1,0 +1,46 @@
+# Antigravity OS -- .gitignore
+
+# === Secrets and credentials ===
+.env
+.env.*
+!.env.template
+.agent/gcp_sa_key.json
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Virtual environments ===
+.venv/
+venv/
+env/
+
+# === IDE and editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Testing and coverage ===
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# === Build artifacts ===
+*.log
+artifacts/
+
+# === Antigravity OS runtime ===
+# State database is user-specific, not committed
+# ~/.antigravity/ is in home dir, not in repo

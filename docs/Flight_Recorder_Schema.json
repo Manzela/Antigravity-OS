@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flight Recorder Entry",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "operation",
+    "state",
+    "timestamp"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string"
+    },
+    "operation": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "IDLE",
+        "PLANNING",
+        "PLAN_APPROVED",
+        "BUILDING",
+        "VERIFYING",
+        "COMPLETE",
+        "BLOCKED",
+        "ROLLED_BACK"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "previous_state": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "error": {
+      "type": "string"
+    }
+  }
+}

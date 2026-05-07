@@ -1,0 +1,13 @@
+version: '1.0'
+monthly_cap: 50.0
+max_loop_count: 5
+providers:
+  secrets: local
+  issues: console
+  cost: local
+  state: sqlite
+  telemetry: console
+  policy: builtin
+ci:
+  platform: local
+  self_healing: true
