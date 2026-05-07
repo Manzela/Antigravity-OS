@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ag-os"
-version = "1.0.0"
+version = "1.1.0"
 description = "The governance kernel for AI agents. Cost enforcement, policy-as-code, self-healing CI."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "Daniel Manzela" },
@@ -57,12 +57,13 @@ linear = []
 redis = ["redis>=5.0"]
 datadog = ["ddtrace>=2.0"]
 cedar = []
+mcp = ["mcp[cli]>=1.0"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.4",
 ]
-all = ["ag-os[gcp,aws,jira,redis]"]
+all = ["ag-os[gcp,aws,jira,redis,mcp]"]
 
 [project.urls]
 Homepage = "https://github.com/Manzela/Antigravity-OS"

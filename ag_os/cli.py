@@ -234,6 +234,27 @@ def status():
 
 
 # ──────────────────────────────────────────────────────────────
+# ag-os serve
+# ──────────────────────────────────────────────────────────────
+
+
+@main.command()
+def serve():
+    """Start the MCP server for AI agent integration."""
+    try:
+        from ag_os.mcp.server import run_server
+    except ImportError:
+        print()
+        print("  [ERROR] MCP dependencies not installed.")
+        print("  Run: pip install ag-os[mcp]")
+        print()
+        sys.exit(1)
+
+    print("  [OK] Starting Antigravity OS MCP Server (stdio)...", file=sys.stderr)
+    run_server()
+
+
+# ──────────────────────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────────────────────
 

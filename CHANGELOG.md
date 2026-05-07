@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-05-07
+
+### Added
+
+- MCP Server (`ag-os serve`) exposing 5 governance tools for AI agent integration.
+  - `check_solvency` -- Budget cap verification.
+  - `transition_state` -- Flight Recorder state machine control.
+  - `evaluate_policy` -- Governance rule evaluation.
+  - `get_status` -- Configuration and provider overview.
+  - `get_history` -- Audit trail retrieval.
+- Optional dependency group: `pip install ag-os[mcp]`.
+- PyPI Trusted Publisher workflow (`.github/workflows/publish.yml`).
+- CI status badge in README.
+- PEP 639 compliant license declaration.
+
+---
+
 ## [1.0.0] - 2026-05-07
 
 ### Added

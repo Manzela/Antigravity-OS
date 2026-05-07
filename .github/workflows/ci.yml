@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,mcp]"
 
       - name: Lint
         run: |
@@ -41,3 +41,4 @@ jobs:
           ag-os check 1.0 --tier standard_cpu
           ag-os demo
           ag-os status
+          ag-os serve --help

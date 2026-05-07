@@ -4,6 +4,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Manzela/Antigravity-OS/actions/workflows/ci.yml"><img src="https://github.com/Manzela/Antigravity-OS/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/Manzela/Antigravity-OS/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Manzela/Antigravity-OS" alt="License" /></a>
   <a href="https://pypi.org/project/ag-os/"><img src="https://img.shields.io/pypi/v/ag-os" alt="PyPI" /></a>
   <a href="https://pypi.org/project/ag-os/"><img src="https://img.shields.io/pypi/pyversions/ag-os" alt="Python" /></a>
@@ -79,10 +80,48 @@ accounts, no API tokens. Value in 60 seconds.
 ### Upgrade When Ready
 
 ```bash
+pip install ag-os[mcp]     # MCP Server for AI agent integration
 pip install ag-os[gcp]     # GCP Secret Manager, Billing API, Cloud Trace
 pip install ag-os[aws]     # AWS Secrets Manager, Cost Explorer
 pip install ag-os[jira]    # Jira issue tracking
 pip install ag-os[redis]   # Redis state store
+```
+
+---
+
+## MCP Server
+
+Antigravity OS includes a built-in [MCP](https://modelcontextprotocol.io) server
+that exposes governance tools to any MCP-compatible AI agent:
+
+```bash
+pip install ag-os[mcp]
+ag-os serve
+```
+
+### Available Tools
+
+| Tool | What It Does |
+|:---|:---|
+| `check_solvency` | Run the Cost Guard against the budget cap |
+| `transition_state` | Advance the Flight Recorder state machine |
+| `evaluate_policy` | Execute governance rules against operation context |
+| `get_status` | Return current configuration and providers |
+| `get_history` | Retrieve the Flight Recorder audit trail |
+
+### Client Configuration
+
+Add to your MCP client configuration (e.g. Claude Desktop, Cursor):
+
+```json
+{
+  "mcpServers": {
+    "antigravity-os": {
+      "command": "ag-os",
+      "args": ["serve"]
+    }
+  }
+}
 ```
 
 ---

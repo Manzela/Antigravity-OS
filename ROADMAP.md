@@ -21,7 +21,7 @@ Priorities may shift based on community feedback.
 ## V1.1 -- Community and Ecosystem
 
 - [ ] Dreaming Module: Background worker that analyzes friction logs and auto-proposes new governance rules via PR
-- [ ] MCP Server: Expose Cost Guard and Flight Recorder as MCP tools
+- [x] MCP Server: Expose Cost Guard and Flight Recorder as MCP tools
 - [ ] A2A Handover Protocol: Formalized agent handover contracts
 - [ ] GitHub Issues provider (REST API, auto-token in Actions)
 - [ ] File-based telemetry provider (JSONL output)
