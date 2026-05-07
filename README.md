@@ -70,7 +70,7 @@ swappable backend:
 
 | Surface | Default | What It Does |
 |:---|:---|:---|
-| **Secrets** | `.env` file | Hydrate credentials at runtime |
+| **Secrets** | OS Keychain | Securely store and retrieve credentials |
 | **Issues** | Console + JSONL | Create and deduplicate governance issues |
 | **Cost** | Local JSON | Track spend, enforce budget caps |
 | **State** | SQLite | Persist flight recorder state and leases |
@@ -247,8 +247,10 @@ ag-os/
 ├── ag_os/
 │   ├── cli.py                  # ag-os CLI (init, check, demo, status)
 │   ├── config.py               # antigravity.yaml loader
+│   ├── interactive.py           # Interactive shell (FTUX, /commands)
 │   ├── core/
 │   │   ├── cost_guard.py       # Solvency logic (Rule 08)
+│   │   ├── credentials.py      # OS Keychain credential manager
 │   │   ├── dreaming.py         # Dreaming Module (self-improvement)
 │   │   ├── flight_recorder.py  # State machine (Rule 05)
 │   │   └── rules_engine.py     # Policy evaluator

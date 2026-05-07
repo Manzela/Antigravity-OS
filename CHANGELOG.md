@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-05-08
+
+### Added
+
+- **Secure Credential Manager** — OS Keychain-backed secret storage via `keyring`.
+  - macOS Keychain / Linux Secret Service / Windows Credential Locker.
+  - Same pattern as GitHub CLI (`gh auth`).
+  - Provider credential registry with validation (GitHub, Linear, Jira, Redis, OTLP).
+  - Environment variable override for CI/CD (highest priority).
+  - Graceful fallback to `~/.config/ag-os/credentials.json` for headless environments.
+- **FTUX Phase 2** — Provider authentication prompts after provider selection.
+  - Masked input for sensitive tokens.
+  - Live validation (GitHub `/user`, Linear GraphQL, Jira `/myself`, Redis PING).
+  - Skips already-configured credentials.
+- **`/auth` command** — Post-setup credential management (view, add, revoke).
+- **`.gitignore` protection** — Auto-adds `.env`, `.env.*`, `credentials.json` during setup.
+
+### Fixed
+
+- **`/dream` command crash** — Fixed 5 wrong attribute names on `DreamReport` and `GovernancePatch` dataclasses.
+- **Provider fallback** — `FlightRecorder` and `DreamEngine` gracefully fall back to `sqlite`/`console` when configured provider isn't installed.
+- **Pre-push git hook** — Now searches `.venv/bin/ag-os` before PATH; skips gracefully if not found.
+- **Test isolation** — Fixtures no longer polluted by local `antigravity.yaml` configuration.
+
+---
+
 ## [1.2.0] - 2026-05-07
 
 ### Added

@@ -300,7 +300,6 @@ def handle_auth():
 
 
 def handle_help():
-
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column("Command", style="cyan bold")
     table.add_column("Description", style="white")
@@ -419,16 +418,16 @@ def handle_dream():
 
     # Render report nicely
     console.print()
-    console.print(Markdown(f"### Dream Report: {report.title}"))
-    console.print(f"[dim]Total friction severity: {report.total_friction_severity}[/]")
+    console.print(Markdown(f"### Dream Report: {report.dream_id}"))
+    console.print(f"[dim]Friction events detected: {report.friction_detected}[/]")
     console.print()
 
-    for patch in report.governance_patches:
+    for patch in report.proposed_patches:
         console.print(
             Panel(
                 f"{patch.description}\n\n"
-                f"[dim]Action:[/] {patch.patch_type} -> [cyan]{patch.target_file}[/]",
-                title=f"[bold gold1]Patch: {patch.rule_id}[/]",
+                f"[dim]Action:[/] {patch.patch_type} → [cyan]{patch.target}[/]",
+                title=f"[bold gold1]Patch: {patch.patch_type}[/]",
                 border_style="yellow",
             )
         )

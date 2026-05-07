@@ -5,7 +5,7 @@ Priorities may shift based on community feedback.
 
 ---
 
-## V1.0 -- Governance Kernel (Current)
+## V1.0 -- Governance Kernel (Released)
 
 - [x] Provider-agnostic architecture with 6 integration surfaces
 - [x] Zero-dependency default stack (SQLite, Console, Local JSON)
