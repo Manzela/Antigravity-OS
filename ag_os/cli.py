@@ -25,11 +25,19 @@ from ag_os.config import _DEFAULT_CONFIG, load_config
 # ──────────────────────────────────────────────────────────────
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.version_option(__version__, prog_name="ag-os")
-def main():
+@click.pass_context
+def main(ctx):
     """Antigravity OS -- The governance kernel for AI agents."""
-    pass
+    if ctx.invoked_subcommand is None:
+        try:
+            from ag_os.interactive import interactive_main
+            interactive_main()
+        except ImportError:
+            print("  [ERROR] Interactive shell dependencies missing.")
+            print("  Run: pip install ag-os[interactive] or pip install prompt_toolkit rich")
+            sys.exit(1)
 
 
 # ──────────────────────────────────────────────────────────────
