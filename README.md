@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://manzela.github.io/Antigravity-OS/"><strong>🔬 Pipeline Observatory (Interactive Demo)</strong></a>
+  <a href="https://manzela.github.io/Antigravity-OS/"><strong>🔬 Pipeline Observatory — Interactive Architecture Visualization</strong></a>
 </p>
 
 ---
@@ -270,13 +270,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full provider development guide.
 ```
 ag-os/
 ├── ag_os/
-│   ├── cli.py                  # ag-os CLI (init, check, demo, status)
+│   ├── cli.py                  # ag-os CLI (init, check, demo, status, dream, daemon)
 │   ├── config.py               # antigravity.yaml loader
 │   ├── interactive.py           # Interactive shell (FTUX, /commands)
+│   ├── server.py               # MCP server (model context protocol)
 │   ├── core/
 │   │   ├── cost_guard.py       # Solvency logic (Rule 08)
 │   │   ├── credentials.py      # OS Keychain credential manager
 │   │   ├── dreaming.py         # Dreaming Module (self-improvement)
+│   │   ├── daemon.py           # Dream Daemon (background service)
+│   │   ├── aggregator.py       # Cross-repo fleet aggregator
+│   │   ├── patch_applier.py    # GitOps patch application (HITL gates)
 │   │   ├── flight_recorder.py  # State machine (Rule 05)
 │   │   └── rules_engine.py     # Policy evaluator
 │   └── providers/
@@ -287,8 +291,16 @@ ag-os/
 │       ├── state/              # StateProvider ABC + sqlite
 │       ├── telemetry/          # TelemetryProvider ABC + console
 │       └── policy/             # PolicyProvider ABC + builtin
+├── docs/
+│   ├── index.html              # Pipeline Observatory (interactive demo)
+│   ├── style.css               # Observatory design system
+│   ├── observatory.js          # Observatory interactions & simulation
+│   └── adr/                    # Architecture Decision Records
 ├── antigravity.yaml
 ├── pyproject.toml
+├── GOVERNANCE.md
+├── MAINTAINERS.md
+├── ADOPTERS.md
 ├── LICENSE
 ├── CONTRIBUTING.md
 ├── SECURITY.md

@@ -46,8 +46,9 @@ Priorities may shift based on community feedback.
 - [x] CNCF Governance Documentation (GOVERNANCE.md, MAINTAINERS.md, ADOPTERS.md)
 - [x] Architecture Decision Records (ADR-001 through ADR-004)
 - [x] Pre-commit hooks and pip-audit in CI
+- [x] Pipeline Observatory: Apple-grade architecture visualization with 3-layer interactive demo
 
-## V1.2 -- Enterprise Signal
+## V1.5 -- Enterprise Signal
 
 - [ ] Jira issue provider
 - [ ] Linear issue provider
