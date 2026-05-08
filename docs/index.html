@@ -3,656 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pipeline Observatory | Antigravity OS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #050505;
-            --panel: #0d0d0d;
-            --border: #1f1f1f;
-            --text-main: #f0f0f0;
-            --text-dim: #888;
-            --cyan: #00e5ff;
-            --gold: #ffb74d;
-            --red: #ff453a;
-            --green: #32d74b;
-            --font-serif: 'Instrument Serif', serif;
-            --font-sans: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            height: 100vh;
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            overflow: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Nav */
-        nav {
-            position: absolute;
-            top: 24px;
-            left: 32px;
-            z-index: 100;
-        }
-        nav h1 {
-            font-family: var(--font-serif);
-            font-size: 2.2rem;
-            font-weight: 400;
-            letter-spacing: 0.02em;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        nav p {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        /* Observatory Canvas */
-        #canvas-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, #111 0%, #050505 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-
-        .path-line {
-            fill: none;
-            stroke: var(--border);
-            stroke-width: 1.5;
-            stroke-dasharray: 4 4;
-            transition: stroke 0.3s;
-        }
-        .path-active {
-            stroke: var(--cyan);
-            stroke-dasharray: none;
-            filter: drop-shadow(0 0 8px rgba(0,229,255,0.4));
-        }
-        .path-error {
-            stroke: var(--red);
-            stroke-dasharray: none;
-            filter: drop-shadow(0 0 8px rgba(255,69,58,0.4));
-        }
-
-        /* Particles */
-        .particle {
-            fill: var(--cyan);
-            filter: drop-shadow(0 0 10px var(--cyan));
-            opacity: 0;
-        }
-        .particle.gold {
-            fill: var(--gold);
-            filter: drop-shadow(0 0 12px var(--gold));
-        }
-        .particle.red {
-            fill: var(--red);
-            filter: drop-shadow(0 0 10px var(--red));
-        }
-
-        /* Nodes */
-        .node {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(20,20,20,0.8);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: var(--text-dim);
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            backdrop-filter: blur(10px);
-            transform: translate(-50%, -50%);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 10;
-        }
-        
-        /* Node fluid effect overlay */
-        .node::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            background: transparent;
-            border: 1px solid transparent;
-            transition: all 0.5s;
-            z-index: -1;
-        }
-
-        .node.active {
-            color: #fff;
-            border-color: var(--cyan);
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
-        }
-        .node.active::before {
-            border-color: var(--cyan);
-            transform: scale(1.15);
-            opacity: 0.4;
-            filter: blur(4px);
-            animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
-        }
-
-        .node.error {
-            color: #fff;
-            border-color: var(--red);
-            box-shadow: 0 0 20px rgba(255, 69, 58, 0.15);
-        }
-        .node.error::before {
-            border-color: var(--red);
-            transform: scale(1.15);
-            opacity: 0.5;
-            filter: blur(4px);
-            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        .node.dreaming {
-            border-color: var(--gold);
-            color: var(--gold);
-            box-shadow: 0 0 30px rgba(255, 183, 77, 0.15);
-        }
-        .node.dreaming::before {
-            border-color: var(--gold);
-            transform: scale(1.2);
-            opacity: 0.6;
-            filter: blur(6px);
-            animation: pulse-ring 1.5s infinite;
-        }
-
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            100% { transform: scale(1.3); opacity: 0; }
-        }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-
-        .node-val {
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            color: #fff;
-            margin-bottom: 2px;
-        }
-
-        /* Right Panel */
-        aside {
-            background: var(--panel);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            overflow-y: auto;
-        }
-
-        .panel-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .panel-header h2 {
-            font-family: var(--font-serif);
-            font-size: 1.5rem;
-            font-weight: 400;
-        }
-        
-        .controls button {
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            font-family: var(--font-sans);
-            font-size: 0.75rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .controls button:hover {
-            border-color: var(--cyan);
-            color: var(--cyan);
-        }
-        .controls button:disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        /* Telemetry Log */
-        .log-section {
-            padding: 24px;
-            border-bottom: 1px solid var(--border);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .section-title {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-dim);
-            margin-bottom: 16px;
-        }
-
-        .telemetry-feed {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            line-height: 1.6;
-            color: var(--text-dim);
-            overflow-y: auto;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .tel-row {
-            display: flex;
-            gap: 12px;
-            opacity: 0;
-            animation: fade-in 0.3s forwards;
-        }
-        @keyframes fade-in { to { opacity: 1; } }
-        .tel-ts { color: #555; }
-        .tel-msg { color: #bbb; }
-        .tel-msg.highlight { color: var(--cyan); }
-        .tel-msg.warn { color: var(--gold); }
-        .tel-msg.error { color: var(--red); }
-
-        /* Dream Report */
-        .report-section {
-            padding: 24px;
-            background: rgba(255, 183, 77, 0.02);
-            border-top: 1px solid rgba(255, 183, 77, 0.1);
-            display: none;
-        }
-        .report-section.visible {
-            display: block;
-            animation: slide-up 0.5s ease;
-        }
-        @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .patch-item {
-            background: rgba(20,20,20,0.8);
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 0.8rem;
-        }
-        .patch-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-        }
-        .patch-type { color: var(--gold); }
-        .patch-target { color: var(--text-dim); }
-        .patch-desc { color: #ccc; line-height: 1.4; }
-
-        /* Memory */
-        .memory-section {
-            padding: 24px;
-            display: none;
-        }
-        .memory-section.visible { display: block; }
-        .mem-file {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--green);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            background: rgba(50, 215, 75, 0.05);
-            border: 1px solid rgba(50, 215, 75, 0.2);
-            border-radius: 6px;
-        }
-
-    </style>
+    <title>Pipeline Observatory | Antigravity OS — Autonomous Multi-Agent Governance</title>
+    <meta name="description" content="Interactive architecture visualization of the Antigravity OS autonomous governance kernel. Multi-tenant pipeline orchestration with Gemma 4 MoE, LoRA isolation, and self-improving evaluation loops.">
+    <meta name="keywords" content="AI governance, multi-agent pipeline, MoE, LoRA, vLLM, Gemma 4, autonomous systems, DreamEngine">
+    <meta name="author" content="Daniel Manzela">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Pipeline Observatory | Antigravity OS">
+    <meta property="og:description" content="Interactive visualization of autonomous multi-agent governance architecture.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzela.github.io/Antigravity-OS/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#060a12">
+    <meta name="color-scheme" content="dark">
+    <link rel="canonical" href="https://manzela.github.io/Antigravity-OS/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<nav>
-    <h1>Pipeline Observatory</h1>
-    <p>Mechanistic Interpretability · v1.2.0</p>
-</nav>
+<div class="bg-mesh" aria-hidden="true"></div>
 
-<main id="canvas-container">
-    <svg id="connections">
-        <!-- SVG paths will be generated by JS -->
-    </svg>
-    
-    <!-- Organic Nodes -->
-    <div class="node" id="node-idle" style="left: 20%; top: 50%;">
-        <div class="node-val">IDLE</div>
-        State
-    </div>
-    <div class="node" id="node-planning" style="left: 40%; top: 30%;">
-        <div class="node-val">PLAN</div>
-        State
-    </div>
-    <div class="node" id="node-building" style="left: 60%; top: 30%;">
-        <div class="node-val">ACT</div>
-        State
-    </div>
-    <div class="node" id="node-verifying" style="left: 80%; top: 50%;">
-        <div class="node-val">EVAL</div>
-        State
-    </div>
-    <div class="node" id="node-rolledback" style="left: 60%; top: 70%;">
-        <div class="node-val">FAIL</div>
-        State
-    </div>
-    <div class="node" id="node-blocked" style="left: 80%; top: 70%;">
-        <div class="node-val">HALT</div>
-        State
-    </div>
-    
-    <!-- The Dream Engine (RLHF / Improvement Layer) -->
-    <div class="node" id="node-dream" style="left: 50%; top: 90%; width: 100px; height: 100px;">
-        <div class="node-val" style="color:var(--gold)">DREAM</div>
-        Engine
-    </div>
-</main>
-
-<aside>
-    <div class="panel-header">
-        <h2>Telemetry</h2>
-        <div class="controls">
-            <button id="btn-run" onclick="runSimulation()">Initialize Loop</button>
-        </div>
-    </div>
-
-    <div class="log-section">
-        <div class="section-title">Execution Trace</div>
-        <div class="telemetry-feed" id="telemetry">
-            <!-- Logs go here -->
-            <div class="tel-row"><span class="tel-ts">00:00:00.000</span><span class="tel-msg">System initialized. Awaiting input.</span></div>
-        </div>
-    </div>
-
-    <div class="report-section" id="report-section">
-        <div class="section-title" style="color:var(--gold)">Synthesized Governance Patches</div>
-        <div id="patch-container"></div>
-    </div>
-
-    <div class="memory-section" id="memory-section">
-        <div class="section-title">Long-Term Memory</div>
-        <div class="mem-file">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            ~/.antigravity/dreams/patch-001.yaml
-        </div>
-    </div>
-</aside>
-
-<script>
-// Graph positions
-const nodes = {
-    idle: { x: 20, y: 50 },
-    planning: { x: 40, y: 30 },
-    building: { x: 60, y: 30 },
-    verifying: { x: 80, y: 50 },
-    rolledback: { x: 60, y: 70 },
-    blocked: { x: 80, y: 70 },
-    dream: { x: 50, y: 90 }
-};
-
-// SVG Drawing
-const svg = document.getElementById('connections');
-let paths = {};
-
-function createPath(id, from, to) {
-    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    // Curved path
-    const d = `M ${from.x} ${from.y} C ${(from.x+to.x)/2} ${from.y}, ${(from.x+to.x)/2} ${to.y}, ${to.x} ${to.y}`;
-    p.setAttribute('d', d);
-    p.setAttribute('class', 'path-line');
-    p.setAttribute('id', 'path-' + id);
-    svg.appendChild(p);
-    paths[id] = p;
-}
-
-function updatePaths() {
-    svg.innerHTML = '';
-    const w = window.innerWidth - 400; // subtract aside width
-    const h = window.innerHeight;
-    
-    // Helper to get absolute coords
-    const getCoords = (n) => ({ x: (nodes[n].x / 100) * w, y: (nodes[n].y / 100) * h });
-    
-    createPath('idle-plan', getCoords('idle'), getCoords('planning'));
-    createPath('plan-act', getCoords('planning'), getCoords('building'));
-    createPath('act-eval', getCoords('building'), getCoords('verifying'));
-    createPath('eval-fail', getCoords('verifying'), getCoords('rolledback'));
-    createPath('fail-plan', getCoords('rolledback'), getCoords('planning'));
-    createPath('act-halt', getCoords('building'), getCoords('blocked'));
-    createPath('fail-dream', getCoords('rolledback'), getCoords('dream'));
-    createPath('halt-dream', getCoords('blocked'), getCoords('dream'));
-    createPath('dream-all', getCoords('dream'), {x: w/2, y: h/2}); // A glow path back to center
-}
-
-window.addEventListener('resize', updatePaths);
-updatePaths();
-
-// Utilities
-const sleep = ms => new Promise(res => setTimeout(res, ms));
-
-function log(msg, type='normal') {
-    const feed = document.getElementById('telemetry');
-    const now = new Date();
-    const ts = now.toISOString().substring(11, 23);
-    const div = document.createElement('div');
-    div.className = 'tel-row';
-    div.innerHTML = `<span class="tel-ts">${ts}</span><span class="tel-msg ${type}">${msg}</span>`;
-    feed.appendChild(div);
-    feed.scrollTop = feed.scrollHeight;
-}
-
-function setNodeState(id, state) {
-    const el = document.getElementById('node-' + id);
-    el.className = 'node ' + state;
-}
-
-function setPathState(id, state) {
-    const el = document.getElementById('path-' + id);
-    if(el) el.className = `path-line ${state}`;
-}
-
-async function emitParticle(pathId, colorClass) {
-    const path = document.getElementById('path-' + pathId);
-    if (!path) return;
-    
-    const len = path.getTotalLength();
-    const pt = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    pt.setAttribute('r', '4');
-    pt.setAttribute('class', `particle ${colorClass}`);
-    svg.appendChild(pt);
-    
-    pt.animate([
-        { offsetDistance: '0%', opacity: 1 },
-        { offsetDistance: '100%', opacity: 1 }
-    ], {
-        duration: 600,
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        fill: 'forwards'
-    });
-    
-    // We have to use a polyfill approach for animating along path in basic SVG without external libs,
-    // actually CSS motion-path is better but SVG animateMotion is perfectly standard.
-    pt.innerHTML = `<animateMotion dur="0.6s" repeatCount="1" fill="freeze"><mpath href="#path-${pathId}"/></animateMotion>`;
-    pt.style.opacity = 1;
-    
-    await sleep(600);
-    pt.style.opacity = 0;
-    setTimeout(() => pt.remove(), 300);
-}
-
-// Simulation Sequence
-let isRunning = false;
-
-async function runSimulation() {
-    if (isRunning) return;
-    isRunning = true;
-    document.getElementById('btn-run').disabled = true;
-    
-    // Reset UI
-    document.querySelectorAll('.node').forEach(n => n.className = 'node');
-    document.querySelectorAll('.path-line').forEach(p => p.className = 'path-line');
-    document.getElementById('telemetry').innerHTML = '';
-    document.getElementById('report-section').classList.remove('visible');
-    document.getElementById('memory-section').classList.remove('visible');
-    
-    log('System initialized. Beginning execution trace.', 'highlight');
-    await sleep(500);
-
-    // The Failing Loop
-    for (let i = 1; i <= 3; i++) {
-        log(`[Cycle ${i}] Operation dispatched.`, 'highlight');
-        
-        setNodeState('idle', 'active');
-        await emitParticle('idle-plan', 'cyan');
-        setNodeState('idle', '');
-        
-        setPathState('idle-plan', 'path-active');
-        setNodeState('planning', 'active');
-        log(`[Cycle ${i}] Planning context window loaded.`);
-        await sleep(300);
-        
-        await emitParticle('plan-act', 'cyan');
-        setPathState('idle-plan', '');
-        setPathState('plan-act', 'path-active');
-        setNodeState('planning', '');
-        setNodeState('building', 'active');
-        log(`[Cycle ${i}] Executing generated tool calls.`);
-        await sleep(400);
-        
-        await emitParticle('act-eval', 'cyan');
-        setPathState('plan-act', '');
-        setPathState('act-eval', 'path-active');
-        setNodeState('building', '');
-        setNodeState('verifying', 'active');
-        log(`[Cycle ${i}] Evaluating output variance.`);
-        await sleep(400);
-        
-        // Failure
-        log(`[Cycle ${i}] Evaluation failed: context threshold exceeded.`, 'error');
-        setNodeState('verifying', 'error');
-        await emitParticle('eval-fail', 'red');
-        setPathState('act-eval', '');
-        setPathState('eval-fail', 'path-error');
-        setNodeState('verifying', '');
-        setNodeState('rolledback', 'error');
-        await sleep(500);
-        
-        // Loop back
-        await emitParticle('fail-plan', 'red');
-        setPathState('eval-fail', '');
-        setPathState('fail-plan', 'path-error');
-        setNodeState('rolledback', '');
-        await sleep(200);
-        setPathState('fail-plan', '');
-    }
-    
-    // Terminal Block
-    log(`[Cycle 4] Heuristic loop breaker triggered.`, 'warn');
-    setNodeState('planning', 'active');
-    await sleep(300);
-    await emitParticle('plan-act', 'cyan');
-    setNodeState('planning', '');
-    setNodeState('building', 'error');
-    log(`[Cycle 4] Agent halted.`, 'error');
-    await emitParticle('act-halt', 'red');
-    setNodeState('building', '');
-    setNodeState('blocked', 'error');
-    log(`[Cycle 4] Terminal state reached.`, 'error');
-    await sleep(1000);
-
-    // Trigger Dream Sequence
-    log('--- INITIATING SELF-IMPROVEMENT LOOP ---', 'warn');
-    setPathState('halt-dream', 'path-error');
-    await emitParticle('halt-dream', 'red');
-    setPathState('halt-dream', '');
-    
-    setNodeState('blocked', '');
-    setNodeState('dream', 'dreaming');
-    log('Dream Engine engaged. Scanning SQLite telemetry traces.', 'highlight');
-    await sleep(800);
-    
-    log('Friction detected: [ROLLBACK_CYCLE x3], [EXCESSIVE_TRANSITIONS x12], [BLOCKED]', 'error');
-    await sleep(600);
-    
-    log('Synthesizing governance patches using constitutional heuristics.', 'highlight');
-    
-    // Organic Pulse effect: nodes shifting slightly
-    document.querySelectorAll('.node:not(#node-dream)').forEach(n => {
-        n.style.boxShadow = '0 0 20px rgba(255,183,77,0.3)';
-        n.style.borderColor = 'rgba(255,183,77,0.5)';
-    });
-    
-    await sleep(1000);
-    
-    // Show Report
-    document.getElementById('report-section').classList.add('visible');
-    const pc = document.getElementById('patch-container');
-    pc.innerHTML = `
-        <div class="patch-item" style="animation: fade-in 0.3s forwards">
-            <div class="patch-header">
-                <span class="patch-type">[THRESHOLD]</span>
-                <span class="patch-target">antigravity.yaml</span>
+<div class="page">
+    <!-- ═══ Top Bar ═══ -->
+    <header class="top-bar" role="banner">
+        <div class="container">
+            <div class="brand">
+                <h1>Pipeline Observatory</h1>
+                <span class="version">v1.4.0</span>
             </div>
-            <div class="patch-desc">Reduce max_loop_count from 5 to 3 to prevent compute exhaustion.</div>
-        </div>
-        <div class="patch-item" style="animation: fade-in 0.3s forwards; animation-delay: 0.2s; opacity:0">
-            <div class="patch-header">
-                <span class="patch-type">[RULE]</span>
-                <span class="patch-target">rules/09-circuit-breaker.md</span>
+            <nav class="nav-pills" role="tablist" aria-label="Main navigation">
+                <button class="nav-pill active" role="tab" aria-selected="true" data-tab="architecture" id="tab-arch">Architecture</button>
+                <button class="nav-pill" role="tab" aria-selected="false" data-tab="demo" id="tab-demo">Live Demo</button>
+            </nav>
+            <div class="top-links">
+                <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://pypi.org/project/ag-os/" target="_blank" rel="noopener">PyPI</a>
             </div>
-            <div class="patch-desc">Halt execution after 2 identical rollbacks and request human intervention.</div>
         </div>
-    `;
-    
-    log('Patches synthesized successfully. System rules updated.', 'highlight');
-    await sleep(800);
-    
-    // Memory
-    document.getElementById('memory-section').classList.add('visible');
-    log('Long-term memory consolidated.', 'highlight');
-    setNodeState('dream', '');
-    document.querySelectorAll('.node').forEach(n => {
-        n.style.boxShadow = '';
-        n.style.borderColor = '';
-    });
-    
-    document.getElementById('btn-run').disabled = false;
-    document.getElementById('btn-run').innerText = 'Restart Simulation';
-    isRunning = false;
-}
-</script>
+    </header>
+
+    <!-- ═══ Hero ═══ -->
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="container">
+            <h2 id="hero-title">Autonomous <em>Multi-Agent</em> Governance</h2>
+            <p class="subtitle">Mechanistic interpretability into a production pipeline — 7-node DAG, Gemma 4 MoE inference, per-tenant LoRA isolation, and a closed-loop self-improvement kernel. Zero LLM dependencies in the governance core.</p>
+        </div>
+    </section>
+
+    <!-- ═══ Architecture Tab ═══ -->
+    <div class="tab-content visible" id="panel-architecture" role="tabpanel" aria-labelledby="tab-arch">
+        <div class="container">
+            <div class="arch-wrapper">
+                <main class="arch-main">
+
+                    <!-- Layer 1: Infrastructure -->
+                    <article class="layer-card" id="layer-infra">
+                        <div class="layer-header">
+                            <h3 class="layer-title">Infrastructure Layer</h3>
+                            <span class="layer-badge infra">Compute</span>
+                        </div>
+                        <p class="section-label">GPU Instances · Auto-Scaling Pool</p>
+                        <div class="gpu-grid">
+                            <div class="gpu-card active" id="gpu-1">
+                                <div class="gpu-name">vertex-endpoint-01</div>
+                                <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
+                                <div class="gpu-spec">
+                                    vLLM 0.17.2 · BF16 · A100 80GB<br>
+                                    8K context · 34× concurrent seq
+                                </div>
+                                <div class="bar-wrap">
+                                    <div class="bar-label"><span>KV Cache</span><span>25.4 / 76 GiB</span></div>
+                                    <div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div>
+                                    <div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div>
+                                </div>
+                            </div>
+                            <div class="gpu-card" id="gpu-2">
+                                <div class="gpu-name">vertex-endpoint-02</div>
+                                <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
+                                <div class="gpu-spec">
+                                    vLLM 0.17.2 · BF16 · A100 80GB<br>
+                                    Replica · Region: eu-west1
+                                </div>
+                                <div class="bar-wrap">
+                                    <div class="bar-label"><span>KV Cache</span><span>18.2 / 76 GiB</span></div>
+                                    <div class="bar-track"><div class="bar-fill green" style="width:24%"></div></div>
+                                </div>
+                                <div class="bar-wrap">
+                                    <div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div>
+                                    <div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div>
+                                </div>
+                            </div>
+                            <div class="gpu-card" id="gpu-standby">
+                                <div class="gpu-name">auto-scale-pool</div>
+                                <div class="gpu-model">Standby Capacity</div>
+                                <div class="gpu-spec">
+                                    Provisioned on demand<br>
+                                    Scales 1→N per traffic
+                                </div>
+                                <div class="bar-wrap">
+                                    <div class="bar-label"><span>Utilization</span><span>0%</span></div>
+                                    <div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="section-label">LoRA Adapter Registry · Per-Tenant Isolation</p>
+                        <div class="lora-row" id="lora-row">
+                            <button class="lora-chip active" data-tenant="il"><span class="dot"></span>IL · Israel</button>
+                            <button class="lora-chip" data-tenant="pl"><span class="dot"></span>PL · Poland</button>
+                            <button class="lora-chip" data-tenant="cz"><span class="dot"></span>CZ · Czechia</button>
+                            <button class="lora-chip" data-tenant="us"><span class="dot"></span>US · United States</button>
+                            <button class="lora-chip" data-tenant="de"><span class="dot"></span>DE · Germany</button>
+                        </div>
+                    </article>
+
+                    <!-- Layer 2: Orchestration -->
+                    <article class="layer-card" id="layer-orch">
+                        <div class="layer-header">
+                            <h3 class="layer-title">Orchestration Layer</h3>
+                            <span class="layer-badge orch">ADK Pipeline</span>
+                        </div>
+                        <p class="section-label">7-Node Agent DAG · Sub-Agent Decomposition</p>
+                        <div class="dag-nodes" id="dag-nodes">
+                            <div class="dag-node" data-node="market" tabindex="0">
+                                <div class="dag-icon">🔍</div>
+                                <div class="dag-name">Market Intel</div>
+                                <div class="dag-sub">3 sub-agents · deterministic</div>
+                            </div>
+                            <div class="dag-node" data-node="keyword" tabindex="0">
+                                <div class="dag-icon">🎯</div>
+                                <div class="dag-name">Keyword Strategy</div>
+                                <div class="dag-sub">2 sub-agents · probabilistic</div>
+                            </div>
+                            <div class="dag-node" data-node="content" tabindex="0">
+                                <div class="dag-icon">✍️</div>
+                                <div class="dag-name">Content Engine</div>
+                                <div class="dag-sub">4 sub-agents · hybrid</div>
+                            </div>
+                            <div class="dag-node" data-node="seo" tabindex="0">
+                                <div class="dag-icon">⚙️</div>
+                                <div class="dag-name">Technical SEO</div>
+                                <div class="dag-sub">2 sub-agents · deterministic</div>
+                            </div>
+                            <div class="dag-node" data-node="eval" tabindex="0">
+                                <div class="dag-icon">⚖️</div>
+                                <div class="dag-name">QA & Eval</div>
+                                <div class="dag-sub">LLM-as-Judge · 3 models</div>
+                            </div>
+                            <div class="dag-node" data-node="deploy" tabindex="0">
+                                <div class="dag-icon">🚀</div>
+                                <div class="dag-name">Deploy & Publish</div>
+                                <div class="dag-sub">1 sub-agent · deterministic</div>
+                            </div>
+                            <div class="dag-node" data-node="govern" tabindex="0" style="border-color: rgba(245,158,11,0.3);">
+                                <div class="dag-icon">🛡️</div>
+                                <div class="dag-name">Governance</div>
+                                <div class="dag-sub">Antigravity OS Kernel</div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Layer 3: Autonomy -->
+                    <article class="layer-card" id="layer-auto">
+                        <div class="layer-header">
+                            <h3 class="layer-title">Autonomy Layer</h3>
+                            <span class="layer-badge auto">Closed Loop</span>
+                        </div>
+                        <p class="section-label">Self-Improving Evaluation · RL Data Flywheel</p>
+                        <div class="auto-flow">
+                            <div class="auto-step">
+                                <div class="auto-step-title">Observe</div>
+                                <div class="auto-step-detail">
+                                    Langfuse traces<br>
+                                    latency · cost · tokens<br>
+                                    quality scores
+                                </div>
+                            </div>
+                            <div class="auto-step">
+                                <div class="auto-step-title">Evaluate</div>
+                                <div class="auto-step-detail">
+                                    Multi-model judge<br>
+                                    Gemini · Claude · GPT-4<br>
+                                    pairwise ranking
+                                </div>
+                            </div>
+                            <div class="auto-step">
+                                <div class="auto-step-title">Improve</div>
+                                <div class="auto-step-detail">
+                                    RL data flywheel<br>
+                                    grade → cache → LoRA<br>
+                                    per-tenant adaptation
+                                </div>
+                            </div>
+                            <div class="auto-step">
+                                <div class="auto-step-title">Dream</div>
+                                <div class="auto-step-detail">
+                                    DreamEngine scan<br>
+                                    friction + success<br>
+                                    governance patches
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                </main>
+
+                <!-- ═══ Detail Sidebar ═══ -->
+                <aside class="detail-panel" id="detail-panel" aria-label="Details">
+                    <div class="detail-header">
+                        <div class="detail-title" id="detail-title">System Overview</div>
+                        <div class="detail-desc" id="detail-desc">Select a component to inspect its configuration, sub-agents, and live metrics.</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <p class="section-label">Live Metrics</p>
+                        <div class="metric-grid">
+                            <div class="metric">
+                                <div class="metric-val" id="m-latency">142ms</div>
+                                <div class="metric-label">P50 Latency</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-val" id="m-tps">847</div>
+                                <div class="metric-label">Tokens/sec</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-val" id="m-cost">$0.003</div>
+                                <div class="metric-label">Cost/Op</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-val" id="m-expert">4/64</div>
+                                <div class="metric-label">Active Experts</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section" id="detail-subagents">
+                        <p class="section-label">Sub-Agents</p>
+                        <div id="subagent-list" class="tel-feed" style="max-height:180px;">
+                            <div class="tel-row"><span class="tel-msg">Select a DAG node to view sub-agents</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <p class="section-label">Execution Trace</p>
+                        <div class="tel-feed" id="telemetry">
+                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System ready. Awaiting dispatch.</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <p class="section-label">Solvency</p>
+                        <div class="bar-wrap">
+                            <div class="bar-label"><span>Budget</span><span id="sol-val">$0.00 / $100.00</span></div>
+                            <div class="bar-track"><div class="bar-fill green" id="sol-bar" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Demo Tab ═══ -->
+    <div class="tab-content" id="panel-demo" role="tabpanel" aria-labelledby="tab-demo">
+        <div class="container">
+            <div class="arch-wrapper">
+                <main class="arch-main">
+                    <article class="layer-card">
+                        <div class="layer-header">
+                            <h3 class="layer-title">Pipeline Simulation</h3>
+                            <div class="sim-controls">
+                                <button class="btn primary" id="btn-run" onclick="runSimulation()">Run Pipeline</button>
+                            </div>
+                        </div>
+                        <p class="section-label">Execution Visualization · Multi-Tenant Concurrent Processing</p>
+                        <div class="dag-nodes" id="sim-nodes">
+                            <div class="dag-node" id="sn-idle"><div class="dag-icon">⏸️</div><div class="dag-name">Idle</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-plan"><div class="dag-icon">📋</div><div class="dag-name">Planning</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-act"><div class="dag-icon">⚡</div><div class="dag-name">Executing</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-eval"><div class="dag-icon">🔬</div><div class="dag-name">Evaluating</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-fail"><div class="dag-icon">↩️</div><div class="dag-name">Rolled Back</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-halt"><div class="dag-icon">🚫</div><div class="dag-name">Halted</div><div class="dag-sub">state</div></div>
+                            <div class="dag-node" id="sn-dream" style="border-color: rgba(245,158,11,0.3);"><div class="dag-icon">💡</div><div class="dag-name">Dream Engine</div><div class="dag-sub">self-improvement</div></div>
+                        </div>
+                    </article>
+
+                    <article class="layer-card" id="dream-report" style="display:none;">
+                        <div class="layer-header">
+                            <h3 class="layer-title">Synthesized Governance Patches</h3>
+                            <span class="layer-badge auto">DreamEngine</span>
+                        </div>
+                        <div id="patch-container"></div>
+                    </article>
+                </main>
+
+                <aside class="detail-panel" aria-label="Simulation telemetry">
+                    <div class="detail-header">
+                        <div class="detail-title">Simulation Telemetry</div>
+                        <div class="detail-desc">Watch a failure → dream → self-improvement cycle.</div>
+                    </div>
+                    <div class="detail-section">
+                        <p class="section-label">Execution Trace</p>
+                        <div class="tel-feed" id="sim-telemetry">
+                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System initialized. Press Run Pipeline.</span></div>
+                        </div>
+                    </div>
+                    <div class="detail-section" id="sim-memory" style="display:none;">
+                        <p class="section-label">Long-Term Memory</p>
+                        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--green);padding:10px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;">
+                            ~/.antigravity/dreams/dream-report.yaml
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="footer">
+        <div class="container">
+            <p>Antigravity OS · The governance kernel for AI agents · <a href="https://github.com/Manzela/Antigravity-OS">Open Source (MIT)</a></p>
+        </div>
+    </footer>
+</div>
+
+<script src="observatory.js"></script>
 </body>
 </html>
