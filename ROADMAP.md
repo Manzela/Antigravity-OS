@@ -28,6 +28,25 @@ Priorities may shift based on community feedback.
 - [ ] Redis state provider
 - [ ] OPA policy provider
 
+## V1.3 -- Credential Management (Released)
+
+- [x] OS Keychain-backed credential storage via `keyring`
+- [x] Provider credential registry with live validation
+- [x] Environment variable override for CI/CD
+- [x] Graceful fallback to local file for headless environments
+- [x] FTUX credential prompts after provider selection
+
+## V1.4 -- DreamEngine Convergence (Released)
+
+- [x] Success Pattern Extraction: Inverse anomaly detection (CLEAN_COMPLETION, FAST_COMPLETION, FIRST_ATTEMPT_SUCCESS)
+- [x] GitOps Patch Applier: Risk-based governance patch application with HITL gates
+- [x] Dream Daemon: Background process for continuous self-improvement cycles
+- [x] Cross-Repo Aggregator: Enterprise fleet-wide friction correlation
+- [x] Tiered Memory Consolidation: TTL and count-based pruning with rollup
+- [x] CNCF Governance Documentation (GOVERNANCE.md, MAINTAINERS.md, ADOPTERS.md)
+- [x] Architecture Decision Records (ADR-001 through ADR-004)
+- [x] Pre-commit hooks and pip-audit in CI
+
 ## V1.2 -- Enterprise Signal
 
 - [ ] Jira issue provider

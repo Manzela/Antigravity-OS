@@ -33,6 +33,11 @@ ROLLBACK_CYCLE = "ROLLBACK_CYCLE"
 BLOCKED_TERMINAL = "BLOCKED_TERMINAL"
 EXCESSIVE_TRANSITIONS = "EXCESSIVE_TRANSITIONS"
 
+# Success archetypes — inverse anomaly detection
+CLEAN_COMPLETION = "CLEAN_COMPLETION"
+FAST_COMPLETION = "FAST_COMPLETION"
+FIRST_ATTEMPT_SUCCESS = "FIRST_ATTEMPT_SUCCESS"
+
 # Severity levels
 SEVERITY_LOW = "LOW"
 SEVERITY_MEDIUM = "MEDIUM"
@@ -62,6 +67,16 @@ class GovernancePatch:
 
 
 @dataclass
+class SuccessPattern:
+    """A detected success pattern from execution history."""
+
+    operation: str
+    archetype: str
+    diagnosis: str
+    evidence: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class DreamReport:
     """A complete Dream Report — the output of one dream cycle."""
 
@@ -69,9 +84,11 @@ class DreamReport:
     timestamp: str
     friction_events: list[FrictionEvent] = field(default_factory=list)
     proposed_patches: list[GovernancePatch] = field(default_factory=list)
+    success_patterns: list[SuccessPattern] = field(default_factory=list)
     summary: str = ""
     operations_analyzed: int = 0
     friction_detected: int = 0
+    successes_detected: int = 0
 
 
 # ──────────────────────────────────────────────────────────────
@@ -276,6 +293,94 @@ class DreamEngine:
 
         return friction
 
+    def scan_success(self) -> list["SuccessPattern"]:
+        """Scan the Flight Recorder for success patterns.
+
+        Identifies operations that completed cleanly, quickly, or on the
+        first attempt. Used to extract positive baselines for governance
+        tuning — the inverse of friction scanning.
+        """
+        operations = self._query_all_flight_records()
+        successes: list[SuccessPattern] = []
+
+        # Compute median transition count for FAST_COMPLETION detection
+        completed_counts = []
+        for records in operations.values():
+            states = [r.get("state", "") for r in records]
+            if "COMPLETE" in states:
+                completed_counts.append(len(records))
+        if completed_counts:
+            median_count = sorted(completed_counts)[len(completed_counts) // 2]
+        else:
+            median_count = 5
+
+        linear_path = ["PLANNING", "PLAN_APPROVED", "BUILDING", "VERIFYING", "COMPLETE"]
+
+        for op_name, records in operations.items():
+            if not records:
+                continue
+
+            states = [r.get("state", "") for r in records]
+            transition_count = len(records)
+
+            if "COMPLETE" not in states:
+                continue
+
+            has_rollback = "ROLLED_BACK" in states
+            has_blocked = "BLOCKED" in states
+
+            # CLEAN_COMPLETION: reached COMPLETE with 0 rollbacks, 0 BLOCKED
+            if not has_rollback and not has_blocked:
+                successes.append(
+                    SuccessPattern(
+                        operation=op_name,
+                        archetype=CLEAN_COMPLETION,
+                        diagnosis=(
+                            f"Operation '{op_name}' completed cleanly with "
+                            f"{transition_count} transitions, zero rollbacks, "
+                            f"and zero blocked states."
+                        ),
+                        evidence={
+                            "transition_count": transition_count,
+                            "states": states,
+                        },
+                    )
+                )
+
+            # FAST_COMPLETION: transitions <= median across all operations
+            if transition_count <= median_count and not has_rollback:
+                successes.append(
+                    SuccessPattern(
+                        operation=op_name,
+                        archetype=FAST_COMPLETION,
+                        diagnosis=(
+                            f"Operation '{op_name}' completed in {transition_count} "
+                            f"transitions (median: {median_count}). "
+                            f"Below-median execution indicates efficient workflow."
+                        ),
+                        evidence={
+                            "transition_count": transition_count,
+                            "median": median_count,
+                        },
+                    )
+                )
+
+            # FIRST_ATTEMPT_SUCCESS: linear path with no backward transitions
+            if states == linear_path:
+                successes.append(
+                    SuccessPattern(
+                        operation=op_name,
+                        archetype=FIRST_ATTEMPT_SUCCESS,
+                        diagnosis=(
+                            f"Operation '{op_name}' followed the ideal linear path "
+                            f"(PLANNING -> COMPLETE) with no deviations or retries."
+                        ),
+                        evidence={"states": states},
+                    )
+                )
+
+        return successes
+
     def synthesize(self, friction_events: list[FrictionEvent]) -> DreamReport:
         """Synthesize friction events into a structured Dream Report.
 
@@ -371,38 +476,50 @@ class DreamEngine:
                 )
             )
 
+        # ── Scan for success patterns ──
+        success_patterns = self.scan_success()
+
         # ── Build summary ──
         archetype_counts = {}
         for e in friction_events:
             archetype_counts[e.archetype] = archetype_counts.get(e.archetype, 0) + 1
+
+        parts = []
+        parts.append(f"Dream cycle analyzed {len(operations)} operations.")
 
         if friction_events:
             archetype_summary = ", ".join(
                 f"{count} {archetype.lower().replace('_', ' ')}"
                 for archetype, count in sorted(archetype_counts.items())
             )
-            summary = (
-                f"Dream cycle analyzed {len(operations)} operations and detected "
-                f"{len(friction_events)} friction events: {archetype_summary}. "
-                f"Generated {len(patches)} governance patches for self-improvement. "
-                f"Apply the proposed patches to prevent recurrence in the next "
-                f"execution cycle."
+            parts.append(
+                f"Detected {len(friction_events)} friction events: {archetype_summary}. "
+                f"Generated {len(patches)} governance patches for self-improvement."
             )
-        else:
-            summary = (
-                f"Dream cycle analyzed {len(operations)} operations. "
-                f"No friction detected — the governance kernel is operating within "
-                f"nominal parameters. No patches proposed."
+
+        if success_patterns:
+            parts.append(
+                f"Identified {len(success_patterns)} success patterns from nominal operations."
             )
+
+        if not friction_events and not success_patterns:
+            parts.append(
+                "No friction detected — the governance kernel is operating within "
+                "nominal parameters. No patches proposed."
+            )
+
+        summary = " ".join(parts)
 
         return DreamReport(
             dream_id=dream_id,
             timestamp=now.isoformat(),
             friction_events=friction_events,
             proposed_patches=patches,
+            success_patterns=success_patterns,
             summary=summary,
             operations_analyzed=len(operations),
             friction_detected=len(friction_events),
+            successes_detected=len(success_patterns),
         )
 
     def persist(self, report: DreamReport) -> Path:
@@ -440,20 +557,110 @@ class DreamEngine:
                     # Reconstruct nested dataclasses
                     friction = [FrictionEvent(**e) for e in data.get("friction_events", [])]
                     patches = [GovernancePatch(**p) for p in data.get("proposed_patches", [])]
+                    success = [SuccessPattern(**s) for s in data.get("success_patterns", [])]
                     report = DreamReport(
                         dream_id=data.get("dream_id", ""),
                         timestamp=data.get("timestamp", ""),
                         friction_events=friction,
                         proposed_patches=patches,
+                        success_patterns=success,
                         summary=data.get("summary", ""),
                         operations_analyzed=data.get("operations_analyzed", 0),
                         friction_detected=data.get("friction_detected", 0),
+                        successes_detected=data.get("successes_detected", 0),
                     )
                     reports.append(report)
             except (yaml.YAMLError, TypeError, KeyError):
                 continue
 
         return reports
+
+    def prune(self) -> dict:
+        """Tiered memory consolidation for the dream archive.
+
+        1. Delete reports older than retention_days.
+        2. If still over retention_max_count, delete oldest FIFO.
+        3. Before deletion: extract core statistics and append to
+           ~/.antigravity/dreams/archive/historical_aggregates.jsonl
+
+        Returns {deleted_count, consolidated_count, remaining_count}.
+        """
+        dreaming_cfg = self._config.get("dreaming", {})
+        retention_days = dreaming_cfg.get("retention_days", 90)
+        max_count = dreaming_cfg.get("retention_max_count", 100)
+
+        if not _DREAMS_DIR.is_dir():
+            return {"deleted_count": 0, "consolidated_count": 0, "remaining_count": 0}
+
+        files = sorted(_DREAMS_DIR.glob("dream-*.yaml"))
+        now = datetime.now(timezone.utc)
+        to_delete: list[Path] = []
+        consolidated = 0
+
+        archive_dir = _DREAMS_DIR / "archive"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        aggregates_path = archive_dir / "historical_aggregates.jsonl"
+
+        # Phase 1: TTL-based expiry
+        for path in files:
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                ts_str = data.get("timestamp", "") if data else ""
+                if ts_str:
+                    report_time = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    age_days = (now - report_time).days
+                    if age_days > retention_days:
+                        # Rollup before deletion
+                        self._write_rollup(aggregates_path, data)
+                        to_delete.append(path)
+                        consolidated += 1
+            except (yaml.YAMLError, ValueError, OSError):
+                continue
+
+        # Phase 2: Count-based eviction (oldest first)
+        remaining_files = [f for f in files if f not in to_delete]
+        if len(remaining_files) > max_count:
+            excess = remaining_files[: len(remaining_files) - max_count]
+            for path in excess:
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        data = yaml.safe_load(f)
+                    if data:
+                        self._write_rollup(aggregates_path, data)
+                        consolidated += 1
+                except (yaml.YAMLError, OSError):
+                    pass
+                to_delete.append(path)
+
+        # Execute deletions
+        for path in to_delete:
+            try:
+                path.unlink()
+            except OSError:
+                pass
+
+        remaining = len(list(_DREAMS_DIR.glob("dream-*.yaml")))
+        return {
+            "deleted_count": len(to_delete),
+            "consolidated_count": consolidated,
+            "remaining_count": remaining,
+        }
+
+    @staticmethod
+    def _write_rollup(path: Path, data: dict) -> None:
+        """Append a compact statistical rollup to the aggregates JSONL file."""
+        rollup = {
+            "dream_id": data.get("dream_id", ""),
+            "timestamp": data.get("timestamp", ""),
+            "operations_analyzed": data.get("operations_analyzed", 0),
+            "friction_detected": data.get("friction_detected", 0),
+            "successes_detected": data.get("successes_detected", 0),
+            "patch_count": len(data.get("proposed_patches", [])),
+            "archetypes": list({e.get("archetype", "") for e in data.get("friction_events", [])}),
+        }
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rollup, default=str) + "\n")
 
     def dream(self) -> DreamReport:
         """Full dream cycle: scan → synthesize → persist → return.
@@ -490,10 +697,11 @@ def print_dream_report(report: DreamReport) -> None:
     print(f"  Timestamp:  {report.timestamp}")
     print(f"  Analyzed:   {report.operations_analyzed} operations")
     print(f"  Friction:   {report.friction_detected} events detected")
+    print(f"  Successes:  {report.successes_detected} patterns identified")
     print()
 
     if report.friction_events:
-        print("  ── Friction Events ──────────────────────────────────────")
+        print("  -- Friction Events ------------------------------------------")
         print()
         for i, event in enumerate(report.friction_events, 1):
             icon = _SEVERITY_ICONS.get(event.severity, "?")
@@ -502,8 +710,17 @@ def print_dream_report(report: DreamReport) -> None:
             print(f"    Diagnosis: {event.diagnosis}")
             print()
     else:
-        print("  ✓ No friction detected. All operations nominal.")
+        print("  No friction detected. All operations nominal.")
         print()
+
+    if report.success_patterns:
+        print("  -- Success Patterns -----------------------------------------")
+        print()
+        for i, pattern in enumerate(report.success_patterns, 1):
+            print(f"  + [{pattern.archetype}]")
+            print(f"    Operation: {pattern.operation}")
+            print(f"    Diagnosis: {pattern.diagnosis}")
+            print()
 
     if report.proposed_patches:
         print("  ── Proposed Governance Patches ──────────────────────────")

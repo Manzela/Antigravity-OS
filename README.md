@@ -146,23 +146,48 @@ ag-os dream
 # Recall past learnings (long-term memory)
 ag-os dream --recall 5
 
+# Auto-apply LOW-risk governance patches
+ag-os dream --apply
+
+# Prune old dream reports (tiered memory consolidation)
+ag-os dream --prune
+
+# Merge dream reports across multiple repositories
+ag-os dream merge /path/to/repo1 /path/to/repo2
+
 # Output as JSON for programmatic consumption
 ag-os dream --json-output
-
-# See it in action (simulates failure → dream → self-improvement)
-ag-os demo --dream
 ```
 
 ### How It Works
 
-1. **Friction Scan** — Queries the Flight Recorder for operations that looped,
+1. **Friction Scan** -- Queries the Flight Recorder for operations that looped,
    rolled back, exceeded budgets, or got stuck.
-2. **Pattern Detection** — Classifies friction into 5 archetypes: loop detection,
-   rollback cycles, budget overruns, blocked terminals, excessive transitions.
-3. **Dream Report** — Synthesizes a structured report with root-cause diagnoses
-   and proposed governance patches (new rules, config changes, threshold adjustments).
-4. **Long-Term Memory** — Persists Dream Reports to `~/.antigravity/dreams/` as
-   YAML files that accumulate across sessions.
+2. **Success Scan** -- Identifies operations that completed cleanly, quickly,
+   or on the first attempt (inverse anomaly detection).
+3. **Pattern Detection** -- Classifies friction into 5 archetypes and successes
+   into 3 archetypes for comprehensive operational insight.
+4. **Dream Report** -- Synthesizes a structured report with root-cause diagnoses,
+   proposed governance patches, and success baselines.
+5. **Patch Application** -- Auto-applies LOW-risk patches (threshold adjustments)
+   with mandatory human approval for HIGH-risk changes (new rules).
+6. **Long-Term Memory** -- Persists Dream Reports to `~/.antigravity/dreams/` with
+   TTL-based pruning and statistical rollup to `historical_aggregates.jsonl`.
+
+### Dream Daemon
+
+Run the dream cycle continuously as a background service:
+
+```bash
+# Start the daemon (foreground)
+ag-os daemon start
+
+# Install as OS service (launchd on macOS, systemd on Linux)
+ag-os daemon install
+
+# Check daemon health
+ag-os daemon status
+```
 
 Any AI agent that reads `ag-os dream` output gains self-improvement capabilities.
 

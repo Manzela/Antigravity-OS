@@ -28,11 +28,12 @@ ag-os demo
 ## Development Workflow
 
 1. **Fork and branch.** Create a feature branch from `main`.
-2. **Write code.** Follow existing patterns (see Style Guide below).
-3. **Test.** Run `pytest` and ensure all tests pass.
-4. **Lint.** Run `ruff check .` and `ruff format --check .` to verify formatting.
-5. **Commit.** Use clear, descriptive commit messages.
-6. **Open a PR.** Fill in the PR template. Reference related issues.
+2. **Set up pre-commit.** Run `pre-commit install` to enable hooks.
+3. **Write code.** Follow existing patterns (see Style Guide below).
+4. **Test.** Run `pytest` and ensure all tests pass.
+5. **Lint.** Run `ruff check .` and `ruff format --check .` to verify formatting.
+6. **Commit.** Use clear, descriptive commit messages. Pre-commit hooks will auto-check.
+7. **Open a PR.** Fill in the PR template. Reference related issues.
 
 ---
 

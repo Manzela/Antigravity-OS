@@ -3,11 +3,17 @@ monthly_cap: 100.0
 max_loop_count: 5
 providers:
   secrets: local
-  issues: jira
+  issues: console
   cost: local
-  state: redis
-  telemetry: otlp
+  state: sqlite
+  telemetry: console
   policy: builtin
 ci:
-  platform: github
+  platform: local
   self_healing: true
+dreaming:
+  schedule_interval_hours: 6
+  auto_apply: false
+  auto_prune: true
+  retention_days: 90
+  retention_max_count: 100

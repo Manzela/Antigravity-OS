@@ -4,6 +4,7 @@
 
 | Version | Supported |
 |:---|:---|
+| 1.4.x | Yes |
 | 1.3.x | Yes |
 | 1.2.x | Yes |
 | 1.1.x | Yes |
@@ -33,9 +34,11 @@ coordinate a fix before any public disclosure.
 The following areas are in scope:
 
 - The `ag_os` Python package and its providers.
-- The `ag-os` CLI tool.
+- The `ag-os` CLI tool and MCP server.
+- The Dream Daemon background process and service installation.
 - Configuration parsing (YAML injection, path traversal).
 - Credential storage (OS Keychain via `keyring`, fallback file).
+- Patch application and audit trail integrity.
 - Secret handling in the secrets provider surface.
 - State store integrity (SQLite, Redis).
 

@@ -335,25 +335,35 @@ def serve():
 # ──────────────────────────────────────────────────────────────
 
 
-@main.command()
+@main.group(invoke_without_command=True)
 @click.option("--recall", default=0, type=int, help="Recall the N most recent dream reports.")
 @click.option("--json-output", "use_json", is_flag=True, help="Output as JSON.")
 @click.option("--dry-run", is_flag=True, help="Analyze friction but don't persist.")
-def dream(recall, use_json, dry_run):
-    """Run the Dreaming Module self-improvement cycle.
+@click.option("--apply", is_flag=True, help="Apply LOW-risk patches automatically.")
+@click.option("--prune", "do_prune", is_flag=True, help="Prune old dream reports.")
+@click.pass_context
+def dream(ctx, recall, use_json, dry_run, apply, do_prune):
+    """Run the Dreaming Module self-improvement cycle."""
+    if ctx.invoked_subcommand is not None:
+        return
 
-    Analyzes the Flight Recorder for friction patterns (loops, rollbacks,
-    budget failures) and generates a Dream Report with proposed governance
-    patches. Reports are persisted to ~/.antigravity/dreams/ as long-term
-    memory.
-    """
     from ag_os.core.dreaming import DreamEngine, print_dream_report
 
     config = load_config()
     engine = DreamEngine(config=config)
 
+    if do_prune:
+        result = engine.prune()
+        print()
+        print(
+            f"  Pruned {result['deleted_count']} reports "
+            f"({result['consolidated_count']} consolidated). "
+            f"{result['remaining_count']} remaining."
+        )
+        print()
+        return
+
     if recall > 0:
-        # Recall mode: retrieve past dream reports
         reports = engine.recall(n=recall)
         if not reports:
             print()
@@ -373,7 +383,7 @@ def dream(recall, use_json, dry_run):
                 print_dream_report(report)
         return
 
-    # Dream cycle: scan → synthesize → (optionally persist)
+    # Dream cycle: scan -> synthesize -> (optionally persist)
     friction = engine.scan_friction()
     report = engine.synthesize(friction)
 
@@ -392,6 +402,113 @@ def dream(recall, use_json, dry_run):
         print_dream_report(report)
         print(report_path_msg)
         print()
+
+    # Apply patches if requested
+    if apply and report.proposed_patches:
+        from ag_os.core.patch_applier import apply_patch, classify_risk
+
+        print("  Applying LOW-risk patches...")
+        for patch in report.proposed_patches:
+            risk = classify_risk(patch.patch_type)
+            if risk == "LOW":
+                success = apply_patch(patch, interactive=False)
+                status = "applied" if success else "skipped"
+                print(f"    [{status}] {patch.target}")
+        print()
+
+
+@dream.command("merge")
+@click.argument("dirs", nargs=-1, required=True, type=click.Path(exists=True))
+@click.option("--json-output", "use_json", is_flag=True, help="Output as JSON.")
+def dream_merge(dirs, use_json):
+    """Merge dream reports from multiple project directories."""
+    from ag_os.core.aggregator import merge_dream_dirs, print_aggregated_report
+
+    report = merge_dream_dirs(list(dirs))
+
+    if use_json:
+        import json as json_mod
+        from dataclasses import asdict
+
+        print(json_mod.dumps(asdict(report), indent=2, default=str))
+    else:
+        print_aggregated_report(report)
+
+
+# ──────────────────────────────────────────────────────────────
+# ag-os daemon
+# ──────────────────────────────────────────────────────────────
+
+
+@main.group()
+def daemon():
+    """Manage the Dream Daemon background process."""
+    pass
+
+
+@daemon.command("start")
+def daemon_start():
+    """Start the Dream Daemon in the foreground."""
+    from ag_os.core.daemon import DreamDaemon
+
+    config = load_config()
+    d = DreamDaemon(config=config)
+    d.run_forever()
+
+
+@daemon.command("install")
+def daemon_install():
+    """Install the Dream Daemon as an OS service."""
+    from ag_os.core.daemon import install_service
+
+    config = load_config()
+    path = install_service(config)
+    print()
+    print(f"  [OK] Service installed: {path}")
+    print()
+    if sys.platform == "darwin":
+        print("  To start: launchctl load " + path)
+    else:
+        print("  To start: systemctl --user enable --now antigravity-daemon")
+    print()
+
+
+@daemon.command("uninstall")
+def daemon_uninstall():
+    """Remove the Dream Daemon OS service."""
+    from ag_os.core.daemon import uninstall_service
+
+    path = uninstall_service()
+    if path:
+        print()
+        print(f"  [OK] Service removed: {path}")
+        print()
+    else:
+        print()
+        print("  No service installation found.")
+        print()
+
+
+@daemon.command("status")
+def daemon_status():
+    """Check Dream Daemon health."""
+    from ag_os.core.daemon import get_daemon_status
+
+    status = get_daemon_status()
+    print()
+    print("  Dream Daemon Status")
+    print("  -------------------")
+    print(f"  Running:     {'Yes' if status['running'] else 'No'}")
+    print(f"  Healthy:     {'Yes' if status['healthy'] else 'No'}")
+    if status["pid"]:
+        print(f"  PID:         {status['pid']}")
+    if status["last_tick"]:
+        print(f"  Last tick:   {status['last_tick']}")
+    print(f"  Cycles:      {status['cycle_count']}")
+    if status["age_seconds"] is not None:
+        age_h = status["age_seconds"] / 3600
+        print(f"  Age:         {age_h:.1f}h since last tick")
+    print()
 
 
 # ──────────────────────────────────────────────────────────────

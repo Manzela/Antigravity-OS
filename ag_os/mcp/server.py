@@ -185,6 +185,7 @@ def dream(dry_run: bool = False) -> dict:
         "timestamp": report.timestamp,
         "operations_analyzed": report.operations_analyzed,
         "friction_detected": report.friction_detected,
+        "successes_detected": report.successes_detected,
         "summary": report.summary,
         "persisted_to": persisted_to,
         "friction_events": [
@@ -195,6 +196,14 @@ def dream(dry_run: bool = False) -> dict:
                 "diagnosis": e.diagnosis,
             }
             for e in report.friction_events
+        ],
+        "success_patterns": [
+            {
+                "operation": s.operation,
+                "archetype": s.archetype,
+                "diagnosis": s.diagnosis,
+            }
+            for s in report.success_patterns
         ],
         "proposed_patches": [
             {
@@ -232,6 +241,7 @@ def recall_dreams(n: int = 5) -> dict:
                 "timestamp": r.timestamp,
                 "operations_analyzed": r.operations_analyzed,
                 "friction_detected": r.friction_detected,
+                "successes_detected": r.successes_detected,
                 "summary": r.summary,
                 "friction_events": [
                     {
@@ -241,6 +251,14 @@ def recall_dreams(n: int = 5) -> dict:
                         "diagnosis": e.diagnosis,
                     }
                     for e in r.friction_events
+                ],
+                "success_patterns": [
+                    {
+                        "operation": s.operation,
+                        "archetype": s.archetype,
+                        "diagnosis": s.diagnosis,
+                    }
+                    for s in r.success_patterns
                 ],
                 "proposed_patches": [
                     {

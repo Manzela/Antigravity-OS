@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-05-08
+
+### Added
+
+- **Success Pattern Extraction** (Feature 2) — Inverse anomaly detection
+  identifies CLEAN_COMPLETION, FAST_COMPLETION, and FIRST_ATTEMPT_SUCCESS
+  patterns from operational telemetry.
+- **GitOps Patch Applier** (Feature 3) — Risk-based governance patch
+  application with comment-preserving YAML round-trips (ruamel.yaml).
+  LOW-risk patches auto-apply; HIGH-risk patches require human approval.
+  Full audit trail to `~/.antigravity/patch_audit.yaml`.
+- **Dream Daemon** (Feature 1) — Background process for continuous
+  self-improvement cycles. OS-native service installation for launchd
+  (macOS) and systemd (Linux). PID/health file management with
+  structured logging.
+- **Cross-Repo Aggregator** (Feature 4) — Enterprise fleet-wide friction
+  correlation via `ag-os dream merge`. Detects systemic patterns across
+  multiple repositories.
+- **Tiered Memory Consolidation** (Feature 5) — TTL and count-based
+  pruning with statistical rollup to `historical_aggregates.jsonl`.
+- **CNCF Governance Documentation** — GOVERNANCE.md, MAINTAINERS.md,
+  ADOPTERS.md.
+- **Architecture Decision Records** — ADR-001 through ADR-004 in
+  `docs/adr/`.
+- **Pre-commit hooks** — ruff, detect-secrets, and standard hygiene
+  hooks.
+- **pip-audit in CI** — Supply-chain vulnerability scanning on every
+  build.
+- **Credential tests** — Test coverage for the keyring/fallback
+  credential lifecycle.
+
+### Changed
+
+- **CI matrix** — Added Python 3.14 to match pyproject.toml classifiers.
+- **Default config** — Reset to offline-first providers (console, local,
+  sqlite) for open-source release. Added `dreaming` section to config
+  schema.
+- **Dream CLI** — Upgraded from `@main.command()` to `@main.group()` to
+  support subcommands (`merge`) and new flags (`--apply`, `--prune`).
+
+### Dependencies
+
+- Added `ruamel.yaml>=0.18` for comment-preserving YAML round-trips.
+
 ## [1.3.0] - 2026-05-08
 
 ### Added

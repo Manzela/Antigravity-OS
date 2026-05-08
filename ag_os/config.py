@@ -27,6 +27,13 @@ _DEFAULT_CONFIG = {
         "platform": "local",
         "self_healing": True,
     },
+    "dreaming": {
+        "schedule_interval_hours": 6,
+        "auto_apply": False,
+        "auto_prune": True,
+        "retention_days": 90,
+        "retention_max_count": 100,
+    },
 }
 
 _CONFIG_FILENAMES = ["antigravity.yaml", "antigravity.yml"]
