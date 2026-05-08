@@ -33,6 +33,7 @@ def main(ctx):
     if ctx.invoked_subcommand is None:
         try:
             from ag_os.interactive import interactive_main
+
             interactive_main()
         except ImportError:
             print("  [ERROR] Interactive shell dependencies missing.")

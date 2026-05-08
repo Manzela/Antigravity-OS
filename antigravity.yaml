@@ -1,9 +1,9 @@
 version: '1.0'
-monthly_cap: 50000.0
+monthly_cap: 100.0
 max_loop_count: 5
 providers:
   secrets: local
-  issues: linear
+  issues: jira
   cost: local
   state: redis
   telemetry: otlp

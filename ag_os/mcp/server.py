@@ -60,7 +60,7 @@ def transition_state(
     """Advance the Flight Recorder state machine for an operation.
 
     Valid states: IDLE, PLANNING, PLAN_APPROVED, BUILDING, VERIFYING,
-    COMPLETE, FAILED, BLOCKED, ROLLED_BACK.
+    COMPLETE, BLOCKED, ROLLED_BACK.
 
     Args:
         operation: Identifier for the current operation (e.g. task ID).

@@ -44,3 +44,6 @@ artifacts/
 # === Antigravity OS runtime ===
 # State database is user-specific, not committed
 # ~/.antigravity/ is in home dir, not in repo
+
+# Antigravity OS — never commit secrets
+credentials.json

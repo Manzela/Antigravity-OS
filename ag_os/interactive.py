@@ -164,9 +164,7 @@ def run_ftux_wizard():
         for i, spec in enumerate(required_creds, 1):
             existing = get_credential(spec.key)
             if existing:
-                console.print(
-                    f"  [green]✔[/] [bold]{spec.label}[/] — already configured"
-                )
+                console.print(f"  [green]✔[/] [bold]{spec.label}[/] — already configured")
                 continue
 
             if spec.hint:
@@ -203,9 +201,7 @@ def run_ftux_wizard():
                 console.print("\n  [yellow]Skipped remaining credentials.[/]")
                 break
     else:
-        console.print(
-            "\n  [dim]All selected providers work offline — no credentials needed.[/]"
-        )
+        console.print("\n  [dim]All selected providers work offline — no credentials needed.[/]")
 
     console.print("\n[bold green]Setup complete![/] You are ready to use Antigravity OS.\n")
     return True
@@ -235,9 +231,7 @@ def handle_auth():
     status = get_credential_status(config)
 
     if not required:
-        console.print(
-            "[dim]All selected providers work offline — no credentials needed.[/]"
-        )
+        console.print("[dim]All selected providers work offline — no credentials needed.[/]")
         return
 
     # Display current status
@@ -378,6 +372,7 @@ def handle_demo():
     with console.status("[dim]Logging state transitions to Flight Recorder...[/]"):
         recorder = FlightRecorder(config=config)
         import uuid
+
         demo_op = f"demo-op-{uuid.uuid4().hex[:6]}"
         recorder.transition(demo_op, "PLANNING")
         recorder.transition(demo_op, "PLAN_APPROVED")
