@@ -8,165 +8,253 @@
 <meta name="theme-color" content="#060a12">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://manzela.github.io/Antigravity-OS/">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <style>
 /* ── Foundation ───────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#060a12;--surface:#0c1220;--surface-2:#111a2e;
-  --border:rgba(148,163,184,.08);--border-lit:rgba(148,163,184,.15);
-  --text:#e2e8f0;--text-2:#94a3b8;--text-3:#64748b;
-  --cyan:#38bdf8;--gold:#f59e0b;--red:#f87171;--green:#34d399;--purple:#a78bfa;
+  --bg:#060a12;
+  --surface:rgba(10, 14, 23, 0.4);
+  --surface-hover:rgba(20, 28, 45, 0.6);
+  --border:rgba(255, 255, 255, 0.08);
+  --border-lit:rgba(255, 255, 255, 0.15);
+  --text:#f8fafc;
+  --text-2:#94a3b8;
+  --text-3:#64748b;
+  --cyan:#00f0ff;
+  --cyan-dim:rgba(0, 240, 255, 0.15);
+  --purple:#b026ff;
+  --red:#f87171;
+  --green:#4ade80;
+  --gold:#fbbf24;
   --sans:'Inter',system-ui,-apple-system,sans-serif;
   --mono:'JetBrains Mono','SF Mono',monospace;
   --ease:cubic-bezier(.25,.46,.45,.94);
 }
 html{scroll-behavior:smooth;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
-body{overflow-x:hidden}
-::selection{background:rgba(56,189,248,.2);color:#fff}
+body{overflow-x:hidden; position: relative;}
+::selection{background:rgba(0, 240, 255, 0.2);color:#fff}
 a{color:var(--cyan);text-decoration:none;transition:opacity .2s}
 a:hover{opacity:.8}
 img{display:block;max-width:100%}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;vertical-align:middle}
 
+/* ── Ambient Effects ──────────────────────── */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(120px);
+  opacity: 0.4;
+  mix-blend-mode: screen;
+}
+.glow-1 {
+  top: -10%; left: -10%;
+  width: 600px; height: 600px;
+  background: var(--cyan-dim);
+}
+.glow-2 {
+  bottom: -20%; right: -10%;
+  width: 700px; height: 700px;
+  background: rgba(176, 38, 255, 0.08);
+}
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 /* ── Layout ───────────────────────────────── */
 .container{max-width:1120px;margin:0 auto;padding:0 32px}
-section{padding:120px 0}
-section+section{border-top:1px solid var(--border)}
+section{padding:120px 0; position: relative; z-index: 1;}
 
 /* ── Nav ──────────────────────────────────── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,18,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);transition:background .3s}
-nav .inner{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;max-width:1120px;margin:0 auto}
-.brand{font-weight:600;font-size:.95rem;letter-spacing:-.02em;color:#fff}
-.brand span{font-weight:400;font-size:.7rem;color:var(--text-3);margin-left:8px}
-.nav-links{display:flex;align-items:center;gap:24px}
-.nav-links a{font-size:.8rem;font-weight:500;color:var(--text-2);transition:color .2s}
-.nav-links a:hover{color:#fff;opacity:1}
-.nav-links .gh{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border-lit);border-radius:8px;font-size:.78rem;color:var(--text);transition:all .2s}
-.nav-links .gh:hover{border-color:var(--cyan);color:var(--cyan);opacity:1}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,18,.7);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s}
+nav .inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;max-width:1120px;margin:0 auto}
+.brand{font-weight:700;font-size:1.1rem;letter-spacing:-.03em;color:#fff; display: flex; align-items: center; gap: 8px;}
+.brand-icon { width: 24px; height: 24px; color: var(--cyan); }
+.brand span{font-weight:400;font-size:.7rem;color:var(--text-3);padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:.85rem;font-weight:500;color:var(--text-2);transition:color .2s}
+.nav-links a:hover{color:#fff;}
+.nav-links .gh{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--border-lit);border-radius:8px;font-size:.8rem;color:var(--text);background: rgba(255,255,255,0.02); transition:all .2s}
+.nav-links .gh:hover{background: rgba(255,255,255,0.05); border-color:var(--cyan);color:var(--cyan);}
 
 /* ── Hero ─────────────────────────────────── */
-.hero{padding:160px 0 120px;text-align:center}
-.hero-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;border:1px solid var(--border-lit);background:rgba(56,189,248,.04);font-size:.72rem;font-weight:500;color:var(--text-2);letter-spacing:.04em;margin-bottom:32px}
-.hero-label .material-symbols-outlined{font-size:14px;color:var(--cyan)}
-h1{font-size:clamp(2.4rem,5vw,3.6rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;color:#fff;margin-bottom:20px}
+.hero{padding:180px 0 100px;text-align:center; position: relative;}
+.hero-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;border:1px solid var(--cyan-dim);background:rgba(0,240,255,.05);font-size:.75rem;font-weight:500;color:var(--cyan);letter-spacing:.04em;margin-bottom:32px; backdrop-filter: blur(10px);}
+.hero-label .material-symbols-outlined{font-size:16px;}
+h1{font-size:clamp(2.8rem,6vw,4.2rem);font-weight:700;letter-spacing:-.04em;line-height:1.05;color:#fff;margin-bottom:24px}
 h1 em{font-style:normal;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.05rem;color:var(--text-2);max-width:580px;margin:0 auto 40px;line-height:1.7;font-weight:400}
-.hero-actions{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:56px}
-.btn-gh{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#fff;color:var(--bg);font-weight:600;font-size:.85rem;border-radius:10px;transition:all .25s var(--ease)}
-.btn-gh:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,255,255,.08);opacity:1}
-.install-cmd{font-family:var(--mono);font-size:.8rem;color:var(--text-2);padding:10px 20px;border:1px solid var(--border-lit);border-radius:10px;user-select:all;cursor:copy;transition:border-color .2s}
-.install-cmd:hover{border-color:var(--cyan)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:640px;margin:0 auto;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--border)}
-.metric{background:var(--surface);padding:20px;text-align:center}
-.metric-val{font-family:var(--mono);font-size:1.5rem;font-weight:600;color:#fff;line-height:1}
-.metric-label{font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-top:6px}
+.hero-sub{font-size:1.15rem;color:var(--text-2);max-width:640px;margin:0 auto 48px;line-height:1.6;font-weight:400}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:64px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--text);color:var(--bg);font-weight:600;font-size:.9rem;border-radius:10px;transition:all .25s var(--ease)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,255,255,.15);opacity:1; background: #fff;}
+.install-cmd{font-family:var(--mono);font-size:.85rem;color:var(--text-2);padding:12px 24px;border:1px solid var(--border-lit);background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-radius:10px;user-select:all;cursor:copy;transition:all .2s; display: flex; align-items: center; gap: 12px;}
+.install-cmd::before { content: '$'; color: var(--cyan); }
+.install-cmd:hover{border-color:var(--cyan); background: rgba(0,240,255,0.05);}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:720px;margin:0 auto;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border); backdrop-filter: blur(10px);}
+.metric{background:var(--surface);padding:24px;text-align:center; transition: background 0.3s;}
+.metric:hover{background: var(--surface-hover);}
+.metric-val{font-family:var(--mono);font-size:1.8rem;font-weight:600;color:#fff;line-height:1}
+.metric-label{font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-top:8px; font-weight: 500;}
+
+/* ── Hero Graphic (SVG) ───────────────────── */
+.hero-graphic {
+  margin: 0 auto 60px;
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+}
+.hero-graphic svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.1));
+}
+.svg-pulse { animation: pulse 3s infinite alternate; }
+.svg-dash { animation: dash 20s linear infinite; }
+@keyframes pulse { 0% { opacity: 0.6; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.3); } }
+@keyframes dash { to { stroke-dashoffset: -1000; } }
 
 /* ── Section Headers ─────────────────────── */
-.section-head{text-align:center;margin-bottom:56px}
-.section-head .label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:12px}
-h2{font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:600;letter-spacing:-.02em;color:#fff;line-height:1.2;margin-bottom:14px}
+.section-head{text-align:center;margin-bottom:64px}
+.section-head .label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--cyan);margin-bottom:16px; display: inline-block; padding: 4px 12px; background: var(--cyan-dim); border-radius: 6px;}
+h2{font-size:clamp(2rem,4vw,2.8rem);font-weight:700;letter-spacing:-.03em;color:#fff;line-height:1.15;margin-bottom:16px}
 h2 em{font-style:normal;color:var(--red)}
-h2 strong{font-weight:600;color:var(--cyan)}
-.section-sub{font-size:.95rem;color:var(--text-2);max-width:560px;margin:0 auto;line-height:1.6}
+h2 strong{font-weight:700;color:var(--cyan)}
+.section-sub{font-size:1.05rem;color:var(--text-2);max-width:600px;margin:0 auto;line-height:1.6}
 
-/* ── Problem Cards ────────────────────────── */
-.card-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border)}
-.p-card{background:var(--surface);padding:28px 24px;transition:background .3s var(--ease)}
-.p-card:hover{background:var(--surface-2)}
-.p-card .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;background:rgba(248,113,113,.06);color:var(--red)}
-.p-card .icon .material-symbols-outlined{font-size:20px}
-.p-card h3{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:8px}
-.p-card p{font-size:.78rem;color:var(--text-2);line-height:1.55}
+/* ── Glass Cards (Problem/Solution) ───────── */
+.card-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.glass-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:32px 28px;position:relative;overflow:hidden;transition:transform .3s var(--ease), border-color .3s, box-shadow .3s; display: flex; flex-direction: column;}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent, var(--border)),transparent);opacity:0;transition:opacity .3s;}
+.glass-card:hover{transform:translateY(-4px);border-color:var(--border-lit);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+.glass-card:hover::before{opacity:1;}
 
-/* ── Solution Cards ───────────────────────── */
-.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border)}
-.s-card{background:var(--surface);padding:28px 24px;display:flex;flex-direction:column;transition:background .3s var(--ease)}
-.s-card:hover{background:var(--surface-2)}
-.s-card .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;background:rgba(56,189,248,.06);color:var(--cyan)}
-.s-card .icon .material-symbols-outlined{font-size:20px}
-.s-card h3{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:8px}
-.s-card p{font-size:.78rem;color:var(--text-2);line-height:1.55;flex:1}
-.s-card code{display:block;margin-top:14px;font-family:var(--mono);font-size:.65rem;color:var(--text-3);padding:8px 12px;background:rgba(0,0,0,.3);border-radius:6px;border:1px solid var(--border)}
+.glass-card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;background:var(--bg-accent, rgba(255,255,255,0.05));color:var(--color-accent, var(--text)); border: 1px solid var(--border);}
+.glass-card .icon .material-symbols-outlined{font-size:24px}
+.glass-card h3{font-size:1rem;font-weight:600;color:#fff;margin-bottom:12px}
+.glass-card p{font-size:.85rem;color:var(--text-2);line-height:1.6;flex:1;}
+.glass-card code{display:block;margin-top:20px;font-family:var(--mono);font-size:.75rem;color:var(--text-3);padding:10px 14px;background:rgba(0,0,0,.4);border-radius:8px;border:1px solid var(--border); transition: color 0.2s, border-color 0.2s;}
+.glass-card:hover code { color: var(--cyan); border-color: var(--cyan-dim); }
+
+/* Problem Specific Accents */
+.p-card { --accent: var(--red); --color-accent: var(--red); --bg-accent: rgba(248,113,113,.08); }
+.s-card { --accent: var(--cyan); --color-accent: var(--cyan); --bg-accent: rgba(0,240,255,.08); }
 
 /* ── Impact Row ───────────────────────────── */
-.impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border)}
-.impact-cell{background:var(--surface);padding:36px 28px;text-align:center}
-.impact-before{font-family:var(--mono);font-size:.85rem;color:var(--text-3);text-decoration:line-through;margin-bottom:10px}
-.impact-after{font-family:var(--mono);font-size:2rem;font-weight:600;color:var(--cyan);line-height:1}
-.impact-label{font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-top:10px}
+.impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.impact-cell{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center; position: relative; overflow: hidden;}
+.impact-cell::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top, var(--cyan-dim) 0%, transparent 70%); opacity: 0; transition: opacity 0.4s; pointer-events: none;}
+.impact-cell:hover::after { opacity: 1; }
+.impact-before{font-family:var(--mono);font-size:1rem;color:var(--text-3);text-decoration:line-through;margin-bottom:12px}
+.impact-after{font-family:var(--mono);font-size:2.8rem;font-weight:700;color:var(--cyan);line-height:1; letter-spacing: -0.02em;}
+.impact-label{font-size:.75rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;margin-top:16px; font-weight: 500;}
 
-/* ── Terminal Block ───────────────────────── */
-.terminal{max-width:560px;margin:0 auto;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0a0f1a}
-.terminal-bar{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3)}
-.terminal-dot{width:10px;height:10px;border-radius:50%;background:var(--text-3);opacity:.3}
-.terminal-label{font-family:var(--mono);font-size:.6rem;color:var(--text-3);margin-left:auto}
-.terminal-body{padding:20px 24px}
-.terminal-line{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);font-size:.78rem;line-height:2.2}
-.terminal-prompt{color:var(--text-3);user-select:none}
-.terminal-cmd{color:var(--text)}
-.terminal-comment{color:var(--text-3);font-style:italic;padding-left:28px;font-size:.72rem}
+/* ── Advanced Terminal ────────────────────── */
+.terminal-wrapper { width: 100%; max-width: 800px; margin: 0 auto; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));}
+.terminal{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(6, 10, 18, 0.85); backdrop-filter: blur(20px);}
+.terminal-bar{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02); position: relative;}
+.mac-dots { display: flex; gap: 8px; }
+.mac-dot{width:12px;height:12px;border-radius:50%;}
+.terminal-label{font-family:var(--mono);font-size:.75rem;color:var(--text-3);position: absolute; left: 50%; transform: translateX(-50%); font-weight: 500;}
+.terminal-body{padding:24px 32px; font-family:var(--mono);font-size:.85rem;line-height:1.8; color: var(--text-2); height: 380px; overflow-y: auto;}
+
+.t-line { display: flex; gap: 12px; margin-bottom: 4px; opacity: 0; transform: translateY(5px); animation: t-fade-in 0.3s forwards; }
+.t-prompt { color: var(--text-3); user-select: none; }
+.t-cmd { color: var(--cyan); font-weight: 500;}
+.t-out { color: var(--text); }
+.t-ok { color: var(--green); }
+.t-err { color: var(--red); }
+.t-cost { color: var(--gold); }
+.t-comment { color: var(--text-3); font-style: italic; }
+.t-table { color: var(--text-3); white-space: pre; margin: 12px 0; font-size: 0.8rem;}
+.t-cursor { display: inline-block; width: 8px; height: 16px; background: var(--text); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 4px;}
+
+@keyframes t-fade-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 /* ── Architecture Section ─────────────────── */
-.arch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border)}
-.arch-card{background:var(--surface);padding:28px 24px}
-.arch-card .layer-label{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.arch-card .layer-label .dot{width:6px;height:6px;border-radius:50%}
-.arch-card h3{font-size:.9rem;font-weight:600;color:#fff;margin-bottom:8px}
-.arch-card p{font-size:.78rem;color:var(--text-2);line-height:1.55}
-.arch-card ul{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:6px}
-.arch-card li{font-size:.72rem;color:var(--text-2);display:flex;align-items:center;gap:8px}
-.arch-card li .material-symbols-outlined{font-size:14px;color:var(--text-3)}
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.arch-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:36px 32px; transition: transform 0.3s;}
+.arch-card:hover { transform: translateY(-4px); }
+.arch-card .layer-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.arch-card .layer-label .dot{width:8px;height:8px;border-radius:50%}
+.arch-card h3{font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:12px}
+.arch-card p{font-size:.85rem;color:var(--text-2);line-height:1.6}
+.arch-card ul{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:12px}
+.arch-card li{font-size:.85rem;color:var(--text);display:flex;align-items:center;gap:12px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid transparent; transition: border-color 0.2s;}
+.arch-card li:hover { border-color: var(--border-lit); background: rgba(255,255,255,0.05); }
+.arch-card li .material-symbols-outlined{font-size:18px;color:var(--cyan)}
 
 /* ── Footer ───────────────────────────────── */
-footer{padding:40px 0;border-top:1px solid var(--border)}
-footer .inner{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--text-3)}
-footer a{color:var(--text-3);transition:color .2s}
+footer{padding:48px 0;border-top:1px solid var(--border); background: rgba(6,10,18,0.8); backdrop-filter: blur(10px);}
+footer .inner{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-3)}
+footer a{color:var(--text-3);transition:color .2s; font-weight: 500;}
 footer a:hover{color:var(--text)}
 
 /* ── Scroll Reveal ────────────────────────── */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
 
 /* ── Responsive ───────────────────────────── */
-@media(max-width:960px){
-  .card-grid-4{grid-template-columns:1fr 1fr}
-  .card-grid-3{grid-template-columns:1fr 1fr}
+@media(max-width:1024px){
+  .card-grid-4{grid-template-columns:repeat(2,1fr)}
+  .card-grid-3{grid-template-columns:repeat(2,1fr)}
   .impact-row{grid-template-columns:1fr}
   .arch-grid{grid-template-columns:1fr}
   .metrics{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
-  .container{padding:0 20px}
+  .container{padding:0 24px}
   section{padding:80px 0}
-  .hero{padding:120px 0 80px}
-  .card-grid-4{grid-template-columns:1fr}
-  .card-grid-3{grid-template-columns:1fr}
+  .hero{padding:140px 0 80px}
+  .card-grid-4, .card-grid-3{grid-template-columns:1fr}
   .hero-actions{flex-direction:column}
-  .nav-links{gap:12px}
+  .nav-links{gap:16px}
   .nav-links a:not(.gh){display:none}
+  h1 { font-size: 2.2rem; }
 }
 
 /* ── Scrollbar ────────────────────────────── */
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border-lit);border-radius:3px}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-lit);border-radius:4px}
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 </style>
 </head>
 <body>
 
+<!-- Ambient Background -->
+<div class="grid-bg"></div>
+<div class="ambient-glow glow-1"></div>
+<div class="ambient-glow glow-2"></div>
+
 <!-- Nav -->
 <nav>
   <div class="inner">
-    <div class="brand">Antigravity OS <span>v1.4.0</span></div>
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Antigravity OS logo">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      Antigravity OS <span>v1.4.0</span>
+    </div>
     <div class="nav-links">
       <a href="#problem">Problem</a>
       <a href="#solution">Solution</a>
       <a href="#reference">Use Case</a>
       <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="gh">
-        <span class="material-symbols-outlined" style="font-size:16px">code</span> GitHub
+        <span class="material-symbols-outlined" style="font-size:18px">code</span> GitHub
       </a>
     </div>
   </div>
@@ -179,19 +267,57 @@ footer a:hover{color:var(--text)}
       <span class="material-symbols-outlined">lock_open</span>
       Open Source · MIT License · Zero Cloud Dependencies
     </div>
-    <h1 class="reveal reveal-d1">The governance kernel for <em>AI agents</em></h1>
-    <p class="hero-sub reveal reveal-d2">AI agents can write code, deploy services, and manage infrastructure. But without deterministic guardrails, they burn budgets, loop endlessly, and operate as black boxes. This kernel solves that.</p>
-    <div class="hero-actions reveal reveal-d2">
-      <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn-gh">
-        <span class="material-symbols-outlined" style="font-size:18px">code</span> View Repository
-      </a>
-      <code class="install-cmd">pip install ag-os</code>
+    
+    <!-- Animated SVG Graphic (Stitch Inspired) -->
+    <div class="hero-graphic reveal reveal-d1">
+      <svg viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing the Antigravity OS governance kernel connecting input data to governed agent nodes">
+        <!-- Connecting Lines -->
+        <path d="M100 120 H700" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+        <path class="svg-dash" d="M100 120 H700" stroke="#00f0ff" stroke-width="2" stroke-dasharray="8 8"/>
+        
+        <!-- Left Node (Input) -->
+        <rect x="50" y="80" width="80" height="80" rx="16" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+        <circle cx="90" cy="120" r="12" fill="#94a3b8"/>
+        
+        <!-- Center Node (AG-OS Core) -->
+        <rect class="svg-pulse" x="300" y="40" width="200" height="160" rx="24" fill="rgba(0,240,255,0.05)" stroke="#00f0ff" stroke-width="2"/>
+        <!-- Core details -->
+        <path d="M340 80 H460 M340 120 H460 M340 160 H400" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="400" cy="120" r="30" fill="url(#coreGradient)"/>
+        
+        <!-- Right Nodes (Agents) -->
+        <rect x="650" y="40" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+        <path class="svg-dash" d="M400 120 L650 60" stroke="#b026ff" stroke-width="2" stroke-dasharray="6 6"/>
+        
+        <rect x="680" y="100" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+        
+        <rect x="650" y="160" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+        <path class="svg-dash" d="M400 120 L650 180" stroke="#4ade80" stroke-width="2" stroke-dasharray="6 6"/>
+
+        <defs>
+          <radialGradient id="coreGradient" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#00f0ff"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+        </defs>
+      </svg>
     </div>
-    <div class="metrics reveal reveal-d3">
-      <div class="metric"><div class="metric-val">102</div><div class="metric-label">Tests Passing</div></div>
-      <div class="metric"><div class="metric-val">9</div><div class="metric-label">Governance Rules</div></div>
-      <div class="metric"><div class="metric-val">6</div><div class="metric-label">Provider Surfaces</div></div>
-      <div class="metric"><div class="metric-val">0</div><div class="metric-label">Cloud Lock-in</div></div>
+
+    <h1 class="reveal reveal-d2">The governance kernel for <em>AI agents</em></h1>
+    <p class="hero-sub reveal reveal-d2">AI agents can write code, deploy services, and manage infrastructure. But without deterministic guardrails, they burn budgets, loop endlessly, and operate as black boxes. This kernel solves that.</p>
+    
+    <div class="hero-actions reveal reveal-d3">
+      <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn-primary">
+        <span class="material-symbols-outlined" style="font-size:20px">code</span> View Repository
+      </a>
+      <div class="install-cmd">pip install ag-os</div>
+    </div>
+    
+    <div class="metrics reveal reveal-d3" id="metrics-container">
+      <div class="metric"><div class="metric-val" data-target="102">0</div><div class="metric-label">Tests Passing</div></div>
+      <div class="metric"><div class="metric-val" data-target="9">0</div><div class="metric-label">Governance Rules</div></div>
+      <div class="metric"><div class="metric-val" data-target="6">0</div><div class="metric-label">Provider Surfaces</div></div>
+      <div class="metric"><div class="metric-val" data-target="0">0</div><div class="metric-label">Cloud Lock-in</div></div>
     </div>
   </div>
 </section>
@@ -204,22 +330,22 @@ footer a:hover{color:var(--text)}
       <h2>Autonomous agents are powerful.<br><em>Ungoverned agents are dangerous.</em></h2>
     </div>
     <div class="card-grid-4 reveal reveal-d1">
-      <div class="p-card">
+      <div class="glass-card p-card">
         <div class="icon"><span class="material-symbols-outlined">payments</span></div>
         <h3>Budget Overruns</h3>
         <p>A single agent loop can exhaust thousands in GPU compute with no built-in spending limits or solvency checks.</p>
       </div>
-      <div class="p-card">
+      <div class="glass-card p-card">
         <div class="icon"><span class="material-symbols-outlined">sync_problem</span></div>
         <h3>Infinite Loops</h3>
         <p>Agents retry identical failed operations indefinitely — each cycle burning tokens and time without progress.</p>
       </div>
-      <div class="p-card">
+      <div class="glass-card p-card">
         <div class="icon"><span class="material-symbols-outlined">visibility_off</span></div>
         <h3>Zero Audit Trail</h3>
         <p>Black-box execution with no flight recorder, no state machine, and no mechanism to replay what happened.</p>
       </div>
-      <div class="p-card">
+      <div class="glass-card p-card">
         <div class="icon"><span class="material-symbols-outlined">psychology_alt</span></div>
         <h3>No Learning</h3>
         <p>Agents repeat identical mistakes across sessions — no shared memory, no friction analysis, no self-improvement.</p>
@@ -237,68 +363,41 @@ footer a:hover{color:var(--text)}
       <p class="section-sub">Six deterministic modules that enforce cost limits, policy-as-code, audit trails, and self-improvement. Zero LLM dependencies in the core.</p>
     </div>
     <div class="card-grid-3 reveal reveal-d1">
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">shield</span></div>
         <h3>Cost Guard</h3>
         <p>Real-time solvency gating. Blocks execution when projected spend exceeds budget. Per-tier rate cards with configurable thresholds.</p>
         <code>ag-os check 1.0 --tier gpu_a100</code>
       </div>
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">gavel</span></div>
         <h3>The Constitution</h3>
         <p>Nine governance rules enforced at every state transition. Policy-as-code defined in Markdown. Extensible by design.</p>
         <code>.agent/rules/08-economic-safety.md</code>
       </div>
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">flight</span></div>
         <h3>Flight Recorder</h3>
         <p>Deterministic state machine with complete audit trail. SQLite WAL-backed. Every operation tracked end-to-end with replay capability.</p>
         <code>ag-os status</code>
       </div>
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">lightbulb</span></div>
         <h3>DreamEngine</h3>
         <p>Self-improvement loop. Scans friction logs, identifies failure patterns, and synthesizes governance patches automatically.</p>
         <code>ag-os dream --apply</code>
       </div>
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">hub</span></div>
         <h3>Provider Registry</h3>
         <p>Six swappable abstraction surfaces — secrets, issues, cost, state, telemetry, policy. Works offline. Scales to cloud.</p>
         <code>providers: { cost: gcp, state: redis }</code>
       </div>
-      <div class="s-card">
+      <div class="glass-card s-card">
         <div class="icon"><span class="material-symbols-outlined">smart_toy</span></div>
         <h3>MCP Server</h3>
         <p>Exposes governance as Model Context Protocol tools. Any MCP-compatible agent gets governance built-in.</p>
         <code>ag-os serve</code>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Impact -->
-<section id="impact">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="label">Measured Results</div>
-      <h2>From chaos to <strong>controlled autonomy</strong></h2>
-    </div>
-    <div class="impact-row reveal reveal-d1">
-      <div class="impact-cell">
-        <div class="impact-before">$10,000+</div>
-        <div class="impact-after">$0</div>
-        <div class="impact-label">Budget Overrun</div>
-      </div>
-      <div class="impact-cell">
-        <div class="impact-before">Infinite loops</div>
-        <div class="impact-after">3 max</div>
-        <div class="impact-label">Then Halt + Escalate</div>
-      </div>
-      <div class="impact-cell">
-        <div class="impact-before">Zero visibility</div>
-        <div class="impact-after">Full trace</div>
-        <div class="impact-label">Every State Transition</div>
       </div>
     </div>
   </div>
@@ -337,41 +436,50 @@ footer a:hover{color:var(--text)}
         </ul>
       </div>
       <div class="arch-card">
-        <div class="layer-label" style="color:var(--gold)"><div class="dot" style="background:var(--gold)"></div>Without → With AG-OS</div>
-        <h3>Observed Impact</h3>
+        <div class="layer-label" style="color:var(--gold)"><div class="dot" style="background:var(--gold)"></div>Observed Impact</div>
+        <h3>Before → After</h3>
         <p>Measured delta after integrating the governance kernel into the pipeline's execution loop.</p>
         <ul>
-          <li><span class="material-symbols-outlined">payments</span> Runaway spend: <strong style="color:var(--red)">$847</strong> → <strong style="color:var(--green)">$0</strong> overrun</li>
-          <li><span class="material-symbols-outlined">sync_problem</span> Retry storms: <strong style="color:var(--red)">12 avg</strong> → <strong style="color:var(--green)">2.1 avg</strong> cycles</li>
-          <li><span class="material-symbols-outlined">visibility</span> Audit coverage: <strong style="color:var(--red)">0%</strong> → <strong style="color:var(--green)">100%</strong> traced</li>
-          <li><span class="material-symbols-outlined">auto_fix_high</span> Self-healed rules: <strong style="color:var(--green)">6 patches</strong> synthesized</li>
+          <li><span class="material-symbols-outlined">payments</span> Runaway spend: <strong style="color:var(--red)">$847</strong> → <strong style="color:var(--green)">$0</strong></li>
+          <li><span class="material-symbols-outlined">sync_problem</span> Retry storms: <strong style="color:var(--red)">12</strong> → <strong style="color:var(--green)">2.1</strong> avg cycles</li>
+          <li><span class="material-symbols-outlined">visibility</span> Audit coverage: <strong style="color:var(--red)">0%</strong> → <strong style="color:var(--green)">100%</strong></li>
+          <li><span class="material-symbols-outlined">auto_fix_high</span> Self-healed: <strong style="color:var(--cyan)">6 patches</strong> generated</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Quick Start -->
+<!-- Quick Start (Animated Terminal) -->
 <section id="quickstart">
   <div class="container">
     <div class="section-head reveal">
       <div class="label">Getting Started</div>
-      <h2>Working in <strong>60 seconds</strong></h2>
+      <h2>Initialize the <strong>Core.</strong></h2>
+      <p class="section-sub">Deploy governed, self-improving agent pipelines in seconds. Built for high-fidelity orchestration.</p>
     </div>
-    <div class="terminal reveal reveal-d1">
-      <div class="terminal-bar">
-        <div class="terminal-dot"></div>
-        <div class="terminal-dot"></div>
-        <div class="terminal-dot"></div>
-        <div class="terminal-label">bash</div>
-      </div>
-      <div class="terminal-body">
-        <div class="terminal-line"><span class="terminal-prompt">$</span><span class="terminal-cmd">pip install ag-os</span></div>
-        <div class="terminal-line"><span class="terminal-prompt">$</span><span class="terminal-cmd">ag-os init --defaults</span></div>
-        <div class="terminal-comment"># Governance kernel initialized locally.</div>
-        <div class="terminal-line"><span class="terminal-prompt">$</span><span class="terminal-cmd">ag-os demo</span></div>
-        <div class="terminal-line"><span class="terminal-prompt">$</span><span class="terminal-cmd">ag-os dream</span></div>
-        <div class="terminal-comment"># Self-improvement cycle complete. 2 patches synthesized.</div>
+    
+    <div class="terminal-wrapper reveal reveal-d1">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="mac-dots">
+            <div class="mac-dot" style="background:#ff5f56; border: 1px solid #e0443e;"></div>
+            <div class="mac-dot" style="background:#ffbd2e; border: 1px solid #dea123;"></div>
+            <div class="mac-dot" style="background:#27c93f; border: 1px solid #1aab29;"></div>
+          </div>
+          <div class="terminal-label">bash - antigravity-os</div>
+        </div>
+        <div class="terminal-body" id="term-body">
+          <noscript>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">pip install ag-os</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-ok">Successfully installed ag-os-1.4.0</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os init --governance --cost-guard</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-ok">Governance framework initialized (9 rules active)</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os demo</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os dream</span></div>
+            <div class="t-line" style="opacity:1;transform:none"><span class="t-comment"># Self-improvement cycle complete. 2 patches synthesized.</span></div>
+          </noscript>
+        </div>
       </div>
     </div>
   </div>
@@ -381,8 +489,11 @@ footer a:hover{color:var(--text)}
 <footer>
   <div class="container">
     <div class="inner">
-      <div>Antigravity OS · Open Source (MIT) · Daniel Manzela, 2026</div>
-      <div style="display:flex;gap:20px">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="material-symbols-outlined" style="color:var(--cyan); font-size:18px;">lock_open</span>
+        Antigravity OS · Open Source (MIT) · Daniel Manzela, 2026
+      </div>
+      <div style="display:flex;gap:24px">
         <a href="https://github.com/Manzela/Antigravity-OS/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
         <a href="https://github.com/Manzela/Antigravity-OS/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a>
         <a href="https://github.com/Manzela/Antigravity-OS/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a>
@@ -393,11 +504,88 @@ footer a:hover{color:var(--text)}
 </footer>
 
 <script>
-// Scroll reveal
+// Scroll Reveal Observer
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
 }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Animated Metric Counters
+const countObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const metrics = entry.target.querySelectorAll('.metric-val');
+      metrics.forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        const duration = 1500; 
+        const stepTime = Math.abs(Math.floor(duration / (target || 1)));
+        let curr = 0;
+        const timer = setInterval(() => {
+          curr += Math.ceil(target / 20) || 1;
+          if (curr >= target) { curr = target; clearInterval(timer); }
+          el.innerText = curr;
+        }, stepTime);
+      });
+      countObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+const metricsContainer = document.getElementById('metrics-container');
+if(metricsContainer) countObserver.observe(metricsContainer);
+
+// Terminal Animation Sequence
+const termLines = [
+  { type: 'cmd', text: 'pip install ag-os' },
+  { type: 'ok', text: '✓ Successfully installed ag-os-1.4.0' },
+  { type: 'cmd', text: 'ag-os init --governance --cost-guard' },
+  { type: 'ok', text: '✓ Governance framework initialized (9 rules active)' },
+  { type: 'ok', text: '✓ Flight recorder active' },
+  { type: 'ok', text: '✓ Cost guard active' },
+  { type: 'cmd', text: 'ag-os run pipeline_alpha.yaml' },
+  { type: 'out', text: 'Running Pipeline #1...' },
+  { type: 'table', text: '+-------+----------------+--------+---------+\n| Step  | Agent          | Status | Cost    |\n+-------+----------------+--------+---------+\n| 1     | DataFetcher    | ✓ OK   | <span class="t-cost">$0.02</span>   |\n| 2     | TextAnalyzer   | ✓ OK   | <span class="t-cost">$0.15</span>   |\n| 3     | Synthesizer    | ✓ OK   | <span class="t-cost">$0.33</span>   |\n+-------+----------------+--------+---------+' },
+  { type: 'ok', text: '✓ Pipeline completed. Total run cost: <span class="t-cost">$0.50</span>' },
+  { type: 'cmd', text: 'ag-os self-improve' },
+  { type: 'out', text: 'Analyzing recent runs...' },
+  { type: 'ok', text: '✓ DreamEngine identified friction in Step 2.' },
+  { type: 'ok', text: '✓ Synthesized 2 governance patches to optimize API calls.' },
+];
+
+const termBody = document.getElementById('term-body');
+let termObserver = new IntersectionObserver((entries) => {
+  if(entries[0].isIntersecting) {
+    runTerminal();
+    termObserver.disconnect();
+  }
+}, { threshold: 0.5 });
+termObserver.observe(document.querySelector('.terminal-wrapper'));
+
+async function runTerminal() {
+  termBody.innerHTML = '<span class="t-cursor"></span>';
+  for(let i=0; i<termLines.length; i++) {
+    const line = termLines[i];
+    const delay = line.type === 'cmd' ? 800 : (line.type === 'table' ? 600 : 300);
+    await new Promise(r => setTimeout(r, delay));
+    
+    // Remove cursor from previous
+    const cursor = document.querySelector('.t-cursor');
+    if(cursor) cursor.remove();
+    
+    const div = document.createElement('div');
+    div.className = 't-line';
+    
+    if(line.type === 'cmd') {
+      div.innerHTML = `<span class="t-prompt">$</span><span class="t-cmd">${line.text}</span>`;
+    } else {
+      div.innerHTML = `<span class="t-${line.type}">${line.text}</span>`;
+    }
+    
+    // Add cursor to end
+    div.innerHTML += '<span class="t-cursor"></span>';
+    termBody.appendChild(div);
+    termBody.scrollTop = termBody.scrollHeight;
+  }
+}
 </script>
 </body>
 </html>
