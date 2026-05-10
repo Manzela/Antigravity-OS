@@ -39,8 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   credential lifecycle.
 - **Pipeline Observatory Redesign** — Complete rewrite of the interactive
   architecture visualization at manzela.github.io/Antigravity-OS/.
-  3-layer view (Infrastructure → Orchestration → Autonomy), Gemma 4 MoE
-  GPU cards with KV cache bars, LoRA per-tenant adapter selector,
+  3-layer view (Infrastructure → Orchestration → Autonomy),
+  GPU utilization cards with KV cache bars, per-tenant adapter selector,
   7-node DAG with sub-agent drill-down, multi-model LLM-as-Judge eval
   loop, RL data flywheel, DreamEngine closed-loop visualization,
   glassmorphism design, responsive layout, ARIA accessibility, and

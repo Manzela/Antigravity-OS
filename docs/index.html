@@ -409,7 +409,7 @@ footer a:hover{color:var(--text)}
     <div class="section-head reveal">
       <div class="label">Reference Implementation</div>
       <h2>Governing a production <strong>multi-agent pipeline</strong></h2>
-      <p class="section-sub">A 7-agent ADK pipeline running Gemma 4 MoE across 5 tenants. The system below operates under Antigravity OS governance — every metric shown reflects the kernel's enforcement.</p>
+      <p class="section-sub">A 7-agent ADK pipeline operating across 5 regional tenants. The system below runs under Antigravity OS governance — every metric shown reflects the kernel's enforcement.</p>
     </div>
 
     <!-- The governed system -->
@@ -417,11 +417,11 @@ footer a:hover{color:var(--text)}
       <div class="arch-card">
         <div class="layer-label" style="color:var(--text-3)"><div class="dot" style="background:var(--text-3)"></div>The System</div>
         <h3>What's Being Governed</h3>
-        <p>A multi-tenant content pipeline with 7 specialized agents, each with sub-agent decomposition. Runs on Gemma 4 26B MoE with per-tenant LoRA adapters on Vertex AI.</p>
+        <p>A multi-tenant content pipeline with 7 specialized agents, each with sub-agent decomposition. Deployed with per-tenant adapters across regional endpoints.</p>
         <ul>
           <li><span class="material-symbols-outlined">account_tree</span> 7 agents, 15+ sub-agents</li>
-          <li><span class="material-symbols-outlined">language</span> 5 country tenants (IL, PL, CZ, US, DE)</li>
-          <li><span class="material-symbols-outlined">memory</span> Gemma 4 MoE · vLLM · A100 GPU</li>
+          <li><span class="material-symbols-outlined">language</span> 5 regional tenants (IL, US, MX, ES, PT)</li>
+          <li><span class="material-symbols-outlined">memory</span> GPU-accelerated inference endpoints</li>
         </ul>
       </div>
       <div class="arch-card">
@@ -440,7 +440,7 @@ footer a:hover{color:var(--text)}
         <h3>Before → After</h3>
         <p>Measured delta after integrating the governance kernel into the pipeline's execution loop.</p>
         <ul>
-          <li><span class="material-symbols-outlined">payments</span> Runaway spend: <strong style="color:var(--red)">$847</strong> → <strong style="color:var(--green)">$0</strong></li>
+          <li><span class="material-symbols-outlined">payments</span> Budget overrun: <strong style="color:var(--red)">Uncapped</strong> → <strong style="color:var(--green)">$0</strong></li>
           <li><span class="material-symbols-outlined">sync_problem</span> Retry storms: <strong style="color:var(--red)">12</strong> → <strong style="color:var(--green)">2.1</strong> avg cycles</li>
           <li><span class="material-symbols-outlined">visibility</span> Audit coverage: <strong style="color:var(--red)">0%</strong> → <strong style="color:var(--green)">100%</strong></li>
           <li><span class="material-symbols-outlined">auto_fix_high</span> Self-healed: <strong style="color:var(--cyan)">6 patches</strong> generated</li>
