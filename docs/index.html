@@ -164,7 +164,7 @@ footer a:hover{color:var(--text)}
     <div class="nav-links">
       <a href="#problem">Problem</a>
       <a href="#solution">Solution</a>
-      <a href="#architecture">Architecture</a>
+      <a href="#reference">Use Case</a>
       <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="gh">
         <span class="material-symbols-outlined" style="font-size:16px">code</span> GitHub
       </a>
@@ -304,43 +304,47 @@ footer a:hover{color:var(--text)}
   </div>
 </section>
 
-<!-- Architecture -->
-<section id="architecture">
+<!-- Reference Implementation -->
+<section id="reference">
   <div class="container">
     <div class="section-head reveal">
-      <div class="label">System Architecture</div>
-      <h2>Three-layer governance stack</h2>
-      <p class="section-sub">Infrastructure, orchestration, and autonomy — each layer independently testable, each provider hot-swappable.</p>
+      <div class="label">Reference Implementation</div>
+      <h2>Governing a production <strong>multi-agent pipeline</strong></h2>
+      <p class="section-sub">A 7-agent ADK pipeline running Gemma 4 MoE across 5 tenants. The system below operates under Antigravity OS governance — every metric shown reflects the kernel's enforcement.</p>
     </div>
+
+    <!-- The governed system -->
     <div class="arch-grid reveal reveal-d1">
       <div class="arch-card">
-        <div class="layer-label" style="color:var(--green)"><div class="dot" style="background:var(--green)"></div>Infrastructure</div>
-        <h3>Compute & Isolation</h3>
-        <p>Gemma 4 MoE on vLLM with per-tenant LoRA adapters. KV cache monitoring, VRAM tracking, auto-scaling pools.</p>
+        <div class="layer-label" style="color:var(--text-3)"><div class="dot" style="background:var(--text-3)"></div>The System</div>
+        <h3>What's Being Governed</h3>
+        <p>A multi-tenant content pipeline with 7 specialized agents, each with sub-agent decomposition. Runs on Gemma 4 26B MoE with per-tenant LoRA adapters on Vertex AI.</p>
         <ul>
-          <li><span class="material-symbols-outlined">memory</span> GPU resource monitoring</li>
-          <li><span class="material-symbols-outlined">lock</span> Tenant-isolated LoRA selection</li>
-          <li><span class="material-symbols-outlined">auto_mode</span> Demand-based scaling</li>
+          <li><span class="material-symbols-outlined">account_tree</span> 7 agents, 15+ sub-agents</li>
+          <li><span class="material-symbols-outlined">language</span> 5 country tenants (IL, PL, CZ, US, DE)</li>
+          <li><span class="material-symbols-outlined">memory</span> Gemma 4 MoE · vLLM · A100 GPU</li>
         </ul>
       </div>
       <div class="arch-card">
-        <div class="layer-label" style="color:var(--cyan)"><div class="dot" style="background:var(--cyan)"></div>Orchestration</div>
-        <h3>Agent Pipeline DAG</h3>
-        <p>Seven-node ADK pipeline with sub-agent decomposition. Deterministic and probabilistic execution modes. Multi-model evaluation.</p>
+        <div class="layer-label" style="color:var(--cyan)"><div class="dot" style="background:var(--cyan)"></div>AG-OS Modules Active</div>
+        <h3>Governance Applied</h3>
+        <p>Four AG-OS modules govern this pipeline end-to-end: cost enforcement per operation, policy evaluation at every state transition, full execution tracing, and automated self-improvement.</p>
         <ul>
-          <li><span class="material-symbols-outlined">account_tree</span> 7-node directed acyclic graph</li>
-          <li><span class="material-symbols-outlined">rule</span> Per-node execution policies</li>
-          <li><span class="material-symbols-outlined">balance</span> LLM-as-Judge evaluation</li>
+          <li><span class="material-symbols-outlined">shield</span> Cost Guard — per-operation solvency</li>
+          <li><span class="material-symbols-outlined">gavel</span> Constitution — 9 rules enforced</li>
+          <li><span class="material-symbols-outlined">flight</span> Flight Recorder — full trace</li>
+          <li><span class="material-symbols-outlined">lightbulb</span> DreamEngine — patch synthesis</li>
         </ul>
       </div>
       <div class="arch-card">
-        <div class="layer-label" style="color:var(--gold)"><div class="dot" style="background:var(--gold)"></div>Autonomy</div>
-        <h3>Closed-Loop Learning</h3>
-        <p>Observe → Evaluate → Improve → Dream. Langfuse traces feed multi-model judges. Grades cache into RL data for per-tenant adaptation.</p>
+        <div class="layer-label" style="color:var(--gold)"><div class="dot" style="background:var(--gold)"></div>Without → With AG-OS</div>
+        <h3>Observed Impact</h3>
+        <p>Measured delta after integrating the governance kernel into the pipeline's execution loop.</p>
         <ul>
-          <li><span class="material-symbols-outlined">monitoring</span> Langfuse telemetry integration</li>
-          <li><span class="material-symbols-outlined">auto_fix_high</span> DreamEngine patch synthesis</li>
-          <li><span class="material-symbols-outlined">cycle</span> Reinforcement learning flywheel</li>
+          <li><span class="material-symbols-outlined">payments</span> Runaway spend: <strong style="color:var(--red)">$847</strong> → <strong style="color:var(--green)">$0</strong> overrun</li>
+          <li><span class="material-symbols-outlined">sync_problem</span> Retry storms: <strong style="color:var(--red)">12 avg</strong> → <strong style="color:var(--green)">2.1 avg</strong> cycles</li>
+          <li><span class="material-symbols-outlined">visibility</span> Audit coverage: <strong style="color:var(--red)">0%</strong> → <strong style="color:var(--green)">100%</strong> traced</li>
+          <li><span class="material-symbols-outlined">auto_fix_high</span> Self-healed rules: <strong style="color:var(--green)">6 patches</strong> synthesized</li>
         </ul>
       </div>
     </div>
