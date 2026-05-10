@@ -1,400 +1,363 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity OS — The Governance Kernel for AI Agents</title>
-    <meta name="description" content="Stop AI agents from burning budgets, deploying broken code, and looping forever. Antigravity OS is an open-source governance kernel with cost enforcement, policy-as-code, and self-improving dream cycles.">
-    <meta name="author" content="Daniel Manzela">
-    <meta property="og:title" content="Antigravity OS — The Governance Kernel for AI Agents">
-    <meta property="og:description" content="Cost enforcement, policy-as-code, and self-improving dream cycles for autonomous AI pipelines.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://manzela.github.io/Antigravity-OS/">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#060a12">
-    <meta name="color-scheme" content="dark">
-    <link rel="canonical" href="https://manzela.github.io/Antigravity-OS/">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="style.css">
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Antigravity OS - The Governance Kernel for AI Agents</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#060a12',
+                        surface: '#0f172a',
+                        'surface-container-highest': '#1e293b',
+                        primary: '#38bdf8', // Cyan
+                        'primary-container': '#0369a1',
+                        'on-primary-container': '#e0f2fe',
+                        secondary: '#f59e0b', // Gold
+                        'on-surface': '#f8fafc',
+                        'on-surface-variant': '#94a3b8',
+                        'outline-variant': '#334155',
+                        error: '#f87171',
+                        purple: '#a855f7'
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Public Sans", "sans-serif"],
+                        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
 </head>
-<body>
-
-<div class="bg-mesh" aria-hidden="true"></div>
-<div class="page">
-
-    <!-- ═══ Nav ═══ -->
-    <header class="top-bar" role="banner">
-        <div class="container">
-            <div class="brand">
-                <h1>Antigravity OS</h1>
-                <span class="version">v1.4.0</span>
-            </div>
-            <nav class="nav-pills" role="tablist" aria-label="Main navigation">
-                <button class="nav-pill active" role="tab" aria-selected="true" data-tab="product" id="tab-product">Overview</button>
-                <button class="nav-pill" role="tab" aria-selected="false" data-tab="architecture" id="tab-arch">Architecture</button>
-                <button class="nav-pill" role="tab" aria-selected="false" data-tab="demo" id="tab-demo">Live Demo</button>
-            </nav>
-            <div class="top-links">
-                <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener">GitHub</a>
-                <a href="https://pypi.org/project/ag-os/" target="_blank" rel="noopener">PyPI</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- ═══════════════════════════════════════════════
-         TAB 1: PRODUCT (Problem → Solution → Impact)
-         ═══════════════════════════════════════════════ -->
-    <div class="tab-content visible" id="panel-product" role="tabpanel" aria-labelledby="tab-product">
-
-        <!-- Hero -->
-        <section class="hero" aria-labelledby="hero-title">
-            <div class="container hero-split">
-                <div class="hero-text">
-                    <p class="hero-eyebrow">Open Source · MIT License · Zero Cloud Dependencies</p>
-                    <h2 id="hero-title">The governance kernel<br>for <em>AI agents</em></h2>
-                    <p class="subtitle">AI agents can write code. But who stops them from burning $10K overnight, deploying broken builds, or looping forever? Antigravity OS does.</p>
-                    <div class="hero-actions">
-                        <a href="https://github.com/Manzela/Antigravity-OS" class="btn primary" target="_blank" rel="noopener">View on GitHub</a>
-                        <code class="install-cmd">pip install ag-os</code>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat"><span class="stat-val">102</span><span class="stat-label">Tests Passing</span></div>
-                        <div class="stat"><span class="stat-val">9</span><span class="stat-label">Governance Rules</span></div>
-                        <div class="stat"><span class="stat-val">6</span><span class="stat-label">Provider Surfaces</span></div>
-                        <div class="stat"><span class="stat-val">0</span><span class="stat-label">Cloud Dependencies</span></div>
-                    </div>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-primary/30 selection:text-primary pt-24 pb-12 overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface/70 backdrop-blur-xl border-b border-outline-variant/20 dark:border-outline-variant/10 shadow-none transition-all duration-300 ease-in-out">
+<div class="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<div class="text-xl font-display font-black tracking-tighter text-on-surface dark:text-on-surface">
+                    Antigravity OS
                 </div>
-                <div class="hero-visual">
-                    <img src="img/hero.png" alt="Abstract neural shield constellation representing AI governance" width="520" height="520" loading="eager">
-                </div>
-            </div>
-        </section>
-
-        <!-- Problem -->
-        <section class="product-section" id="problem" aria-labelledby="problem-title">
-            <div class="container">
-                <p class="section-label">The Problem</p>
-                <h3 class="product-title" id="problem-title">Autonomous agents are powerful.<br>Ungoverned agents are <span class="text-red">dangerous</span>.</h3>
-                <div class="problem-grid">
-                    <div class="problem-card">
-                        <div class="problem-icon">💸</div>
-                        <h4>Budget Overruns</h4>
-                        <p>A single agent loop can burn through thousands in GPU compute before anyone notices. No built-in spending limits.</p>
-                    </div>
-                    <div class="problem-card">
-                        <div class="problem-icon">🔄</div>
-                        <h4>Infinite Loops</h4>
-                        <p>Agents retry failed tasks endlessly — 5, 10, 20 cycles of identical errors — each costing time and money.</p>
-                    </div>
-                    <div class="problem-card">
-                        <div class="problem-icon">🚫</div>
-                        <h4>No Audit Trail</h4>
-                        <p>When things break in production, there's no flight recorder. No state machine. No way to replay what happened.</p>
-                    </div>
-                    <div class="problem-card">
-                        <div class="problem-icon">🧠</div>
-                        <h4>No Learning</h4>
-                        <p>Agents make the same mistakes repeatedly. No memory of past failures, no mechanism to improve governance over time.</p>
-                    </div>
-                </div>
-                <div class="problem-visual">
-                    <img src="img/problem.png" alt="Abstract circuit paths diverging chaotically — representing ungoverned AI execution" width="400" height="400" loading="lazy">
-                </div>
-            </div>
-        </section>
-
-        <!-- Solution -->
-        <section class="product-section solution-section" id="solution" aria-labelledby="solution-title">
-            <div class="container">
-                <p class="section-label">The Solution</p>
-                <h3 class="product-title" id="solution-title">One install. <span class="text-cyan">Complete governance.</span></h3>
-                <p class="product-subtitle">Antigravity OS wraps any AI agent pipeline with an integrated governance layer — cost enforcement, policy evaluation, state tracking, and self-improvement. All deterministic. Zero LLM dependencies in the core.</p>
-                <div class="solution-grid">
-                    <div class="solution-card">
-                        <div class="solution-icon">🛡️</div>
-                        <h4>Cost Guard</h4>
-                        <p>Real-time solvency gating. Block execution when projected spend exceeds budget. Per-tier rate cards.</p>
-                        <code>ag-os check 1.0 --tier gpu_a100</code>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">📜</div>
-                        <h4>The Constitution</h4>
-                        <p>9 governance rules enforced at every state transition. Policy-as-code in Markdown. Extensible.</p>
-                        <code>.agent/rules/08-economic-safety.md</code>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">✈️</div>
-                        <h4>Flight Recorder</h4>
-                        <p>Deterministic state machine with full audit trail. SQLite-backed. Every operation tracked end-to-end.</p>
-                        <code>ag-os status</code>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">💡</div>
-                        <h4>DreamEngine</h4>
-                        <p>Self-improvement loop. Scans friction logs, detects patterns, synthesizes governance patches. Agents that learn.</p>
-                        <code>ag-os dream --apply</code>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">🔌</div>
-                        <h4>Provider Registry</h4>
-                        <p>6 swappable surfaces — secrets, issues, cost, state, telemetry, policy. Works offline, scales to cloud.</p>
-                        <code>providers: { cost: gcp, state: redis }</code>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">🤖</div>
-                        <h4>MCP Server</h4>
-                        <p>Expose governance as MCP tools. Any MCP-compatible agent (Claude, Cursor) gets governance built-in.</p>
-                        <code>ag-os serve</code>
-                    </div>
-                </div>
-                <div class="solution-visual">
-                    <img src="img/solution.png" alt="Abstract circuit paths flowing through a central governance gate — representing controlled AI execution" width="400" height="400" loading="lazy">
-                </div>
-            </div>
-        </section>
-
-        <!-- Impact / Results -->
-        <section class="product-section" id="impact" aria-labelledby="impact-title">
-            <div class="container">
-                <p class="section-label">The Impact</p>
-                <h3 class="product-title" id="impact-title">From chaos to <span class="text-green">controlled autonomy</span></h3>
-                <div class="impact-grid">
-                    <div class="impact-card">
-                        <div class="impact-before">
-                            <span class="impact-label">Before</span>
-                            <span class="impact-val text-red">$10,000+</span>
-                            <span class="impact-desc">Monthly runaway compute</span>
-                        </div>
-                        <div class="impact-arrow">→</div>
-                        <div class="impact-after">
-                            <span class="impact-label">After</span>
-                            <span class="impact-val text-green">$0 overrun</span>
-                            <span class="impact-desc">Hard budget caps enforced</span>
-                        </div>
-                    </div>
-                    <div class="impact-card">
-                        <div class="impact-before">
-                            <span class="impact-label">Before</span>
-                            <span class="impact-val text-red">∞ loops</span>
-                            <span class="impact-desc">Agents retry forever</span>
-                        </div>
-                        <div class="impact-arrow">→</div>
-                        <div class="impact-after">
-                            <span class="impact-label">After</span>
-                            <span class="impact-val text-green">3 max</span>
-                            <span class="impact-desc">Then halt + escalate</span>
-                        </div>
-                    </div>
-                    <div class="impact-card">
-                        <div class="impact-before">
-                            <span class="impact-label">Before</span>
-                            <span class="impact-val text-red">0 visibility</span>
-                            <span class="impact-desc">Black-box execution</span>
-                        </div>
-                        <div class="impact-arrow">→</div>
-                        <div class="impact-after">
-                            <span class="impact-label">After</span>
-                            <span class="impact-val text-green">Full trace</span>
-                            <span class="impact-desc">Every state transition logged</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Quick Start -->
-        <section class="product-section" id="quickstart" aria-labelledby="qs-title">
-            <div class="container">
-                <p class="section-label">Get Started</p>
-                <h3 class="product-title" id="qs-title">Value in <span class="text-cyan">60 seconds</span></h3>
-                <div class="qs-block">
-                    <pre><code><span class="c"># Install</span>
-pip install ag-os
-
-<span class="c"># Initialize governance (creates rules, hooks, config)</span>
-ag-os init --defaults
-
-<span class="c"># See it in action</span>
-ag-os demo
-
-<span class="c"># Run the self-improvement cycle</span>
-ag-os dream</code></pre>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- ═══════════════════════════════════════════════
-         TAB 2: ARCHITECTURE (existing 3-layer view)
-         ═══════════════════════════════════════════════ -->
-    <div class="tab-content" id="panel-architecture" role="tabpanel" aria-labelledby="tab-arch">
-        <div class="container">
-            <section class="hero" style="padding:48px 0 32px;">
-                <h2 style="font-size:2.2rem;">System <em>Architecture</em></h2>
-                <p class="subtitle">Three-layer stack: Infrastructure → Orchestration → Autonomy. Click any component to inspect.</p>
-            </section>
-            <div class="arch-wrapper">
-                <main class="arch-main">
-                    <!-- Layer 1: Infrastructure -->
-                    <article class="layer-card" id="layer-infra">
-                        <div class="layer-header">
-                            <h3 class="layer-title">Infrastructure Layer</h3>
-                            <span class="layer-badge infra">Compute</span>
-                        </div>
-                        <p class="section-label">GPU Instances · Auto-Scaling Pool</p>
-                        <div class="gpu-grid">
-                            <div class="gpu-card active" id="gpu-1">
-                                <div class="gpu-name">vertex-endpoint-01</div>
-                                <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
-                                <div class="gpu-spec">vLLM 0.17.2 · BF16 · A100 80GB<br>8K context · 34× concurrent seq</div>
-                                <div class="bar-wrap"><div class="bar-label"><span>KV Cache</span><span>25.4 / 76 GiB</span></div><div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div></div>
-                                <div class="bar-wrap"><div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div><div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div></div>
-                            </div>
-                            <div class="gpu-card" id="gpu-2">
-                                <div class="gpu-name">vertex-endpoint-02</div>
-                                <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
-                                <div class="gpu-spec">vLLM 0.17.2 · BF16 · A100 80GB<br>Replica · Region: eu-west1</div>
-                                <div class="bar-wrap"><div class="bar-label"><span>KV Cache</span><span>18.2 / 76 GiB</span></div><div class="bar-track"><div class="bar-fill green" style="width:24%"></div></div></div>
-                                <div class="bar-wrap"><div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div><div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div></div>
-                            </div>
-                            <div class="gpu-card" id="gpu-standby">
-                                <div class="gpu-name">auto-scale-pool</div>
-                                <div class="gpu-model">Standby Capacity</div>
-                                <div class="gpu-spec">Provisioned on demand<br>Scales 1→N per traffic</div>
-                                <div class="bar-wrap"><div class="bar-label"><span>Utilization</span><span>0%</span></div><div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div></div>
-                            </div>
-                        </div>
-                        <p class="section-label">LoRA Adapter Registry · Per-Tenant Isolation</p>
-                        <div class="lora-row" id="lora-row">
-                            <button class="lora-chip active" data-tenant="il"><span class="dot"></span>IL · Israel</button>
-                            <button class="lora-chip" data-tenant="pl"><span class="dot"></span>PL · Poland</button>
-                            <button class="lora-chip" data-tenant="cz"><span class="dot"></span>CZ · Czechia</button>
-                            <button class="lora-chip" data-tenant="us"><span class="dot"></span>US · United States</button>
-                            <button class="lora-chip" data-tenant="de"><span class="dot"></span>DE · Germany</button>
-                        </div>
-                    </article>
-
-                    <!-- Layer 2: Orchestration -->
-                    <article class="layer-card" id="layer-orch">
-                        <div class="layer-header">
-                            <h3 class="layer-title">Orchestration Layer</h3>
-                            <span class="layer-badge orch">ADK Pipeline</span>
-                        </div>
-                        <p class="section-label">7-Node Agent DAG · Sub-Agent Decomposition</p>
-                        <div class="dag-nodes" id="dag-nodes">
-                            <div class="dag-node" data-node="market" tabindex="0"><div class="dag-icon">🔍</div><div class="dag-name">Market Intel</div><div class="dag-sub">3 sub-agents · deterministic</div></div>
-                            <div class="dag-node" data-node="keyword" tabindex="0"><div class="dag-icon">🎯</div><div class="dag-name">Keyword Strategy</div><div class="dag-sub">2 sub-agents · probabilistic</div></div>
-                            <div class="dag-node" data-node="content" tabindex="0"><div class="dag-icon">✍️</div><div class="dag-name">Content Engine</div><div class="dag-sub">4 sub-agents · hybrid</div></div>
-                            <div class="dag-node" data-node="seo" tabindex="0"><div class="dag-icon">⚙️</div><div class="dag-name">Technical SEO</div><div class="dag-sub">2 sub-agents · deterministic</div></div>
-                            <div class="dag-node" data-node="eval" tabindex="0"><div class="dag-icon">⚖️</div><div class="dag-name">QA & Eval</div><div class="dag-sub">LLM-as-Judge · 3 models</div></div>
-                            <div class="dag-node" data-node="deploy" tabindex="0"><div class="dag-icon">🚀</div><div class="dag-name">Deploy & Publish</div><div class="dag-sub">1 sub-agent · deterministic</div></div>
-                            <div class="dag-node" data-node="govern" tabindex="0" style="border-color:rgba(245,158,11,0.3);"><div class="dag-icon">🛡️</div><div class="dag-name">Governance</div><div class="dag-sub">Antigravity OS Kernel</div></div>
-                        </div>
-                    </article>
-
-                    <!-- Layer 3: Autonomy -->
-                    <article class="layer-card" id="layer-auto">
-                        <div class="layer-header">
-                            <h3 class="layer-title">Autonomy Layer</h3>
-                            <span class="layer-badge auto">Closed Loop</span>
-                        </div>
-                        <p class="section-label">Self-Improving Evaluation · RL Data Flywheel</p>
-                        <div class="auto-flow">
-                            <div class="auto-step"><div class="auto-step-title">Observe</div><div class="auto-step-detail">Langfuse traces<br>latency · cost · tokens<br>quality scores</div></div>
-                            <div class="auto-step"><div class="auto-step-title">Evaluate</div><div class="auto-step-detail">Multi-model judge<br>Gemini · Claude · GPT-4<br>pairwise ranking</div></div>
-                            <div class="auto-step"><div class="auto-step-title">Improve</div><div class="auto-step-detail">RL data flywheel<br>grade → cache → LoRA<br>per-tenant adaptation</div></div>
-                            <div class="auto-step"><div class="auto-step-title">Dream</div><div class="auto-step-detail">DreamEngine scan<br>friction + success<br>governance patches</div></div>
-                        </div>
-                    </article>
-                </main>
-
-                <!-- Detail Sidebar -->
-                <aside class="detail-panel" id="detail-panel" aria-label="Details">
-                    <div class="detail-header">
-                        <div class="detail-title" id="detail-title">System Overview</div>
-                        <div class="detail-desc" id="detail-desc">Select a component to inspect its configuration, sub-agents, and live metrics.</div>
-                    </div>
-                    <div class="detail-section">
-                        <p class="section-label">Live Metrics</p>
-                        <div class="metric-grid">
-                            <div class="metric"><div class="metric-val" id="m-latency">142ms</div><div class="metric-label">P50 Latency</div></div>
-                            <div class="metric"><div class="metric-val" id="m-tps">847</div><div class="metric-label">Tokens/sec</div></div>
-                            <div class="metric"><div class="metric-val" id="m-cost">$0.003</div><div class="metric-label">Cost/Op</div></div>
-                            <div class="metric"><div class="metric-val" id="m-expert">4/64</div><div class="metric-label">Active Experts</div></div>
-                        </div>
-                    </div>
-                    <div class="detail-section" id="detail-subagents">
-                        <p class="section-label">Sub-Agents</p>
-                        <div id="subagent-list" class="tel-feed" style="max-height:180px;">
-                            <div class="tel-row"><span class="tel-msg">Select a DAG node to view sub-agents</span></div>
-                        </div>
-                    </div>
-                    <div class="detail-section">
-                        <p class="section-label">Execution Trace</p>
-                        <div class="tel-feed" id="telemetry">
-                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System ready.</span></div>
-                        </div>
-                    </div>
-                    <div class="detail-section">
-                        <p class="section-label">Solvency</p>
-                        <div class="bar-wrap"><div class="bar-label"><span>Budget</span><span id="sol-val">$0.00 / $100.00</span></div><div class="bar-track"><div class="bar-fill green" id="sol-bar" style="width:0%"></div></div></div>
-                    </div>
-                </aside>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════
-         TAB 3: LIVE DEMO
-         ═══════════════════════════════════════════════ -->
-    <div class="tab-content" id="panel-demo" role="tabpanel" aria-labelledby="tab-demo">
-        <div class="container">
-            <section class="hero" style="padding:48px 0 32px;">
-                <h2 style="font-size:2.2rem;">Live <em>Simulation</em></h2>
-                <p class="subtitle">Watch an agent fail 3 times, hit the governance circuit breaker, then self-improve through the DreamEngine.</p>
-            </section>
-            <div class="arch-wrapper">
-                <main class="arch-main">
-                    <article class="layer-card">
-                        <div class="layer-header">
-                            <h3 class="layer-title">Pipeline Simulation</h3>
-                            <div class="sim-controls"><button class="btn primary" id="btn-run" onclick="runSimulation()">Run Pipeline</button></div>
-                        </div>
-                        <p class="section-label">Execution Visualization · Failure → Dream → Self-Improvement Cycle</p>
-                        <div class="dag-nodes" id="sim-nodes">
-                            <div class="dag-node" id="sn-idle"><div class="dag-icon">⏸️</div><div class="dag-name">Idle</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-plan"><div class="dag-icon">📋</div><div class="dag-name">Planning</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-act"><div class="dag-icon">⚡</div><div class="dag-name">Executing</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-eval"><div class="dag-icon">🔬</div><div class="dag-name">Evaluating</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-fail"><div class="dag-icon">↩️</div><div class="dag-name">Rolled Back</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-halt"><div class="dag-icon">🚫</div><div class="dag-name">Halted</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-dream" style="border-color:rgba(245,158,11,0.3);"><div class="dag-icon">💡</div><div class="dag-name">Dream Engine</div><div class="dag-sub">self-improvement</div></div>
-                        </div>
-                    </article>
-                    <article class="layer-card" id="dream-report" style="display:none;">
-                        <div class="layer-header"><h3 class="layer-title">Synthesized Governance Patches</h3><span class="layer-badge auto">DreamEngine</span></div>
-                        <div id="patch-container"></div>
-                    </article>
-                </main>
-                <aside class="detail-panel" aria-label="Simulation telemetry">
-                    <div class="detail-header"><div class="detail-title">Simulation Telemetry</div><div class="detail-desc">Watch: failure → dream → self-improvement cycle.</div></div>
-                    <div class="detail-section"><p class="section-label">Execution Trace</p><div class="tel-feed" id="sim-telemetry"><div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System initialized. Press Run Pipeline.</span></div></div></div>
-                    <div class="detail-section" id="sim-memory" style="display:none;"><p class="section-label">Long-Term Memory</p><div style="font-family:var(--mono);font-size:0.7rem;color:var(--green);padding:10px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;">~/.antigravity/dreams/dream-report.yaml</div></div>
-                </aside>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ Footer ═══ -->
-    <footer class="footer">
-        <div class="container">
-            <p>Antigravity OS · The governance kernel for AI agents · <a href="https://github.com/Manzela/Antigravity-OS">Open Source (MIT)</a> · Daniel Manzela, 2026</p>
-        </div>
-    </footer>
+<div class="hidden md:flex items-center gap-6 font-headline text-label-md">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors py-2" href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener">GitHub</a>
+<a class="text-primary dark:text-primary font-bold border-b-2 border-primary py-2" href="https://pypi.org/project/ag-os/" target="_blank" rel="noopener">PyPI</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors py-2" href="#problem">Problem</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary transition-colors py-2" href="#solution">Solution</a>
 </div>
-
-<script src="observatory.js"></script>
-</body>
-</html>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-2">
+<button aria-label="code" class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest/50 dark:hover:bg-surface-container-highest/30 rounded-lg transition-colors">
+<span class="material-symbols-outlined">code</span>
+</button>
+<button aria-label="settings" class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest/50 dark:hover:bg-surface-container-highest/30 rounded-lg transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="bg-primary text-background font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity active:scale-95 font-label text-sm no-underline">GitHub</a>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-6 flex flex-col gap-32 py-12">
+<!-- Section 1: Hero -->
+<section class="flex flex-col lg:flex-row items-center justify-between gap-16 relative">
+<!-- Background Glow -->
+<div class="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="flex-1 flex flex-col items-start gap-8 z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/50 border border-outline-variant/30 text-xs font-mono text-secondary backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">lock_open</span>
+                    Open Source · MIT License · Zero Cloud Dependencies
+                </div>
+<h1 class="font-display font-black text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight">
+                    The governance kernel for<br/>
+<span class="bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent">AI agents</span>
+</h1>
+<p class="text-lg md:text-xl text-on-surface-variant max-w-2xl leading-relaxed">
+                    AI agents can write code. But who stops them from burning $10K overnight, deploying broken builds, or looping forever? Antigravity OS does.
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mt-4">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-background font-bold rounded-lg hover:bg-primary/90 transition-colors no-underline" href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener">
+<span class="material-symbols-outlined">code_blocks</span>
+                        View on GitHub
+                    </a>
+<div class="w-full sm:w-auto flex items-center justify-between gap-4 px-6 py-4 bg-surface/50 border border-outline-variant/30 rounded-lg backdrop-blur-sm group cursor-copy hover:border-outline-variant/60 transition-colors">
+<code class="font-mono text-on-surface text-sm">pip install ag-os</code>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors">content_copy</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-outline-variant/20 w-full mt-4">
+<div class="flex flex-col gap-1">
+<span class="font-display font-bold text-2xl text-on-surface">102</span>
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Tests Passing</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-display font-bold text-2xl text-on-surface">9</span>
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Governance Rules</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-display font-bold text-2xl text-on-surface">6</span>
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Provider Surfaces</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-display font-bold text-2xl text-on-surface">0</span>
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Cloud Dependencies</span>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full max-w-lg lg:max-w-none aspect-square relative z-10">
+<div class="absolute inset-0 bg-gradient-to-tr from-surface/80 to-transparent rounded-2xl z-10 border border-outline-variant/20 mix-blend-overlay pointer-events-none"></div>
+<img alt="Abstract AI governance illustration — glowing geometric structures on deep navy background" class="w-full h-full object-cover rounded-2xl shadow-2xl" src="img/hero_stitch.png"/>
+</div>
+</section>
+<!-- Section 2: Problem -->
+<section id="problem" class="flex flex-col gap-12 relative">
+<div class="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-on-surface">
+                    Autonomous agents are powerful. <span class="text-error">Ungoverned agents are dangerous.</span>
+</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface/40 backdrop-blur-md border border-error/20 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-colors">
+<div class="w-12 h-12 bg-error/10 text-error rounded-xl flex items-center justify-center text-2xl">
+                        💰
+                    </div>
+<h3 class="font-headline font-bold text-lg text-on-surface">Budget Overruns</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        LLM API calls stack up fast. One bad loop can drain your cloud credits in minutes.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface/40 backdrop-blur-md border border-error/20 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-colors">
+<div class="w-12 h-12 bg-error/10 text-error rounded-xl flex items-center justify-center text-2xl">
+                        🔄
+                    </div>
+<h3 class="font-headline font-bold text-lg text-on-surface">Infinite Loops</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        Agents get stuck resolving the same error without a systemic circuit breaker.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface/40 backdrop-blur-md border border-error/20 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-colors">
+<div class="w-12 h-12 bg-error/10 text-error rounded-xl flex items-center justify-center text-2xl">
+                        🛑
+                    </div>
+<h3 class="font-headline font-bold text-lg text-on-surface">No Audit Trail</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        Black box execution leaves you guessing why an agent deleted production data.
+                    </p>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface/40 backdrop-blur-md border border-error/20 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-colors">
+<div class="w-12 h-12 bg-error/10 text-error rounded-xl flex items-center justify-center text-2xl">
+                        🧠
+                    </div>
+<h3 class="font-headline font-bold text-lg text-on-surface">No Learning</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        Agents repeat the same mistakes across sessions without a shared memory core.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Section 3: Solution -->
+<section id="solution" class="flex flex-col gap-12 relative">
+<div class="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-purple/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-on-surface">
+                    One install. Complete governance.
+                </h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        🛡️
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">Cost Guard</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            Hard limits on token usage and API spend. Automatically halts execution before overruns occur.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        ag-os check 1.0 --tier gpu_a100
+                    </div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        📜
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">The Constitution</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            Define unbreachable rules for agent behavior. Prevent destructive actions system-wide.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        .agent/rules/08-economic-safety.md
+                    </div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        ✈️
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">Flight Recorder</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            Immutable local logging of every thought, action, and API call for perfect audits.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        ag-os status
+                    </div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        💡
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">DreamEngine</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            Self-improvement loop. Scans friction logs, detects patterns, synthesizes governance patches. Agents that learn.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        ag-os dream --apply
+                    </div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        🔌
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">Provider Registry</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            6 swappable surfaces — secrets, issues, cost, state, telemetry, policy. Works offline, scales to cloud.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        providers: { cost: gcp, state: redis }
+                    </div>
+</div>
+<!-- Card 6 -->
+<div class="bg-surface/40 backdrop-blur-md border border-primary/30 rounded-2xl p-6 flex flex-col gap-4 hover:bg-surface/60 transition-all hover:-translate-y-1">
+<div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-2xl">
+                        🤖
+                    </div>
+<div class="flex-1">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-2">MCP Server</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                            Expose governance as MCP tools. Any MCP-compatible agent (Claude, Cursor) gets governance built-in.
+                        </p>
+</div>
+<div class="mt-4 p-3 bg-background rounded-lg border border-outline-variant/30 text-xs font-mono text-on-surface-variant">
+                        ag-os serve
+                    </div>
+</div>
+</div>
+</section>
+<!-- Section 4: Impact -->
+<section class="flex flex-col gap-12 py-12 border-y border-outline-variant/20">
+<div class="flex flex-col items-center text-center gap-4">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-on-surface">
+                    From chaos to controlled autonomy.
+                </h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="flex flex-col items-center text-center gap-2 p-6">
+<div class="text-on-surface-variant line-through text-lg font-mono mb-2">$10,000+</div>
+<div class="text-primary font-display font-black text-4xl">$0</div>
+<div class="text-sm text-on-surface font-semibold uppercase tracking-widest mt-2">Overrun</div>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-6 md:border-x border-outline-variant/20">
+<div class="text-on-surface-variant line-through text-lg font-mono mb-2">Infinite loops</div>
+<div class="text-primary font-display font-black text-4xl">3 max</div>
+<div class="text-sm text-on-surface font-semibold uppercase tracking-widest mt-2">Retries</div>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-6">
+<div class="text-on-surface-variant line-through text-lg font-mono mb-2">0 visibility</div>
+<div class="text-primary font-display font-black text-4xl">Full trace</div>
+<div class="text-sm text-on-surface font-semibold uppercase tracking-widest mt-2">Audit</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Quick Start -->
+<section class="flex flex-col items-center gap-10">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-on-surface">
+                Value in 60 seconds.
+            </h2>
+<div class="w-full max-w-2xl bg-[#0d1117] border border-outline-variant/30 rounded-xl overflow-hidden shadow-2xl">
+<div class="flex items-center gap-2 px-4 py-3 bg-surface/80 border-b border-outline-variant/30">
+<div class="w-3 h-3 rounded-full bg-error/80"></div>
+<div class="w-3 h-3 rounded-full bg-secondary/80"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+<span class="ml-2 text-xs font-mono text-on-surface-variant">bash</span>
+</div>
+<div class="p-6 font-mono text-sm leading-loose">
+<div class="flex items-start">
+<span class="text-on-surface-variant select-none mr-4">$</span>
+<span class="text-on-surface">pip install ag-os</span>
+</div>
+<div class="flex items-start mt-2">
+<span class="text-on-surface-variant select-none mr-4">$</span>
+<span class="text-on-surface">ag-os init --defaults</span>
+</div>
+<div class="flex items-start text-on-surface-variant italic mt-1 ml-6 mb-2">
+                        # Initialized Governance Kernel locally.
+                    </div>
+<div class="flex items-start">
+<span class="text-on-surface-variant select-none mr-4">$</span>
+<span class="text-on-surface">ag-os demo</span>
+</div>
+<div class="flex items-start">
+<span class="text-on-surface-variant select-none mr-4">$</span>
+<span class="text-on-surface">ag-os dream</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 bg-surface dark:bg-surface border-t border-outline-variant/20 dark:border-outline-variant/10">
+<div class="flex flex-col md:flex-row items-center justify-between gap-8 px-6 max-w-7xl mx-auto opacity-100 hover:opacity-80 transition-opacity font-body text-body-sm">
+<div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+<span class="text-lg font-display font-bold text-secondary dark:text-secondary">Antigravity OS</span>
+<span class="hidden md:inline text-on-surface-variant dark:text-on-surface-variant">·</span>
+<span class="text-primary dark:text-primary">
+                    © 2026 Daniel Manzela. Open Source (MIT License).
+                </span>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-6">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors" href="https://github.com/Manzela/Antigravity-OS/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors" href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener">GitHub</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors" href="https://github.com/Manzela/Antigravity-OS/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors" href="https://github.com/Manzela/Antigravity-OS/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a>
+</div>
+</div>
+</footer>
+</body></html>
