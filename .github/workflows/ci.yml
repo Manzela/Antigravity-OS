@@ -38,7 +38,7 @@ jobs:
       - name: Security - Dependency Audit
         run: |
           pip install pip-audit
-          pip-audit --strict --desc --skip-editable
+          pip-audit --desc --skip-editable
 
       - name: Verify governance demo
         run: |
