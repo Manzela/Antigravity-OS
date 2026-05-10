@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pipeline Observatory | Antigravity OS — Autonomous Multi-Agent Governance</title>
-    <meta name="description" content="Interactive architecture visualization of the Antigravity OS autonomous governance kernel. Multi-tenant pipeline orchestration with Gemma 4 MoE, LoRA isolation, and self-improving evaluation loops.">
-    <meta name="keywords" content="AI governance, multi-agent pipeline, MoE, LoRA, vLLM, Gemma 4, autonomous systems, DreamEngine">
+    <title>Antigravity OS — The Governance Kernel for AI Agents</title>
+    <meta name="description" content="Stop AI agents from burning budgets, deploying broken code, and looping forever. Antigravity OS is an open-source governance kernel with cost enforcement, policy-as-code, and self-improving dream cycles.">
     <meta name="author" content="Daniel Manzela">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Pipeline Observatory | Antigravity OS">
-    <meta property="og:description" content="Interactive visualization of autonomous multi-agent governance architecture.">
+    <meta property="og:title" content="Antigravity OS — The Governance Kernel for AI Agents">
+    <meta property="og:description" content="Cost enforcement, policy-as-code, and self-improving dream cycles for autonomous AI pipelines.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://manzela.github.io/Antigravity-OS/">
     <meta name="twitter:card" content="summary_large_image">
@@ -23,17 +21,18 @@
 <body>
 
 <div class="bg-mesh" aria-hidden="true"></div>
-
 <div class="page">
-    <!-- ═══ Top Bar ═══ -->
+
+    <!-- ═══ Nav ═══ -->
     <header class="top-bar" role="banner">
         <div class="container">
             <div class="brand">
-                <h1>Pipeline Observatory</h1>
+                <h1>Antigravity OS</h1>
                 <span class="version">v1.4.0</span>
             </div>
             <nav class="nav-pills" role="tablist" aria-label="Main navigation">
-                <button class="nav-pill active" role="tab" aria-selected="true" data-tab="architecture" id="tab-arch">Architecture</button>
+                <button class="nav-pill active" role="tab" aria-selected="true" data-tab="product" id="tab-product">Overview</button>
+                <button class="nav-pill" role="tab" aria-selected="false" data-tab="architecture" id="tab-arch">Architecture</button>
                 <button class="nav-pill" role="tab" aria-selected="false" data-tab="demo" id="tab-demo">Live Demo</button>
             </nav>
             <div class="top-links">
@@ -43,20 +42,201 @@
         </div>
     </header>
 
-    <!-- ═══ Hero ═══ -->
-    <section class="hero" aria-labelledby="hero-title">
-        <div class="container">
-            <h2 id="hero-title">Autonomous <em>Multi-Agent</em> Governance</h2>
-            <p class="subtitle">Mechanistic interpretability into a production pipeline — 7-node DAG, Gemma 4 MoE inference, per-tenant LoRA isolation, and a closed-loop self-improvement kernel. Zero LLM dependencies in the governance core.</p>
-        </div>
-    </section>
+    <!-- ═══════════════════════════════════════════════
+         TAB 1: PRODUCT (Problem → Solution → Impact)
+         ═══════════════════════════════════════════════ -->
+    <div class="tab-content visible" id="panel-product" role="tabpanel" aria-labelledby="tab-product">
 
-    <!-- ═══ Architecture Tab ═══ -->
-    <div class="tab-content visible" id="panel-architecture" role="tabpanel" aria-labelledby="tab-arch">
+        <!-- Hero -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="container hero-split">
+                <div class="hero-text">
+                    <p class="hero-eyebrow">Open Source · MIT License · Zero Cloud Dependencies</p>
+                    <h2 id="hero-title">The governance kernel<br>for <em>AI agents</em></h2>
+                    <p class="subtitle">AI agents can write code. But who stops them from burning $10K overnight, deploying broken builds, or looping forever? Antigravity OS does.</p>
+                    <div class="hero-actions">
+                        <a href="https://github.com/Manzela/Antigravity-OS" class="btn primary" target="_blank" rel="noopener">View on GitHub</a>
+                        <code class="install-cmd">pip install ag-os</code>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat"><span class="stat-val">102</span><span class="stat-label">Tests Passing</span></div>
+                        <div class="stat"><span class="stat-val">9</span><span class="stat-label">Governance Rules</span></div>
+                        <div class="stat"><span class="stat-val">6</span><span class="stat-label">Provider Surfaces</span></div>
+                        <div class="stat"><span class="stat-val">0</span><span class="stat-label">Cloud Dependencies</span></div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <img src="img/hero.png" alt="Abstract neural shield constellation representing AI governance" width="520" height="520" loading="eager">
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem -->
+        <section class="product-section" id="problem" aria-labelledby="problem-title">
+            <div class="container">
+                <p class="section-label">The Problem</p>
+                <h3 class="product-title" id="problem-title">Autonomous agents are powerful.<br>Ungoverned agents are <span class="text-red">dangerous</span>.</h3>
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <div class="problem-icon">💸</div>
+                        <h4>Budget Overruns</h4>
+                        <p>A single agent loop can burn through thousands in GPU compute before anyone notices. No built-in spending limits.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">🔄</div>
+                        <h4>Infinite Loops</h4>
+                        <p>Agents retry failed tasks endlessly — 5, 10, 20 cycles of identical errors — each costing time and money.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">🚫</div>
+                        <h4>No Audit Trail</h4>
+                        <p>When things break in production, there's no flight recorder. No state machine. No way to replay what happened.</p>
+                    </div>
+                    <div class="problem-card">
+                        <div class="problem-icon">🧠</div>
+                        <h4>No Learning</h4>
+                        <p>Agents make the same mistakes repeatedly. No memory of past failures, no mechanism to improve governance over time.</p>
+                    </div>
+                </div>
+                <div class="problem-visual">
+                    <img src="img/problem.png" alt="Abstract circuit paths diverging chaotically — representing ungoverned AI execution" width="400" height="400" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution -->
+        <section class="product-section solution-section" id="solution" aria-labelledby="solution-title">
+            <div class="container">
+                <p class="section-label">The Solution</p>
+                <h3 class="product-title" id="solution-title">One install. <span class="text-cyan">Complete governance.</span></h3>
+                <p class="product-subtitle">Antigravity OS wraps any AI agent pipeline with an integrated governance layer — cost enforcement, policy evaluation, state tracking, and self-improvement. All deterministic. Zero LLM dependencies in the core.</p>
+                <div class="solution-grid">
+                    <div class="solution-card">
+                        <div class="solution-icon">🛡️</div>
+                        <h4>Cost Guard</h4>
+                        <p>Real-time solvency gating. Block execution when projected spend exceeds budget. Per-tier rate cards.</p>
+                        <code>ag-os check 1.0 --tier gpu_a100</code>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">📜</div>
+                        <h4>The Constitution</h4>
+                        <p>9 governance rules enforced at every state transition. Policy-as-code in Markdown. Extensible.</p>
+                        <code>.agent/rules/08-economic-safety.md</code>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">✈️</div>
+                        <h4>Flight Recorder</h4>
+                        <p>Deterministic state machine with full audit trail. SQLite-backed. Every operation tracked end-to-end.</p>
+                        <code>ag-os status</code>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">💡</div>
+                        <h4>DreamEngine</h4>
+                        <p>Self-improvement loop. Scans friction logs, detects patterns, synthesizes governance patches. Agents that learn.</p>
+                        <code>ag-os dream --apply</code>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">🔌</div>
+                        <h4>Provider Registry</h4>
+                        <p>6 swappable surfaces — secrets, issues, cost, state, telemetry, policy. Works offline, scales to cloud.</p>
+                        <code>providers: { cost: gcp, state: redis }</code>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">🤖</div>
+                        <h4>MCP Server</h4>
+                        <p>Expose governance as MCP tools. Any MCP-compatible agent (Claude, Cursor) gets governance built-in.</p>
+                        <code>ag-os serve</code>
+                    </div>
+                </div>
+                <div class="solution-visual">
+                    <img src="img/solution.png" alt="Abstract circuit paths flowing through a central governance gate — representing controlled AI execution" width="400" height="400" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <!-- Impact / Results -->
+        <section class="product-section" id="impact" aria-labelledby="impact-title">
+            <div class="container">
+                <p class="section-label">The Impact</p>
+                <h3 class="product-title" id="impact-title">From chaos to <span class="text-green">controlled autonomy</span></h3>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="impact-before">
+                            <span class="impact-label">Before</span>
+                            <span class="impact-val text-red">$10,000+</span>
+                            <span class="impact-desc">Monthly runaway compute</span>
+                        </div>
+                        <div class="impact-arrow">→</div>
+                        <div class="impact-after">
+                            <span class="impact-label">After</span>
+                            <span class="impact-val text-green">$0 overrun</span>
+                            <span class="impact-desc">Hard budget caps enforced</span>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-before">
+                            <span class="impact-label">Before</span>
+                            <span class="impact-val text-red">∞ loops</span>
+                            <span class="impact-desc">Agents retry forever</span>
+                        </div>
+                        <div class="impact-arrow">→</div>
+                        <div class="impact-after">
+                            <span class="impact-label">After</span>
+                            <span class="impact-val text-green">3 max</span>
+                            <span class="impact-desc">Then halt + escalate</span>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-before">
+                            <span class="impact-label">Before</span>
+                            <span class="impact-val text-red">0 visibility</span>
+                            <span class="impact-desc">Black-box execution</span>
+                        </div>
+                        <div class="impact-arrow">→</div>
+                        <div class="impact-after">
+                            <span class="impact-label">After</span>
+                            <span class="impact-val text-green">Full trace</span>
+                            <span class="impact-desc">Every state transition logged</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section class="product-section" id="quickstart" aria-labelledby="qs-title">
+            <div class="container">
+                <p class="section-label">Get Started</p>
+                <h3 class="product-title" id="qs-title">Value in <span class="text-cyan">60 seconds</span></h3>
+                <div class="qs-block">
+                    <pre><code><span class="c"># Install</span>
+pip install ag-os
+
+<span class="c"># Initialize governance (creates rules, hooks, config)</span>
+ag-os init --defaults
+
+<span class="c"># See it in action</span>
+ag-os demo
+
+<span class="c"># Run the self-improvement cycle</span>
+ag-os dream</code></pre>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB 2: ARCHITECTURE (existing 3-layer view)
+         ═══════════════════════════════════════════════ -->
+    <div class="tab-content" id="panel-architecture" role="tabpanel" aria-labelledby="tab-arch">
         <div class="container">
+            <section class="hero" style="padding:48px 0 32px;">
+                <h2 style="font-size:2.2rem;">System <em>Architecture</em></h2>
+                <p class="subtitle">Three-layer stack: Infrastructure → Orchestration → Autonomy. Click any component to inspect.</p>
+            </section>
             <div class="arch-wrapper">
                 <main class="arch-main">
-
                     <!-- Layer 1: Infrastructure -->
                     <article class="layer-card" id="layer-infra">
                         <div class="layer-header">
@@ -68,46 +248,22 @@
                             <div class="gpu-card active" id="gpu-1">
                                 <div class="gpu-name">vertex-endpoint-01</div>
                                 <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
-                                <div class="gpu-spec">
-                                    vLLM 0.17.2 · BF16 · A100 80GB<br>
-                                    8K context · 34× concurrent seq
-                                </div>
-                                <div class="bar-wrap">
-                                    <div class="bar-label"><span>KV Cache</span><span>25.4 / 76 GiB</span></div>
-                                    <div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div>
-                                    <div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div>
-                                </div>
+                                <div class="gpu-spec">vLLM 0.17.2 · BF16 · A100 80GB<br>8K context · 34× concurrent seq</div>
+                                <div class="bar-wrap"><div class="bar-label"><span>KV Cache</span><span>25.4 / 76 GiB</span></div><div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div></div>
+                                <div class="bar-wrap"><div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div><div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div></div>
                             </div>
                             <div class="gpu-card" id="gpu-2">
                                 <div class="gpu-name">vertex-endpoint-02</div>
                                 <div class="gpu-model">Gemma 4 26B-A4B MoE</div>
-                                <div class="gpu-spec">
-                                    vLLM 0.17.2 · BF16 · A100 80GB<br>
-                                    Replica · Region: eu-west1
-                                </div>
-                                <div class="bar-wrap">
-                                    <div class="bar-label"><span>KV Cache</span><span>18.2 / 76 GiB</span></div>
-                                    <div class="bar-track"><div class="bar-fill green" style="width:24%"></div></div>
-                                </div>
-                                <div class="bar-wrap">
-                                    <div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div>
-                                    <div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div>
-                                </div>
+                                <div class="gpu-spec">vLLM 0.17.2 · BF16 · A100 80GB<br>Replica · Region: eu-west1</div>
+                                <div class="bar-wrap"><div class="bar-label"><span>KV Cache</span><span>18.2 / 76 GiB</span></div><div class="bar-track"><div class="bar-fill green" style="width:24%"></div></div></div>
+                                <div class="bar-wrap"><div class="bar-label"><span>VRAM</span><span>52 / 80 GiB</span></div><div class="bar-track"><div class="bar-fill cyan" style="width:65%"></div></div></div>
                             </div>
                             <div class="gpu-card" id="gpu-standby">
                                 <div class="gpu-name">auto-scale-pool</div>
                                 <div class="gpu-model">Standby Capacity</div>
-                                <div class="gpu-spec">
-                                    Provisioned on demand<br>
-                                    Scales 1→N per traffic
-                                </div>
-                                <div class="bar-wrap">
-                                    <div class="bar-label"><span>Utilization</span><span>0%</span></div>
-                                    <div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div>
-                                </div>
+                                <div class="gpu-spec">Provisioned on demand<br>Scales 1→N per traffic</div>
+                                <div class="bar-wrap"><div class="bar-label"><span>Utilization</span><span>0%</span></div><div class="bar-track"><div class="bar-fill purple" style="width:0%"></div></div></div>
                             </div>
                         </div>
                         <p class="section-label">LoRA Adapter Registry · Per-Tenant Isolation</p>
@@ -128,41 +284,13 @@
                         </div>
                         <p class="section-label">7-Node Agent DAG · Sub-Agent Decomposition</p>
                         <div class="dag-nodes" id="dag-nodes">
-                            <div class="dag-node" data-node="market" tabindex="0">
-                                <div class="dag-icon">🔍</div>
-                                <div class="dag-name">Market Intel</div>
-                                <div class="dag-sub">3 sub-agents · deterministic</div>
-                            </div>
-                            <div class="dag-node" data-node="keyword" tabindex="0">
-                                <div class="dag-icon">🎯</div>
-                                <div class="dag-name">Keyword Strategy</div>
-                                <div class="dag-sub">2 sub-agents · probabilistic</div>
-                            </div>
-                            <div class="dag-node" data-node="content" tabindex="0">
-                                <div class="dag-icon">✍️</div>
-                                <div class="dag-name">Content Engine</div>
-                                <div class="dag-sub">4 sub-agents · hybrid</div>
-                            </div>
-                            <div class="dag-node" data-node="seo" tabindex="0">
-                                <div class="dag-icon">⚙️</div>
-                                <div class="dag-name">Technical SEO</div>
-                                <div class="dag-sub">2 sub-agents · deterministic</div>
-                            </div>
-                            <div class="dag-node" data-node="eval" tabindex="0">
-                                <div class="dag-icon">⚖️</div>
-                                <div class="dag-name">QA & Eval</div>
-                                <div class="dag-sub">LLM-as-Judge · 3 models</div>
-                            </div>
-                            <div class="dag-node" data-node="deploy" tabindex="0">
-                                <div class="dag-icon">🚀</div>
-                                <div class="dag-name">Deploy & Publish</div>
-                                <div class="dag-sub">1 sub-agent · deterministic</div>
-                            </div>
-                            <div class="dag-node" data-node="govern" tabindex="0" style="border-color: rgba(245,158,11,0.3);">
-                                <div class="dag-icon">🛡️</div>
-                                <div class="dag-name">Governance</div>
-                                <div class="dag-sub">Antigravity OS Kernel</div>
-                            </div>
+                            <div class="dag-node" data-node="market" tabindex="0"><div class="dag-icon">🔍</div><div class="dag-name">Market Intel</div><div class="dag-sub">3 sub-agents · deterministic</div></div>
+                            <div class="dag-node" data-node="keyword" tabindex="0"><div class="dag-icon">🎯</div><div class="dag-name">Keyword Strategy</div><div class="dag-sub">2 sub-agents · probabilistic</div></div>
+                            <div class="dag-node" data-node="content" tabindex="0"><div class="dag-icon">✍️</div><div class="dag-name">Content Engine</div><div class="dag-sub">4 sub-agents · hybrid</div></div>
+                            <div class="dag-node" data-node="seo" tabindex="0"><div class="dag-icon">⚙️</div><div class="dag-name">Technical SEO</div><div class="dag-sub">2 sub-agents · deterministic</div></div>
+                            <div class="dag-node" data-node="eval" tabindex="0"><div class="dag-icon">⚖️</div><div class="dag-name">QA & Eval</div><div class="dag-sub">LLM-as-Judge · 3 models</div></div>
+                            <div class="dag-node" data-node="deploy" tabindex="0"><div class="dag-icon">🚀</div><div class="dag-name">Deploy & Publish</div><div class="dag-sub">1 sub-agent · deterministic</div></div>
+                            <div class="dag-node" data-node="govern" tabindex="0" style="border-color:rgba(245,158,11,0.3);"><div class="dag-icon">🛡️</div><div class="dag-name">Governance</div><div class="dag-sub">Antigravity OS Kernel</div></div>
                         </div>
                     </article>
 
@@ -174,111 +302,67 @@
                         </div>
                         <p class="section-label">Self-Improving Evaluation · RL Data Flywheel</p>
                         <div class="auto-flow">
-                            <div class="auto-step">
-                                <div class="auto-step-title">Observe</div>
-                                <div class="auto-step-detail">
-                                    Langfuse traces<br>
-                                    latency · cost · tokens<br>
-                                    quality scores
-                                </div>
-                            </div>
-                            <div class="auto-step">
-                                <div class="auto-step-title">Evaluate</div>
-                                <div class="auto-step-detail">
-                                    Multi-model judge<br>
-                                    Gemini · Claude · GPT-4<br>
-                                    pairwise ranking
-                                </div>
-                            </div>
-                            <div class="auto-step">
-                                <div class="auto-step-title">Improve</div>
-                                <div class="auto-step-detail">
-                                    RL data flywheel<br>
-                                    grade → cache → LoRA<br>
-                                    per-tenant adaptation
-                                </div>
-                            </div>
-                            <div class="auto-step">
-                                <div class="auto-step-title">Dream</div>
-                                <div class="auto-step-detail">
-                                    DreamEngine scan<br>
-                                    friction + success<br>
-                                    governance patches
-                                </div>
-                            </div>
+                            <div class="auto-step"><div class="auto-step-title">Observe</div><div class="auto-step-detail">Langfuse traces<br>latency · cost · tokens<br>quality scores</div></div>
+                            <div class="auto-step"><div class="auto-step-title">Evaluate</div><div class="auto-step-detail">Multi-model judge<br>Gemini · Claude · GPT-4<br>pairwise ranking</div></div>
+                            <div class="auto-step"><div class="auto-step-title">Improve</div><div class="auto-step-detail">RL data flywheel<br>grade → cache → LoRA<br>per-tenant adaptation</div></div>
+                            <div class="auto-step"><div class="auto-step-title">Dream</div><div class="auto-step-detail">DreamEngine scan<br>friction + success<br>governance patches</div></div>
                         </div>
                     </article>
-
                 </main>
 
-                <!-- ═══ Detail Sidebar ═══ -->
+                <!-- Detail Sidebar -->
                 <aside class="detail-panel" id="detail-panel" aria-label="Details">
                     <div class="detail-header">
                         <div class="detail-title" id="detail-title">System Overview</div>
                         <div class="detail-desc" id="detail-desc">Select a component to inspect its configuration, sub-agents, and live metrics.</div>
                     </div>
-
                     <div class="detail-section">
                         <p class="section-label">Live Metrics</p>
                         <div class="metric-grid">
-                            <div class="metric">
-                                <div class="metric-val" id="m-latency">142ms</div>
-                                <div class="metric-label">P50 Latency</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-val" id="m-tps">847</div>
-                                <div class="metric-label">Tokens/sec</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-val" id="m-cost">$0.003</div>
-                                <div class="metric-label">Cost/Op</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-val" id="m-expert">4/64</div>
-                                <div class="metric-label">Active Experts</div>
-                            </div>
+                            <div class="metric"><div class="metric-val" id="m-latency">142ms</div><div class="metric-label">P50 Latency</div></div>
+                            <div class="metric"><div class="metric-val" id="m-tps">847</div><div class="metric-label">Tokens/sec</div></div>
+                            <div class="metric"><div class="metric-val" id="m-cost">$0.003</div><div class="metric-label">Cost/Op</div></div>
+                            <div class="metric"><div class="metric-val" id="m-expert">4/64</div><div class="metric-label">Active Experts</div></div>
                         </div>
                     </div>
-
                     <div class="detail-section" id="detail-subagents">
                         <p class="section-label">Sub-Agents</p>
                         <div id="subagent-list" class="tel-feed" style="max-height:180px;">
                             <div class="tel-row"><span class="tel-msg">Select a DAG node to view sub-agents</span></div>
                         </div>
                     </div>
-
                     <div class="detail-section">
                         <p class="section-label">Execution Trace</p>
                         <div class="tel-feed" id="telemetry">
-                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System ready. Awaiting dispatch.</span></div>
+                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System ready.</span></div>
                         </div>
                     </div>
-
                     <div class="detail-section">
                         <p class="section-label">Solvency</p>
-                        <div class="bar-wrap">
-                            <div class="bar-label"><span>Budget</span><span id="sol-val">$0.00 / $100.00</span></div>
-                            <div class="bar-track"><div class="bar-fill green" id="sol-bar" style="width:0%"></div></div>
-                        </div>
+                        <div class="bar-wrap"><div class="bar-label"><span>Budget</span><span id="sol-val">$0.00 / $100.00</span></div><div class="bar-track"><div class="bar-fill green" id="sol-bar" style="width:0%"></div></div></div>
                     </div>
                 </aside>
             </div>
         </div>
     </div>
 
-    <!-- ═══ Demo Tab ═══ -->
+    <!-- ═══════════════════════════════════════════════
+         TAB 3: LIVE DEMO
+         ═══════════════════════════════════════════════ -->
     <div class="tab-content" id="panel-demo" role="tabpanel" aria-labelledby="tab-demo">
         <div class="container">
+            <section class="hero" style="padding:48px 0 32px;">
+                <h2 style="font-size:2.2rem;">Live <em>Simulation</em></h2>
+                <p class="subtitle">Watch an agent fail 3 times, hit the governance circuit breaker, then self-improve through the DreamEngine.</p>
+            </section>
             <div class="arch-wrapper">
                 <main class="arch-main">
                     <article class="layer-card">
                         <div class="layer-header">
                             <h3 class="layer-title">Pipeline Simulation</h3>
-                            <div class="sim-controls">
-                                <button class="btn primary" id="btn-run" onclick="runSimulation()">Run Pipeline</button>
-                            </div>
+                            <div class="sim-controls"><button class="btn primary" id="btn-run" onclick="runSimulation()">Run Pipeline</button></div>
                         </div>
-                        <p class="section-label">Execution Visualization · Multi-Tenant Concurrent Processing</p>
+                        <p class="section-label">Execution Visualization · Failure → Dream → Self-Improvement Cycle</p>
                         <div class="dag-nodes" id="sim-nodes">
                             <div class="dag-node" id="sn-idle"><div class="dag-icon">⏸️</div><div class="dag-name">Idle</div><div class="dag-sub">state</div></div>
                             <div class="dag-node" id="sn-plan"><div class="dag-icon">📋</div><div class="dag-name">Planning</div><div class="dag-sub">state</div></div>
@@ -286,36 +370,18 @@
                             <div class="dag-node" id="sn-eval"><div class="dag-icon">🔬</div><div class="dag-name">Evaluating</div><div class="dag-sub">state</div></div>
                             <div class="dag-node" id="sn-fail"><div class="dag-icon">↩️</div><div class="dag-name">Rolled Back</div><div class="dag-sub">state</div></div>
                             <div class="dag-node" id="sn-halt"><div class="dag-icon">🚫</div><div class="dag-name">Halted</div><div class="dag-sub">state</div></div>
-                            <div class="dag-node" id="sn-dream" style="border-color: rgba(245,158,11,0.3);"><div class="dag-icon">💡</div><div class="dag-name">Dream Engine</div><div class="dag-sub">self-improvement</div></div>
+                            <div class="dag-node" id="sn-dream" style="border-color:rgba(245,158,11,0.3);"><div class="dag-icon">💡</div><div class="dag-name">Dream Engine</div><div class="dag-sub">self-improvement</div></div>
                         </div>
                     </article>
-
                     <article class="layer-card" id="dream-report" style="display:none;">
-                        <div class="layer-header">
-                            <h3 class="layer-title">Synthesized Governance Patches</h3>
-                            <span class="layer-badge auto">DreamEngine</span>
-                        </div>
+                        <div class="layer-header"><h3 class="layer-title">Synthesized Governance Patches</h3><span class="layer-badge auto">DreamEngine</span></div>
                         <div id="patch-container"></div>
                     </article>
                 </main>
-
                 <aside class="detail-panel" aria-label="Simulation telemetry">
-                    <div class="detail-header">
-                        <div class="detail-title">Simulation Telemetry</div>
-                        <div class="detail-desc">Watch a failure → dream → self-improvement cycle.</div>
-                    </div>
-                    <div class="detail-section">
-                        <p class="section-label">Execution Trace</p>
-                        <div class="tel-feed" id="sim-telemetry">
-                            <div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System initialized. Press Run Pipeline.</span></div>
-                        </div>
-                    </div>
-                    <div class="detail-section" id="sim-memory" style="display:none;">
-                        <p class="section-label">Long-Term Memory</p>
-                        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--green);padding:10px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;">
-                            ~/.antigravity/dreams/dream-report.yaml
-                        </div>
-                    </div>
+                    <div class="detail-header"><div class="detail-title">Simulation Telemetry</div><div class="detail-desc">Watch: failure → dream → self-improvement cycle.</div></div>
+                    <div class="detail-section"><p class="section-label">Execution Trace</p><div class="tel-feed" id="sim-telemetry"><div class="tel-row"><span class="tel-ts">00:00.000</span><span class="tel-msg">System initialized. Press Run Pipeline.</span></div></div></div>
+                    <div class="detail-section" id="sim-memory" style="display:none;"><p class="section-label">Long-Term Memory</p><div style="font-family:var(--mono);font-size:0.7rem;color:var(--green);padding:10px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;">~/.antigravity/dreams/dream-report.yaml</div></div>
                 </aside>
             </div>
         </div>
@@ -324,7 +390,7 @@
     <!-- ═══ Footer ═══ -->
     <footer class="footer">
         <div class="container">
-            <p>Antigravity OS · The governance kernel for AI agents · <a href="https://github.com/Manzela/Antigravity-OS">Open Source (MIT)</a></p>
+            <p>Antigravity OS · The governance kernel for AI agents · <a href="https://github.com/Manzela/Antigravity-OS">Open Source (MIT)</a> · Daniel Manzela, 2026</p>
         </div>
     </footer>
 </div>
