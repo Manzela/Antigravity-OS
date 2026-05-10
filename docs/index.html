@@ -270,38 +270,110 @@ footer a:hover{color:var(--text)}
       Open Source · MIT License · Zero Cloud Dependencies
     </div>
     
-    <!-- Animated SVG Graphic (Stitch Inspired) -->
+    <!-- Hero Governance Flow Diagram -->
     <div class="hero-graphic reveal reveal-d1">
-      <svg viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing the Antigravity OS governance kernel connecting input data to governed agent nodes">
-        <!-- Connecting Lines -->
-        <path d="M100 120 H700" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-        <path class="svg-dash" d="M100 120 H700" stroke="#00f0ff" stroke-width="2" stroke-dasharray="8 8"/>
-        
-        <!-- Left Node (Input) -->
-        <rect x="50" y="80" width="80" height="80" rx="16" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-        <circle cx="90" cy="120" r="12" fill="#94a3b8"/>
-        
-        <!-- Center Node (AG-OS Core) -->
-        <rect class="svg-pulse" x="300" y="40" width="200" height="160" rx="24" fill="rgba(0,240,255,0.05)" stroke="#00f0ff" stroke-width="2"/>
-        <!-- Core details -->
-        <path d="M340 80 H460 M340 120 H460 M340 160 H400" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
-        <circle cx="400" cy="120" r="30" fill="url(#coreGradient)"/>
-        
-        <!-- Right Nodes (Agents) -->
-        <rect x="650" y="40" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-        <path class="svg-dash" d="M400 120 L650 60" stroke="#b026ff" stroke-width="2" stroke-dasharray="6 6"/>
-        
-        <rect x="680" y="100" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-        
-        <rect x="650" y="160" width="60" height="40" rx="8" fill="rgba(10,14,23,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
-        <path class="svg-dash" d="M400 120 L650 180" stroke="#4ade80" stroke-width="2" stroke-dasharray="6 6"/>
-
+      <svg viewBox="0 0 900 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing ungoverned AI agents passing through the Antigravity OS governance kernel with four enforcement gates, emerging as governed agents">
         <defs>
-          <radialGradient id="coreGradient" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stop-color="#00f0ff"/>
+          <radialGradient id="coreGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.15"/>
             <stop offset="100%" stop-color="transparent"/>
           </radialGradient>
+          <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#f87171"/>
+            <stop offset="50%" stop-color="#00f0ff"/>
+            <stop offset="100%" stop-color="#4ade80"/>
+          </linearGradient>
         </defs>
+
+        <!-- Main flow line (background) -->
+        <path d="M80 140 H820" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+        <!-- Animated flow line -->
+        <path class="svg-dash" d="M80 140 H820" stroke="url(#flowGrad)" stroke-width="2" stroke-dasharray="6 4"/>
+
+        <!-- === LEFT: Ungoverned Agents === -->
+        <!-- Agent 1 -->
+        <rect x="20" y="60" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
+        <text x="70" y="83" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent 1</text>
+        <path d="M120 78 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Agent 2 -->
+        <rect x="30" y="122" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
+        <text x="80" y="145" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent 2</text>
+        <path d="M130 140 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Agent 3 -->
+        <rect x="20" y="184" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
+        <text x="70" y="207" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent N</text>
+        <path d="M120 202 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- "Ungoverned" label -->
+        <text x="70" y="42" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="9" font-weight="600" text-transform="uppercase" letter-spacing="0.1em">UNGOVERNED</text>
+
+        <!-- === CENTER: AG-OS Kernel Boundary === -->
+        <!-- Outer kernel boundary -->
+        <rect class="svg-pulse" x="180" y="20" width="540" height="240" rx="20" fill="rgba(0,240,255,0.03)" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="8 4"/>
+        <!-- Kernel label -->
+        <text x="450" y="50" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="11" font-weight="600" letter-spacing="0.15em">ANTIGRAVITY OS</text>
+
+        <!-- Inner glow -->
+        <circle cx="450" cy="140" r="100" fill="url(#coreGlow)"/>
+
+        <!-- Gate 1: Cost Guard -->
+        <rect x="210" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
+        <text x="262" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Cost Guard</text>
+        <text x="262" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Solvency gate</text>
+        <text x="262" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">per operation</text>
+        <!-- Checkmark -->
+        <circle cx="262" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
+        <path d="M258 172 L261 175 L267 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Gate 2: Constitution -->
+        <rect x="335" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
+        <text x="387" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Constitution</text>
+        <text x="387" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">9 policy rules</text>
+        <text x="387" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">enforced</text>
+        <circle cx="387" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
+        <path d="M383 172 L386 175 L392 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Gate 3: Flight Recorder -->
+        <rect x="460" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
+        <text x="512" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Flight Rec.</text>
+        <text x="512" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Full audit trail</text>
+        <text x="512" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">every transition</text>
+        <circle cx="512" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
+        <path d="M508 172 L511 175 L517 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Gate 4: DreamEngine -->
+        <rect x="585" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
+        <text x="637" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">DreamEngine</text>
+        <text x="637" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Self-improve</text>
+        <text x="637" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">patch synthesis</text>
+        <circle cx="637" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
+        <path d="M633 172 L636 175 L642 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Flow arrows between gates -->
+        <path d="M315 140 L335 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5" marker-end="none"/>
+        <path d="M440 140 L460 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
+        <path d="M565 140 L585 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
+
+        <!-- === RIGHT: Governed Output === -->
+        <!-- Governed Agent 1 -->
+        <rect x="750" y="60" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
+        <text x="810" y="83" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Governed</text>
+        <path d="M720 140 L750 78" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Governed Agent 2 -->
+        <rect x="760" y="122" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
+        <text x="820" y="145" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Auditable</text>
+        <path d="M720 140 L760 140" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Governed Agent 3 -->
+        <rect x="750" y="184" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
+        <text x="810" y="207" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Cost-bound</text>
+        <path d="M720 140 L750 202" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- "Governed" label -->
+        <text x="810" y="42" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="9" font-weight="600" letter-spacing="0.1em">GOVERNED</text>
       </svg>
     </div>
 
