@@ -103,28 +103,88 @@ def apply_patch(
 
 
 def _apply_new_rule(patch) -> bool:
-    """Write a new rule file to .agent/rules/."""
-    # Extract filename from target (e.g. ".agent/rules/09-rollback-circuit-breaker.md")
-    target = Path(patch.target)
-    if not target.parts:
+    """Write a new rule file to .agent/rules/, rejecting traversal attempts.
+
+    `patch.target` is treated as untrusted input (deserialized from a Dream
+    Report YAML on disk, which any process running as the user can write).
+    Only relative paths that resolve strictly inside ``.agent/rules`` are
+    accepted; absolute paths, ``~``-prefixed paths, and ``..`` segments are
+    rejected.
+    """
+    if not patch.target:
         return False
 
-    # Ensure directory exists
-    target.parent.mkdir(parents=True, exist_ok=True)
+    raw_target = str(patch.target).strip()
 
-    if target.exists():
-        logger.info("Rule file already exists, skipping: %s", target)
+    # Reject obvious abuse before any Path() construction.
+    if (
+        not raw_target
+        or "\x00" in raw_target
+        or raw_target.startswith("~")
+        or raw_target.startswith("/")
+        or raw_target.startswith("\\")
+        or (len(raw_target) >= 2 and raw_target[1] == ":")  # Windows drive
+    ):
+        logger.warning("Rejected absolute/home-relative rule path: %r", raw_target)
         return False
 
-    target.write_text(patch.yaml_content, encoding="utf-8")
-    logger.info("Created rule file: %s", target)
+    target = Path(raw_target)
+
+    if target.is_absolute():
+        logger.warning("Rejected absolute rule path: %r", raw_target)
+        return False
+
+    if any(part in ("..",) for part in target.parts):
+        logger.warning("Rejected rule path with traversal: %r", raw_target)
+        return False
+
+    base_dir = Path(".agent/rules").resolve()
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    candidate = (Path.cwd() / target).resolve()
+
+    try:
+        candidate.relative_to(base_dir)
+    except ValueError:
+        logger.warning(
+            "Rejected out-of-tree rule path: %r (resolves to %s, base=%s)",
+            raw_target,
+            candidate,
+            base_dir,
+        )
+        return False
+
+    if candidate.exists():
+        logger.info("Rule file already exists, skipping: %s", candidate)
+        return False
+
+    candidate.parent.mkdir(parents=True, exist_ok=True)
+    candidate.write_text(patch.yaml_content, encoding="utf-8")
+    logger.info("Created rule file: %s", candidate)
     return True
 
 
 def _apply_config_change(patch, config_path: Optional[Path] = None) -> bool:
-    """Apply a config/threshold change to antigravity.yaml."""
+    """Apply a config/threshold change to antigravity.yaml.
+
+    When ``config_path`` is not supplied, the target file is auto-discovered
+    via :func:`ag_os.config.find_config_file` rather than defaulting to a
+    CWD-relative ``antigravity.yaml``. This prevents a ``cd`` into an
+    unrelated project from silently mutating that project's config when a
+    Dream Report is auto-applied. If no config can be discovered, the
+    patch is refused.
+    """
     if config_path is None:
-        config_path = Path("antigravity.yaml")
+        from ag_os.config import find_config_file
+
+        discovered = find_config_file()
+        if discovered is None:
+            logger.warning(
+                "No antigravity.yaml found via discovery; refusing to write "
+                "CWD-relative config. Pass config_path explicitly."
+            )
+            return False
+        config_path = discovered
 
     if not config_path.is_file():
         logger.warning("Config file not found: %s", config_path)

@@ -189,10 +189,36 @@ def _fallback_load() -> dict:
 
 
 def _fallback_save(data: dict) -> None:
-    """Save credentials to fallback file with strict permissions."""
-    _FALLBACK_DIR.mkdir(parents=True, exist_ok=True)
-    _FALLBACK_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    # chmod 600 — owner read/write only
+    """Save credentials to fallback file with strict permissions, atomically.
+
+    The file is created via :func:`os.open` with mode ``0o600``, so the
+    contents never land on disk at the process umask (typically ``0o644``)
+    even briefly. The previous ``write_text`` then ``chmod`` sequence left
+    a TOCTOU window during which a co-tenant FSEvents watcher could read
+    the credentials before the chmod fired.
+    """
+    _FALLBACK_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+    # Tighten the directory in case it pre-existed with looser perms.
+    try:
+        _FALLBACK_DIR.chmod(0o700)
+    except OSError:
+        pass
+
+    payload = json.dumps(data, indent=2).encode("utf-8")
+
+    fd = os.open(
+        _FALLBACK_FILE,
+        os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+        0o600,
+    )
+    try:
+        os.write(fd, payload)
+    finally:
+        os.close(fd)
+
+    # Belt-and-suspenders: re-tighten in case the file already existed at a
+    # wider mode (os.open with O_CREAT does not relax existing perms but
+    # also does not tighten them).
     _FALLBACK_FILE.chmod(stat.S_IRUSR | stat.S_IWUSR)
 
 

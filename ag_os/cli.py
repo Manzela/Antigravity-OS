@@ -407,11 +407,21 @@ def dream(ctx, recall, use_json, dry_run, apply, do_prune):
     if apply and report.proposed_patches:
         from ag_os.core.patch_applier import apply_patch, classify_risk
 
+        # Pin the config target to the file we actually loaded so a CWD
+        # change between load and apply cannot redirect writes to a
+        # sibling project's antigravity.yaml.
+        loaded_path = config.get("_config_path")
+        pinned_config_path = Path(loaded_path) if loaded_path else None
+
         print("  Applying LOW-risk patches...")
         for patch in report.proposed_patches:
             risk = classify_risk(patch.patch_type)
             if risk == "LOW":
-                success = apply_patch(patch, interactive=False)
+                success = apply_patch(
+                    patch,
+                    config_path=pinned_config_path,
+                    interactive=False,
+                )
                 status = "applied" if success else "skipped"
                 print(f"    [{status}] {patch.target}")
         print()
