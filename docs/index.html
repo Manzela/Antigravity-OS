@@ -2,664 +2,1389 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Antigravity OS — Governance Kernel for AI Agents</title>
-<meta name="description" content="An open-source governance kernel that enforces cost limits, policy-as-code, audit trails, and self-improvement loops for autonomous AI agent pipelines.">
-<meta name="theme-color" content="#060a12">
-<meta name="color-scheme" content="dark">
-<link rel="canonical" href="https://manzela.github.io/Antigravity-OS/">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23060a12'/%3E%3Cpath d='M16 6L6 11.5L16 17L26 11.5L16 6Z' stroke='%2300f0ff' stroke-width='1.5' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M6 20.5L16 26L26 20.5' stroke='%2300f0ff' stroke-width='1.5' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M6 16L16 21.5L26 16' stroke='%2300f0ff' stroke-width='1.5' stroke-linejoin='round' fill='none' opacity='0.6'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23060a12'/%3E%3Cpath d='M90 35L30 65L90 95L150 65L90 35Z' stroke='%2300f0ff' stroke-width='4' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M30 115L90 145L150 115' stroke='%2300f0ff' stroke-width='4' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M30 90L90 120L150 90' stroke='%2300f0ff' stroke-width='4' stroke-linejoin='round' fill='none' opacity='0.6'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Antigravity OS — The governance kernel for AI agents</title>
+<meta name="description" content="Deterministic guardrails for non-deterministic agents. Cost limits, policy enforcement, and audit trails — built in. Open source, MIT, zero cloud dependencies."/>
+<meta name="theme-color" content="#060a12"/>
+<meta name="color-scheme" content="dark"/>
+<link rel="canonical" href="https://manzela.github.io/Antigravity-OS/"/>
+
+<!-- Inline SVG favicon (F10) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23060a12%22/%3E%3Cpath%20d%3D%22M16%206%20L25%2024%20H7%20Z%22%20fill%3D%22none%22%20stroke%3D%22%230ea5e9%22%20stroke-width%3D%221.8%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2218%22%20r%3D%222.4%22%20fill%3D%22%230ea5e9%22/%3E%3C/svg%3E"/>
+
+<!-- Open Graph + Twitter (F24) -->
+<meta property="og:title" content="Antigravity OS — The governance kernel for AI agents"/>
+<meta property="og:description" content="Deterministic guardrails for non-deterministic agents. Cost limits, policy enforcement, audit trails. Open source, MIT, zero cloud dependencies."/>
+<meta property="og:url" content="https://manzela.github.io/Antigravity-OS/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Antigravity OS"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Antigravity OS — The governance kernel for AI agents"/>
+<meta name="twitter:description" content="Deterministic guardrails for non-deterministic agents. Cost limits, policy enforcement, audit trails. Open source, MIT."/>
+
+<!-- Inline pre-paint script: marks JS available so reveal CSS can hide content
+     ONLY when JS is running AND motion is allowed (F1, F23, P4 progressive enhancement) -->
+<script>
+  (function(){
+    var d = document.documentElement;
+    d.classList.add('js');
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      d.classList.add('motion-reduce');
+    }
+  })();
+</script>
+
+<!-- JSON-LD structured data (F25) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Antigravity OS",
+  "description": "A governance kernel for autonomous AI agent pipelines. Enforces cost limits, policy-as-code, audit trails, and self-improvement loops.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS, Linux, Windows",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "license": "https://opensource.org/licenses/MIT",
+  "codeRepository": "https://github.com/Manzela/Antigravity-OS",
+  "downloadUrl": "https://pypi.org/project/ag-os/",
+  "softwareVersion": "1.4.0",
+  "author": {"@type": "Person", "name": "Daniel Manzela"}
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
 <style>
-/* ── Foundation ───────────────────────────── */
+/* ============================================================
+   1. RESET
+   ============================================================ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ============================================================
+   2. DESIGN TOKENS (P3, P5)
+   ============================================================ */
 :root{
+  /* Color */
   --bg:#060a12;
-  --surface:rgba(10, 14, 23, 0.4);
-  --surface-hover:rgba(20, 28, 45, 0.6);
-  --border:rgba(255, 255, 255, 0.08);
-  --border-lit:rgba(255, 255, 255, 0.15);
-  --text:#f8fafc;
-  --text-2:#94a3b8;
-  --text-3:#64748b;
-  --cyan:#00f0ff;
-  --cyan-dim:rgba(0, 240, 255, 0.15);
-  --purple:#b026ff;
-  --red:#f87171;
-  --green:#4ade80;
-  --gold:#fbbf24;
-  --sans:'Inter',system-ui,-apple-system,sans-serif;
-  --mono:'JetBrains Mono','SF Mono',monospace;
-  --ease:cubic-bezier(.25,.46,.45,.94);
+  --bg-2:#0a0f1a;
+  --surface:#11161f;
+  --surface-2:#161c28;
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.14);
+
+  --text:#f5f5f7;          /* Headlines, body emphasis */
+  --text-2:#c9c9d0;        /* Body copy (F36) */
+  --text-3:#86868b;        /* Eyebrow, meta, captions */
+  --text-4:#5b5b62;        /* Disabled, footnotes */
+
+  --cyan:#0ea5e9;
+  --cyan-2:#38bdf8;
+  --cyan-tint:rgba(14,165,233,0.12);
+
+  /* Module hues — used ONLY in hero diagram (F16) */
+  --hue-cost:#34d399;
+  --hue-policy:#a78bfa;
+  --hue-audit:#fbbf24;
+  --hue-dream:#0ea5e9;
+
+  /* Type */
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+
+  /* Type scale (F4, F5) */
+  --fs-eyebrow:0.75rem;     /* 12px */
+  --fs-meta:0.8125rem;      /* 13px */
+  --fs-body-sm:0.9375rem;   /* 15px */
+  --fs-body:1.0625rem;      /* 17px */
+  --fs-lead:1.25rem;        /* 20px */
+  --fs-h3:1.25rem;          /* 20px */
+  --fs-h2:clamp(1.75rem, 3vw, 2.5rem);   /* 28-40px */
+  --fs-h1:clamp(2.5rem, 6vw, 4.5rem);    /* 40-72px */
+
+  /* Spacing rhythm (P2) */
+  --s-1:0.25rem;
+  --s-2:0.5rem;
+  --s-3:0.75rem;
+  --s-4:1rem;
+  --s-5:1.5rem;
+  --s-6:2rem;
+  --s-7:3rem;
+  --s-8:4rem;
+  --s-9:6rem;
+  --s-10:8rem;
+
+  /* Container widths (F6) */
+  --w-wide:1120px;
+  --w-default:1080px;
+  --w-narrow:720px;
+
+  /* Motion */
+  --ease:cubic-bezier(0.4,0,0.2,1);
+  --dur-fast:180ms;
+  --dur:280ms;
+  --dur-slow:560ms;
+
+  /* Radii */
+  --r-sm:6px;
+  --r:10px;
+  --r-lg:14px;
+  --r-pill:999px;
 }
-html{scroll-behavior:smooth;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
-body{overflow-x:hidden; position: relative;}
-::selection{background:rgba(0, 240, 255, 0.2);color:#fff}
-a{color:var(--cyan);text-decoration:none;transition:opacity .2s}
-a:hover{opacity:.8}
-img{display:block;max-width:100%}
-.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;vertical-align:middle}
 
-/* ── Ambient Effects ──────────────────────── */
-.ambient-glow {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: -1;
-  filter: blur(120px);
-  opacity: 0.4;
-  mix-blend-mode: screen;
+/* ============================================================
+   3. BASE
+   ============================================================ */
+html{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
 }
-.glow-1 {
-  top: -10%; left: -10%;
-  width: 600px; height: 600px;
-  background: var(--cyan-dim);
+body{position:relative;min-height:100vh;overflow-x:hidden}
+::selection{background:var(--cyan-tint);color:#fff}
+
+a{color:var(--cyan);text-decoration:none;transition:color var(--dur-fast) var(--ease),opacity var(--dur-fast) var(--ease)}
+a:hover{color:var(--cyan-2)}
+
+img,svg{display:block;max-width:100%}
+
+/* ============================================================
+   4. TYPOGRAPHY (P1, P5)
+   ============================================================ */
+h1,h2,h3,h4{
+  color:var(--text);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  line-height:1.15;
+  text-wrap:balance;
 }
-.glow-2 {
-  bottom: -20%; right: -10%;
-  width: 700px; height: 700px;
-  background: rgba(176, 38, 255, 0.08);
+h1{font-size:var(--fs-h1);font-weight:700;letter-spacing:-0.035em;line-height:1.05}
+h2{font-size:var(--fs-h2);letter-spacing:-0.025em;line-height:1.1}
+h3{font-size:var(--fs-h3);letter-spacing:-0.015em;line-height:1.25}
+
+p{font-size:var(--fs-body);color:var(--text-2);line-height:1.6;text-wrap:pretty}
+.lead{font-size:var(--fs-lead);line-height:1.5;color:var(--text-2);max-width:60ch}
+
+.eyebrow{
+  display:inline-block;
+  font-size:var(--fs-eyebrow);
+  font-weight:600;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--cyan);
+  margin-bottom:var(--s-4);
 }
-.grid-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background-image: radial-gradient(var(--border) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.3;
-  pointer-events: none;
+
+code,kbd{
+  font-family:var(--mono);
+  font-size:0.875em;
 }
 
-/* ── Layout ───────────────────────────────── */
-.container{max-width:1120px;margin:0 auto;padding:0 32px}
-section{padding:120px 0; position: relative; z-index: 1;}
-
-/* ── Nav ──────────────────────────────────── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,18,.7);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s}
-nav .inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;max-width:1120px;margin:0 auto}
-.brand{font-weight:700;font-size:1.1rem;letter-spacing:-.03em;color:#fff; display: flex; align-items: center; gap: 8px;}
-.brand-icon { width: 24px; height: 24px; color: var(--cyan); }
-.brand span{font-weight:400;font-size:.7rem;color:var(--text-3);padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);}
-.nav-links{display:flex;align-items:center;gap:32px}
-.nav-links a{font-size:.85rem;font-weight:500;color:var(--text-2);transition:color .2s}
-.nav-links a:hover{color:#fff;}
-.nav-links .gh{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--border-lit);border-radius:8px;font-size:.8rem;color:var(--text);background: rgba(255,255,255,0.02); transition:all .2s}
-.nav-links .gh:hover{background: rgba(255,255,255,0.05); border-color:var(--cyan);color:var(--cyan);}
-
-/* ── Hero ─────────────────────────────────── */
-.hero{padding:180px 0 100px;text-align:center; position: relative;}
-.hero-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;border:1px solid var(--cyan-dim);background:rgba(0,240,255,.05);font-size:.75rem;font-weight:500;color:var(--cyan);letter-spacing:.04em;margin-bottom:32px; backdrop-filter: blur(10px);}
-.hero-label .material-symbols-outlined{font-size:16px;}
-h1{font-size:clamp(2.8rem,6vw,4.2rem);font-weight:700;letter-spacing:-.04em;line-height:1.05;color:#fff;margin-bottom:24px}
-h1 em{font-style:normal;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.15rem;color:var(--text-2);max-width:640px;margin:0 auto 48px;line-height:1.6;font-weight:400}
-.hero-actions{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:64px}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--text);color:var(--bg);font-weight:600;font-size:.9rem;border-radius:10px;transition:all .25s var(--ease)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,255,255,.15);opacity:1; background: #fff;}
-.install-cmd{font-family:var(--mono);font-size:.85rem;color:var(--text-2);padding:12px 24px;border:1px solid var(--border-lit);background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-radius:10px;user-select:all;cursor:copy;transition:all .2s; display: flex; align-items: center; gap: 12px;}
-.install-cmd::before { content: '$'; color: var(--cyan); }
-.install-cmd:hover{border-color:var(--cyan); background: rgba(0,240,255,0.05);}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:720px;margin:0 auto;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border); backdrop-filter: blur(10px);}
-.metric{background:var(--surface);padding:24px;text-align:center; transition: background 0.3s;}
-.metric:hover{background: var(--surface-hover);}
-.metric-val{font-family:var(--mono);font-size:1.8rem;font-weight:600;color:#fff;line-height:1}
-.metric-label{font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-top:8px; font-weight: 500;}
-
-/* ── Hero Graphic (SVG) ───────────────────── */
-.hero-graphic {
-  margin: 0 auto 60px;
-  width: 100%;
-  max-width: 800px;
-  position: relative;
+/* ============================================================
+   5. ACCESSIBILITY (P8)
+   ============================================================ */
+.skip-link{
+  position:fixed;
+  top:-100px;
+  left:var(--s-4);
+  background:var(--cyan);
+  color:#001018;
+  padding:12px 20px;
+  border-radius:var(--r);
+  z-index:1000;
+  font-weight:600;
+  font-size:var(--fs-body-sm);
+  transition:top var(--dur) var(--ease);
 }
-.hero-graphic svg {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.1));
+.skip-link:focus{top:80px;outline:2px solid var(--text);outline-offset:2px}
+
+*:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+  border-radius:2px;
 }
-.svg-pulse { animation: pulse 3s infinite alternate; }
-.svg-dash { animation: dash 20s linear infinite; }
-@keyframes pulse { 0% { opacity: 0.6; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.3); } }
-@keyframes dash { to { stroke-dashoffset: -1000; } }
 
-/* ── Section Headers ─────────────────────── */
-.section-head{text-align:center;margin-bottom:64px}
-.section-head .label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--cyan);margin-bottom:16px; display: inline-block; padding: 4px 12px; background: var(--cyan-dim); border-radius: 6px;}
-h2{font-size:clamp(2rem,4vw,2.8rem);font-weight:700;letter-spacing:-.03em;color:#fff;line-height:1.15;margin-bottom:16px}
-h2 em{font-style:normal;color:var(--red)}
-h2 strong{font-weight:700;color:var(--cyan)}
-.section-sub{font-size:1.05rem;color:var(--text-2);max-width:600px;margin:0 auto;line-height:1.6}
+/* Reduced motion overrides reveal AND animations (F23) */
+@media (prefers-reduced-motion:reduce){
+  *,::before,::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+    scroll-behavior:auto !important;
+  }
+  .reveal{opacity:1 !important;transform:none !important}
+  .terminal-cursor{animation:none !important}
+}
 
-/* ── Glass Cards (Problem/Solution) ───────── */
-.card-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-.glass-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:32px 28px;position:relative;overflow:hidden;transition:transform .3s var(--ease), border-color .3s, box-shadow .3s; display: flex; flex-direction: column;}
-.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent, var(--border)),transparent);opacity:0;transition:opacity .3s;}
-.glass-card:hover{transform:translateY(-4px);border-color:var(--border-lit);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
-.glass-card:hover::before{opacity:1;}
+/* ============================================================
+   6. LAYOUT (P2)
+   ============================================================ */
+.container{
+  width:100%;
+  max-width:var(--w-default);
+  margin:0 auto;
+  padding:0 clamp(20px,5vw,32px);   /* F33 */
+}
+.container.narrow{max-width:var(--w-narrow)}
+.container.wide{max-width:var(--w-wide)}
 
-.glass-card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;background:var(--bg-accent, rgba(255,255,255,0.05));color:var(--color-accent, var(--text)); border: 1px solid var(--border);}
-.glass-card .icon .material-symbols-outlined{font-size:24px}
-.glass-card h3{font-size:1rem;font-weight:600;color:#fff;margin-bottom:12px}
-.glass-card p{font-size:.85rem;color:var(--text-2);line-height:1.6;flex:1;}
-.glass-card code{display:block;margin-top:20px;font-family:var(--mono);font-size:.75rem;color:var(--text-3);padding:10px 14px;background:rgba(0,0,0,.4);border-radius:8px;border:1px solid var(--border); transition: color 0.2s, border-color 0.2s;}
-.glass-card:hover code { color: var(--cyan); border-color: var(--cyan-dim); }
+main{display:block}
 
-/* Problem Specific Accents */
-.p-card { --accent: var(--red); --color-accent: var(--red); --bg-accent: rgba(248,113,113,.08); }
-.s-card { --accent: var(--cyan); --color-accent: var(--cyan); --bg-accent: rgba(0,240,255,.08); }
+section{padding:var(--s-9) 0}                /* 96px */
+@media (min-width:1024px){
+  section{padding:var(--s-10) 0}             /* 128px desktop */
+}
+.section-head{margin-bottom:var(--s-7)}
+.section-head .lead{margin-top:var(--s-4)}
 
-/* ── Impact Row ───────────────────────────── */
-.impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-.impact-cell{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center; position: relative; overflow: hidden;}
-.impact-cell::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top, var(--cyan-dim) 0%, transparent 70%); opacity: 0; transition: opacity 0.4s; pointer-events: none;}
-.impact-cell:hover::after { opacity: 1; }
-.impact-before{font-family:var(--mono);font-size:1rem;color:var(--text-3);text-decoration:line-through;margin-bottom:12px}
-.impact-after{font-family:var(--mono);font-size:2.8rem;font-weight:700;color:var(--cyan);line-height:1; letter-spacing: -0.02em;}
-.impact-label{font-size:.75rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;margin-top:16px; font-weight: 500;}
+/* ============================================================
+   7. NAV (P7)
+   ============================================================ */
+nav.top{
+  position:fixed;
+  inset:0 0 auto 0;
+  z-index:50;
+  background:rgba(6,10,18,0.72);
+  backdrop-filter:blur(24px) saturate(140%);
+  -webkit-backdrop-filter:blur(24px) saturate(140%);
+  border-bottom:1px solid var(--border);
+}
+nav.top .inner{
+  max-width:var(--w-wide);
+  margin:0 auto;
+  padding:14px clamp(20px,5vw,32px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--s-5);
+}
+.brand{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-weight:600;
+  font-size:0.9375rem;
+  color:var(--text);
+  letter-spacing:-0.01em;
+  min-height:44px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.brand-mark{
+  width:22px;
+  height:22px;
+  flex:none;
+}
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:var(--s-2);
+  list-style:none;
+}
+.nav-links a{
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  padding:0 12px;
+  font-size:0.875rem;
+  font-weight:500;
+  color:var(--text-2);
+  border-radius:var(--r-sm);
+  transition:color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+}
+.nav-links a:hover{color:var(--text);background:var(--surface)}
+.nav-cta{
+  margin-left:var(--s-3);
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text) !important;
+}
+.nav-cta:hover{background:var(--surface-2);border-color:var(--border-strong)}
+@media (max-width:760px){
+  /* Hide section-anchor nav links on mobile; keep brand + GitHub CTA */
+  .nav-links li:not(:last-child){display:none}
+  .nav-cta{display:inline-flex}
+  nav.top .inner{padding:12px 16px}
+}
+@media (max-width:380px){
+  .brand span{display:none}  /* logo only on tiny screens */
+}
 
-/* ── Advanced Terminal ────────────────────── */
-.terminal-wrapper { width: 100%; max-width: 800px; margin: 0 auto; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));}
-.terminal{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(6, 10, 18, 0.85); backdrop-filter: blur(20px);}
-.terminal-bar{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02); position: relative;}
-.mac-dots { display: flex; gap: 8px; }
-.mac-dot{width:12px;height:12px;border-radius:50%;}
-.terminal-label{font-family:var(--mono);font-size:.75rem;color:var(--text-3);position: absolute; left: 50%; transform: translateX(-50%); font-weight: 500;}
-.terminal-body{padding:24px 32px; font-family:var(--mono);font-size:.85rem;line-height:1.8; color: var(--text-2); height: 380px; overflow-y: auto;}
+/* ============================================================
+   8. BUTTONS (F12, P7)
+   ============================================================ */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:48px;
+  padding:0 24px;
+  font-family:var(--sans);
+  font-size:var(--fs-body-sm);
+  font-weight:600;
+  letter-spacing:-0.005em;
+  border-radius:var(--r-pill);
+  border:1px solid transparent;
+  cursor:pointer;
+  text-decoration:none;
+  transition:transform var(--dur-fast) var(--ease),
+             background var(--dur-fast) var(--ease),
+             border-color var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease);
+  white-space:nowrap;
+}
+.btn-primary{
+  background:var(--cyan);
+  color:#001018;
+}
+.btn-primary:hover{background:var(--cyan-2);transform:translateY(-1px);color:#001018}
+.btn-ghost{
+  background:transparent;
+  color:var(--text);
+  border-color:var(--border-strong);
+}
+.btn-ghost:hover{background:var(--surface);border-color:rgba(255,255,255,0.22);color:var(--text)}
+.btn .icon{width:16px;height:16px;flex:none}
 
-.t-line { display: flex; gap: 12px; margin-bottom: 4px; opacity: 0; transform: translateY(5px); animation: t-fade-in 0.3s forwards; }
-.t-prompt { color: var(--text-3); user-select: none; }
-.t-cmd { color: var(--cyan); font-weight: 500;}
-.t-out { color: var(--text); }
-.t-ok { color: var(--green); }
-.t-err { color: var(--red); }
-.t-cost { color: var(--gold); }
-.t-comment { color: var(--text-3); font-style: italic; }
-.t-table { color: var(--text-3); white-space: pre; margin: 12px 0; font-size: 0.8rem;}
-.t-cursor { display: inline-block; width: 8px; height: 16px; background: var(--text); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 4px;}
+/* ============================================================
+   9. CODE CHIP — copyable (F13)
+   ============================================================ */
+.code-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  height:48px;
+  padding:0 16px 0 18px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-pill);
+  font-family:var(--mono);
+  font-size:0.875rem;
+  color:var(--text-2);
+  cursor:pointer;
+  transition:border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+  position:relative;
+}
+.code-chip:hover{border-color:var(--border-strong);background:var(--surface-2)}
+.code-chip .prompt{color:var(--text-3);user-select:none}
+.code-chip .copy-icon{
+  width:16px;height:16px;color:var(--text-3);
+  transition:color var(--dur-fast) var(--ease);
+}
+.code-chip:hover .copy-icon{color:var(--text)}
+.code-chip[data-copied="true"] .copy-icon{color:var(--hue-cost)}
+.code-chip .toast{
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%) translateY(4px);
+  padding:6px 12px;
+  background:var(--text);
+  color:var(--bg);
+  font-family:var(--sans);
+  font-size:0.75rem;
+  font-weight:600;
+  border-radius:var(--r-sm);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease);
+  white-space:nowrap;
+}
+.code-chip[data-copied="true"] .toast{opacity:1;transform:translateX(-50%) translateY(0)}
 
-@keyframes t-fade-in { to { opacity: 1; transform: translateY(0); } }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+/* ============================================================
+   10. HERO (F4, F6, F12, F27, F28, F34)
+   ============================================================ */
+.hero{
+  padding:calc(var(--s-10) + 64px) 0 var(--s-9);
+  position:relative;
+}
+.hero-grid{
+  display:grid;
+  gap:var(--s-7);
+}
+.hero-meta-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 14px 6px 12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-pill);
+  font-size:0.75rem;
+  color:var(--text-2);
+  letter-spacing:0.04em;
+  margin-bottom:var(--s-5);
+  width:fit-content;
+}
+.hero-meta-chip .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--hue-cost);
+  box-shadow:0 0 0 3px rgba(52,211,153,0.18);
+}
+.hero h1{margin-bottom:var(--s-5);max-width:18ch}
+.hero h1 .accent{color:var(--cyan)}
+.hero .lead{margin-bottom:var(--s-7);font-size:clamp(1.0625rem,1.6vw,1.3125rem);max-width:38ch}
+.hero-cta{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:var(--s-3);
+  margin-bottom:var(--s-9);
+}
 
-/* ── Architecture Section ─────────────────── */
-.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-.arch-card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:36px 32px; transition: transform 0.3s;}
-.arch-card:hover { transform: translateY(-4px); }
-.arch-card .layer-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.arch-card .layer-label .dot{width:8px;height:8px;border-radius:50%}
-.arch-card h3{font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:12px}
-.arch-card p{font-size:.85rem;color:var(--text-2);line-height:1.6}
-.arch-card ul{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:12px}
-.arch-card li{font-size:.85rem;color:var(--text);display:flex;align-items:center;gap:12px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid transparent; transition: border-color 0.2s;}
-.arch-card li:hover { border-color: var(--border-lit); background: rgba(255,255,255,0.05); }
-.arch-card li .material-symbols-outlined{font-size:18px;color:var(--cyan)}
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:var(--s-5);
+  padding:var(--s-6) 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  margin-bottom:var(--s-8);
+}
+.hero-stat .num{
+  font-size:clamp(1.75rem,3vw,2.5rem);
+  font-weight:600;
+  letter-spacing:-0.03em;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.hero-stat .num .unit{font-size:0.6em;color:var(--text-3);font-weight:500;margin-left:2px}
+.hero-stat .label{
+  display:block;
+  margin-top:8px;
+  font-size:0.8125rem;
+  color:var(--text-3);
+  letter-spacing:0.02em;
+}
+@media (max-width:640px){
+  .hero-stats{grid-template-columns:1fr;gap:var(--s-4);padding:var(--s-5) 0}
+  .hero-stat{display:flex;align-items:baseline;gap:12px}
+  .hero-stat .label{margin-top:0}
+}
 
-/* ── Footer ───────────────────────────────── */
-footer{padding:48px 0;border-top:1px solid var(--border); background: rgba(6,10,18,0.8); backdrop-filter: blur(10px);}
-footer .inner{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-3)}
-footer a{color:var(--text-3);transition:color .2s; font-weight: 500;}
-footer a:hover{color:var(--text)}
+/* Hero diagram (F2, F3, F6, F16) */
+.hero-diagram{
+  width:100%;
+  background:linear-gradient(180deg,var(--bg-2),var(--bg));
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:clamp(20px,3vw,40px);
+  position:relative;
+  overflow:hidden;
+}
+.hero-diagram::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(52,211,153,0.06) 0,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(14,165,233,0.06) 0,transparent 40%);
+  pointer-events:none;
+}
+.hero-diagram svg{
+  width:100%;
+  height:auto;
+  position:relative;
+  z-index:1;
+}
 
-/* ── Scroll Reveal ────────────────────────── */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
-.reveal.visible{opacity:1;transform:translateY(0)}
-.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
+/* ============================================================
+   11. SECTION HEADERS (F7, F15)
+   ============================================================ */
+.section-head h2{margin-bottom:var(--s-3)}
+.section-divider{
+  border:none;
+  height:1px;
+  background:var(--border);
+  margin:0;
+}
 
-/* ── Responsive ───────────────────────────── */
-@media(max-width:1024px){
-  .card-grid-4{grid-template-columns:repeat(2,1fr)}
-  .card-grid-3{grid-template-columns:repeat(2,1fr)}
-  .impact-row{grid-template-columns:1fr}
+/* ============================================================
+   12. PROBLEM SECTION
+   ============================================================ */
+.problem-list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:var(--s-6);
+  list-style:none;
+}
+.problem-item{
+  padding:var(--s-6) 0 0;
+  border-top:1px solid var(--border);
+}
+.problem-item .num{
+  display:block;
+  font-family:var(--mono);
+  font-size:0.75rem;
+  color:var(--text-3);
+  letter-spacing:0.1em;
+  margin-bottom:var(--s-3);
+}
+.problem-item h3{margin-bottom:var(--s-3);font-size:1.125rem}
+.problem-item p{font-size:var(--fs-body-sm);color:var(--text-2);margin-bottom:var(--s-3)}
+.problem-item .stat{
+  font-family:var(--mono);
+  font-size:0.8125rem;
+  color:var(--text);
+  font-weight:500;
+  display:inline-block;
+  padding-top:var(--s-2);
+  border-top:1px dashed var(--border);
+  width:100%;
+}
+.problem-item .stat .danger{color:#fca5a5}
+
+@media (max-width:780px){
+  .problem-list{grid-template-columns:1fr;gap:var(--s-5)}
+}
+
+/* ============================================================
+   13. ARCHITECTURE SECTION (F17, F18)
+   ============================================================ */
+.arch-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:var(--s-4);
+}
+.arch-card{
+  position:relative;
+  padding:var(--s-6);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  transition:transform var(--dur) var(--ease),
+             border-color var(--dur) var(--ease),
+             background var(--dur) var(--ease);
+  display:flex;
+  flex-direction:column;
+  min-height:240px;
+}
+.arch-card:hover{
+  transform:translateY(-2px);
+  border-color:var(--border-strong);
+  background:var(--surface-2);
+}
+.arch-card .arch-icon{
+  width:36px;height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin-bottom:var(--s-4);
+  color:var(--cyan);
+}
+.arch-card:hover .arch-icon{border-color:var(--border-strong)}
+.arch-card .arch-icon svg{width:18px;height:18px}
+.arch-card h3{font-size:1.0625rem;margin-bottom:var(--s-2)}
+.arch-card p{font-size:0.9375rem;color:var(--text-2);line-height:1.55;flex:1;margin-bottom:var(--s-4)}
+.arch-card .arch-cmd{
+  font-family:var(--mono);
+  font-size:0.75rem;
+  color:var(--text-3);
+  padding-top:var(--s-3);
+  border-top:1px solid var(--border);
+  letter-spacing:-0.01em;
+}
+@media (max-width:900px){
+  .arch-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
   .arch-grid{grid-template-columns:1fr}
-  .metrics{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:640px){
-  .container{padding:0 24px}
-  section{padding:80px 0}
-  .hero{padding:140px 0 80px}
-  .card-grid-4, .card-grid-3{grid-template-columns:1fr}
-  .hero-actions{flex-direction:column}
-  .nav-links{gap:16px}
-  .nav-links a:not(.gh){display:none}
-  h1 { font-size: 2.2rem; }
+  .arch-card{min-height:auto}
 }
 
-/* ── Scrollbar ────────────────────────────── */
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border-lit);border-radius:4px}
-::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+/* ============================================================
+   14. EVIDENCE SECTION (F19)
+   ============================================================ */
+.evidence-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:var(--s-7);
+  align-items:start;
+}
+.evidence-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:var(--fs-body-sm);
+}
+.evidence-table caption{
+  text-align:left;
+  font-size:var(--fs-eyebrow);
+  font-weight:600;
+  color:var(--text-3);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  padding-bottom:var(--s-4);
+}
+.evidence-table thead th{
+  text-align:left;
+  padding:var(--s-3) 0;
+  font-size:0.75rem;
+  font-weight:500;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  border-bottom:1px solid var(--border);
+}
+.evidence-table thead th:nth-child(2){color:var(--text-4)}
+.evidence-table thead th:nth-child(3){color:var(--cyan)}
+.evidence-table tbody td{
+  padding:var(--s-4) 0;
+  border-bottom:1px solid var(--border);
+  font-variant-numeric:tabular-nums;
+  vertical-align:top;
+}
+.evidence-table .metric{color:var(--text);font-weight:500}
+.evidence-table .before{color:var(--text-4)}
+.evidence-table .after{color:var(--text);font-weight:600}
+.evidence-table tbody tr:last-child td{border-bottom:none}
+
+/* Terminal (F20, F21) */
+.terminal{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  font-family:var(--mono);
+  font-size:0.8125rem;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.terminal-bar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+}
+.mac-dots{display:flex;gap:6px}
+.mac-dot{width:11px;height:11px;border-radius:50%}
+.mac-dot.r{background:#ff5f57}
+.mac-dot.y{background:#febc2e}
+.mac-dot.g{background:#28c840}
+.terminal-label{
+  margin-left:auto;margin-right:auto;
+  font-size:0.6875rem;
+  color:var(--text-3);
+  letter-spacing:0.04em;
+}
+.terminal-body{
+  padding:18px 20px;
+  line-height:1.85;
+  color:var(--text-2);
+  overflow:hidden;
+  flex:1;
+  min-height:0;
+}
+.t-line{display:block;white-space:pre-wrap}
+.t-prompt{color:var(--text-3);user-select:none;margin-right:10px}
+.t-cmd{color:var(--cyan)}
+.t-out{color:var(--text-2)}
+.t-ok{color:var(--hue-cost)}
+.t-meta{color:var(--text-3);font-style:italic}
+.t-dim{color:var(--text-4)}
+.terminal-cursor{
+  display:inline-block;
+  width:7px;
+  height:13px;
+  background:var(--text);
+  vertical-align:-2px;
+  margin-left:3px;
+  animation:blink 1s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+@media (max-width:900px){
+  .evidence-grid{grid-template-columns:1fr}
+  .terminal{min-height:280px}
+}
+
+/* ============================================================
+   15. REFERENCE / USE-CASE SECTION
+   ============================================================ */
+.reference-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:var(--s-6);
+  margin-top:var(--s-7);
+}
+.ref-block{
+  padding:var(--s-6);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+}
+.ref-block .ref-label{
+  font-size:var(--fs-eyebrow);
+  font-weight:600;
+  color:var(--text-3);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:var(--s-3);
+  display:block;
+}
+.ref-block h3{font-size:1.0625rem;margin-bottom:var(--s-3)}
+.ref-block p{font-size:var(--fs-body-sm);color:var(--text-2);margin-bottom:var(--s-4)}
+.ref-list{list-style:none;display:grid;gap:10px}
+.ref-list li{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:0.875rem;
+  color:var(--text-2);
+  line-height:1.5;
+}
+.ref-list svg{
+  width:14px;height:14px;
+  margin-top:4px;
+  color:var(--cyan);
+  flex:none;
+}
+@media (max-width:900px){
+  .reference-grid{grid-template-columns:1fr}
+}
+
+/* ============================================================
+   16. CLOSING CTA (F31)
+   ============================================================ */
+.cta-section{
+  padding:var(--s-10) 0;
+  text-align:center;
+  background:radial-gradient(ellipse at 50% 0%,rgba(14,165,233,0.07) 0%,transparent 60%);
+  border-top:1px solid var(--border);
+}
+.cta-section h2{
+  font-size:clamp(2rem,4vw,3rem);
+  margin-bottom:var(--s-4);
+  max-width:18ch;
+  margin-left:auto;
+  margin-right:auto;
+}
+.cta-section .lead{
+  margin:0 auto var(--s-7);
+  text-align:center;
+}
+.cta-actions{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--s-3);
+  flex-wrap:wrap;
+}
+
+/* ============================================================
+   17. FOOTER (F29, F37)
+   ============================================================ */
+footer{
+  border-top:1px solid var(--border);
+  padding:var(--s-7) 0;
+  margin-top:0;
+}
+footer .inner{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:var(--s-5);
+}
+.footer-brand{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:var(--text-3);
+  font-size:var(--fs-meta);
+}
+.footer-brand .brand-mark{width:20px;height:20px}
+.footer-meta{color:var(--text-3);font-size:var(--fs-meta)}
+.footer-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--s-5);
+  list-style:none;
+}
+.footer-links a{
+  color:var(--text-3);
+  font-size:var(--fs-meta);
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+}
+.footer-links a:hover{color:var(--text)}
+
+@media (max-width:640px){
+  footer .inner{flex-direction:column;align-items:flex-start}
+}
+
+/* ============================================================
+   18. REVEAL (F1, F23) — visible by default; only hidden when
+       JS is loaded AND motion is allowed. Pure-CSS users, JS-off
+       users, reduced-motion users, and SEO bots all see content.
+   ============================================================ */
+.reveal{opacity:1;transform:none}
+html.js:not(.motion-reduce) .reveal{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity var(--dur-slow) var(--ease),
+             transform var(--dur-slow) var(--ease);
+  will-change:opacity,transform;
+}
+html.js:not(.motion-reduce) .reveal.in{opacity:1;transform:none}
+html.js:not(.motion-reduce) .reveal.no-anim{opacity:1;transform:none;transition:none}
+
+/* ============================================================
+   19. PRINT (F35)
+   ============================================================ */
+@media print{
+  html,body{background:#fff;color:#000}
+  nav.top,.skip-link,.cta-section,footer{display:none}
+  a{color:#000;text-decoration:underline}
+  section{padding:24px 0}
+  .hero{padding:24px 0}
+  .arch-card,.ref-block,.terminal,.hero-diagram{
+    background:#fff;border-color:#ccc;box-shadow:none;
+  }
+  h1,h2,h3,p,td,th,li{color:#000 !important}
+  .reveal{opacity:1 !important;transform:none !important}
+}
 </style>
 </head>
 <body>
 
-<!-- Ambient Background -->
-<div class="grid-bg"></div>
-<div class="ambient-glow glow-1"></div>
-<div class="ambient-glow glow-2"></div>
+<a href="#main" class="skip-link">Skip to main content</a>
 
-<!-- Nav -->
-<nav>
+<nav class="top" aria-label="Primary">
   <div class="inner">
-    <div class="brand">
-      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Antigravity OS logo">
-        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <a href="#" class="brand" aria-label="Antigravity OS — home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="7" fill="#0d1320"/>
+        <path d="M16 6 L25 24 H7 Z" fill="none" stroke="#0ea5e9" stroke-width="1.8" stroke-linejoin="round"/>
+        <circle cx="16" cy="18" r="2.4" fill="#0ea5e9"/>
       </svg>
-      Antigravity OS <span>v1.4.0</span>
-    </div>
-    <div class="nav-links">
-      <a href="#problem">Problem</a>
-      <a href="#solution">Solution</a>
-      <a href="#reference">Use Case</a>
-      <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="gh">
-        <span class="material-symbols-outlined" style="font-size:18px">code</span> GitHub
-      </a>
-    </div>
+      <span>Antigravity OS</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#evidence">Evidence</a></li>
+      <li><a href="https://github.com/Manzela/Antigravity-OS" class="nav-cta" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
   </div>
 </nav>
 
-<!-- Hero -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-label reveal">
-      <span class="material-symbols-outlined">lock_open</span>
-      Open Source · MIT License · Zero Cloud Dependencies
-    </div>
+<main id="main">
 
-    <!-- Hero Governance Flow Diagram -->
-    <div class="hero-graphic reveal reveal-d1">
-      <svg viewBox="0 0 900 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing ungoverned AI agents passing through the Antigravity OS governance kernel with four enforcement gates, emerging as governed agents">
-        <defs>
-          <radialGradient id="coreGlow" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.15"/>
-            <stop offset="100%" stop-color="transparent"/>
-          </radialGradient>
-          <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#f87171"/>
-            <stop offset="50%" stop-color="#00f0ff"/>
-            <stop offset="100%" stop-color="#4ade80"/>
-          </linearGradient>
-        </defs>
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="container wide">
+      <div class="hero-grid reveal">
 
-        <!-- Main flow line (background) -->
-        <path d="M80 140 H820" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
-        <!-- Animated flow line -->
-        <path class="svg-dash" d="M80 140 H820" stroke="url(#flowGrad)" stroke-width="2" stroke-dasharray="6 4"/>
+        <div>
+          <span class="hero-meta-chip">
+            <span class="dot" aria-hidden="true"></span>
+            v1.4.0 · Open source · MIT · Zero cloud dependencies
+          </span>
+          <h1>The governance kernel for <span class="accent">AI agents.</span></h1>
+          <p class="lead">Cost limits, policy enforcement, and audit trails. Built into your agent runtime — not a SaaS, not a sidecar, no lock-in.</p>
 
-        <!-- === LEFT: Ungoverned Agents === -->
-        <!-- Agent 1 -->
-        <rect x="20" y="60" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
-        <text x="70" y="83" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent 1</text>
-        <path d="M120 78 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- Agent 2 -->
-        <rect x="30" y="122" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
-        <text x="80" y="145" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent 2</text>
-        <path d="M130 140 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- Agent 3 -->
-        <rect x="20" y="184" width="100" height="36" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1.5"/>
-        <text x="70" y="207" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="500">Agent N</text>
-        <path d="M120 202 L160 140" stroke="rgba(248,113,113,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- "Ungoverned" label -->
-        <text x="70" y="42" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="9" font-weight="600" text-transform="uppercase" letter-spacing="0.1em">UNGOVERNED</text>
-
-        <!-- === CENTER: AG-OS Kernel Boundary === -->
-        <!-- Outer kernel boundary -->
-        <rect class="svg-pulse" x="180" y="20" width="540" height="240" rx="20" fill="rgba(0,240,255,0.03)" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="8 4"/>
-        <!-- Kernel label -->
-        <text x="450" y="50" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="11" font-weight="600" letter-spacing="0.15em">ANTIGRAVITY OS</text>
-
-        <!-- Inner glow -->
-        <circle cx="450" cy="140" r="100" fill="url(#coreGlow)"/>
-
-        <!-- Gate 1: Cost Guard -->
-        <rect x="210" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
-        <text x="262" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Cost Guard</text>
-        <text x="262" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Solvency gate</text>
-        <text x="262" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">per operation</text>
-        <!-- Checkmark -->
-        <circle cx="262" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
-        <path d="M258 172 L261 175 L267 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-        <!-- Gate 2: Constitution -->
-        <rect x="335" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
-        <text x="387" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Constitution</text>
-        <text x="387" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">9 policy rules</text>
-        <text x="387" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">enforced</text>
-        <circle cx="387" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
-        <path d="M383 172 L386 175 L392 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-        <!-- Gate 3: Flight Recorder -->
-        <rect x="460" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
-        <text x="512" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">Flight Rec.</text>
-        <text x="512" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Full audit trail</text>
-        <text x="512" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">every transition</text>
-        <circle cx="512" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
-        <path d="M508 172 L511 175 L517 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-        <!-- Gate 4: DreamEngine -->
-        <rect x="585" y="90" width="105" height="100" rx="12" fill="rgba(10,14,23,0.7)" stroke="rgba(0,240,255,0.25)" stroke-width="1.5"/>
-        <text x="637" y="122" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="600">DreamEngine</text>
-        <text x="637" y="140" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">Self-improve</text>
-        <text x="637" y="155" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="8.5">patch synthesis</text>
-        <circle cx="637" cy="172" r="8" fill="rgba(74,222,128,0.15)" stroke="#4ade80" stroke-width="1"/>
-        <path d="M633 172 L636 175 L642 169" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-        <!-- Flow arrows between gates -->
-        <path d="M315 140 L335 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5" marker-end="none"/>
-        <path d="M440 140 L460 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
-        <path d="M565 140 L585 140" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
-
-        <!-- === RIGHT: Governed Output === -->
-        <!-- Governed Agent 1 -->
-        <rect x="750" y="60" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
-        <text x="810" y="83" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Governed</text>
-        <path d="M720 140 L750 78" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- Governed Agent 2 -->
-        <rect x="760" y="122" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
-        <text x="820" y="145" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Auditable</text>
-        <path d="M720 140 L760 140" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- Governed Agent 3 -->
-        <rect x="750" y="184" width="120" height="36" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1.5"/>
-        <text x="810" y="207" text-anchor="middle" fill="#4ade80" font-family="Inter,sans-serif" font-size="11" font-weight="500">Cost-bound</text>
-        <path d="M720 140 L750 202" stroke="rgba(74,222,128,0.25)" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- "Governed" label -->
-        <text x="810" y="42" text-anchor="middle" fill="#64748b" font-family="Inter,sans-serif" font-size="9" font-weight="600" letter-spacing="0.1em">GOVERNED</text>
-      </svg>
-    </div>
-
-    <h1 class="reveal reveal-d2">The governance kernel for <em>AI agents</em></h1>
-    <p class="hero-sub reveal reveal-d2">AI agents can write code, deploy services, and manage infrastructure. But without deterministic guardrails, they burn budgets, loop endlessly, and operate as black boxes. This kernel solves that.</p>
-
-    <div class="hero-actions reveal reveal-d3">
-      <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn-primary">
-        <span class="material-symbols-outlined" style="font-size:20px">code</span> View Repository
-      </a>
-      <div class="install-cmd">pip install ag-os</div>
-    </div>
-
-    <div class="metrics reveal reveal-d3" id="metrics-container">
-      <div class="metric"><div class="metric-val" data-target="102">0</div><div class="metric-label">Tests Passing</div></div>
-      <div class="metric"><div class="metric-val" data-target="9">0</div><div class="metric-label">Governance Rules</div></div>
-      <div class="metric"><div class="metric-val" data-target="6">0</div><div class="metric-label">Provider Surfaces</div></div>
-      <div class="metric"><div class="metric-val" data-target="0">0</div><div class="metric-label">Cloud Lock-in</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- Problem -->
-<section id="problem">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="label">The Problem</div>
-      <h2>Autonomous agents are powerful.<br><em>Ungoverned agents are dangerous.</em></h2>
-    </div>
-    <div class="card-grid-4 reveal reveal-d1">
-      <div class="glass-card p-card">
-        <div class="icon"><span class="material-symbols-outlined">payments</span></div>
-        <h3>Budget Overruns</h3>
-        <p>A single agent loop can exhaust thousands in GPU compute with no built-in spending limits or solvency checks.</p>
-      </div>
-      <div class="glass-card p-card">
-        <div class="icon"><span class="material-symbols-outlined">sync_problem</span></div>
-        <h3>Infinite Loops</h3>
-        <p>Agents retry identical failed operations indefinitely — each cycle burning tokens and time without progress.</p>
-      </div>
-      <div class="glass-card p-card">
-        <div class="icon"><span class="material-symbols-outlined">visibility_off</span></div>
-        <h3>Zero Audit Trail</h3>
-        <p>Black-box execution with no flight recorder, no state machine, and no mechanism to replay what happened.</p>
-      </div>
-      <div class="glass-card p-card">
-        <div class="icon"><span class="material-symbols-outlined">psychology_alt</span></div>
-        <h3>No Learning</h3>
-        <p>Agents repeat identical mistakes across sessions — no shared memory, no friction analysis, no self-improvement.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Solution -->
-<section id="solution">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="label">The Solution</div>
-      <h2>One install. <strong>Complete governance.</strong></h2>
-      <p class="section-sub">Six deterministic modules that enforce cost limits, policy-as-code, audit trails, and self-improvement. Zero LLM dependencies in the core.</p>
-    </div>
-    <div class="card-grid-3 reveal reveal-d1">
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">shield</span></div>
-        <h3>Cost Guard</h3>
-        <p>Real-time solvency gating. Blocks execution when projected spend exceeds budget. Per-tier rate cards with configurable thresholds.</p>
-        <code>ag-os check 1.0 --tier gpu_a100</code>
-      </div>
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">gavel</span></div>
-        <h3>The Constitution</h3>
-        <p>Nine governance rules enforced at every state transition. Policy-as-code defined in Markdown. Extensible by design.</p>
-        <code>.agent/rules/08-economic-safety.md</code>
-      </div>
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">flight</span></div>
-        <h3>Flight Recorder</h3>
-        <p>Deterministic state machine with complete audit trail. SQLite WAL-backed. Every operation tracked end-to-end with replay capability.</p>
-        <code>ag-os status</code>
-      </div>
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">lightbulb</span></div>
-        <h3>DreamEngine</h3>
-        <p>Self-improvement loop. Scans friction logs, identifies failure patterns, and synthesizes governance patches automatically.</p>
-        <code>ag-os dream --apply</code>
-      </div>
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">hub</span></div>
-        <h3>Provider Registry</h3>
-        <p>Six swappable abstraction surfaces — secrets, issues, cost, state, telemetry, policy. Works offline. Scales to cloud.</p>
-        <code>providers: { cost: gcp, state: redis }</code>
-      </div>
-      <div class="glass-card s-card">
-        <div class="icon"><span class="material-symbols-outlined">smart_toy</span></div>
-        <h3>MCP Server</h3>
-        <p>Exposes governance as Model Context Protocol tools. Any MCP-compatible agent gets governance built-in.</p>
-        <code>ag-os serve</code>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Reference Implementation -->
-<section id="reference">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="label">Reference Implementation</div>
-      <h2>Governing a production <strong>multi-agent pipeline</strong></h2>
-      <p class="section-sub">A 7-agent ADK pipeline operating across 5 regional tenants. The system below runs under Antigravity OS governance — every metric shown reflects the kernel's enforcement.</p>
-    </div>
-
-    <!-- The governed system -->
-    <div class="arch-grid reveal reveal-d1">
-      <div class="arch-card">
-        <div class="layer-label" style="color:var(--text-3)"><div class="dot" style="background:var(--text-3)"></div>The System</div>
-        <h3>What's Being Governed</h3>
-        <p>A multi-tenant content pipeline with 7 specialized agents, each with sub-agent decomposition. Deployed with per-tenant adapters across regional endpoints.</p>
-        <ul>
-          <li><span class="material-symbols-outlined">account_tree</span> 7 agents, 15+ sub-agents</li>
-          <li><span class="material-symbols-outlined">language</span> 5 regional tenants (IL, US, MX, ES, PT)</li>
-          <li><span class="material-symbols-outlined">memory</span> GPU-accelerated inference endpoints</li>
-        </ul>
-      </div>
-      <div class="arch-card">
-        <div class="layer-label" style="color:var(--cyan)"><div class="dot" style="background:var(--cyan)"></div>AG-OS Modules Active</div>
-        <h3>Governance Applied</h3>
-        <p>Four AG-OS modules govern this pipeline end-to-end: cost enforcement per operation, policy evaluation at every state transition, full execution tracing, and automated self-improvement.</p>
-        <ul>
-          <li><span class="material-symbols-outlined">shield</span> Cost Guard — per-operation solvency</li>
-          <li><span class="material-symbols-outlined">gavel</span> Constitution — 9 rules enforced</li>
-          <li><span class="material-symbols-outlined">flight</span> Flight Recorder — full trace</li>
-          <li><span class="material-symbols-outlined">lightbulb</span> DreamEngine — patch synthesis</li>
-        </ul>
-      </div>
-      <div class="arch-card">
-        <div class="layer-label" style="color:var(--gold)"><div class="dot" style="background:var(--gold)"></div>Observed Impact</div>
-        <h3>Before → After</h3>
-        <p>Measured delta after integrating the governance kernel into the pipeline's execution loop.</p>
-        <ul>
-          <li><span class="material-symbols-outlined">payments</span> Budget overrun: <strong style="color:var(--red)">Uncapped</strong> → <strong style="color:var(--green)">$0</strong></li>
-          <li><span class="material-symbols-outlined">sync_problem</span> Retry storms: <strong style="color:var(--red)">12</strong> → <strong style="color:var(--green)">2.1</strong> avg cycles</li>
-          <li><span class="material-symbols-outlined">visibility</span> Audit coverage: <strong style="color:var(--red)">0%</strong> → <strong style="color:var(--green)">100%</strong></li>
-          <li><span class="material-symbols-outlined">auto_fix_high</span> Self-healed: <strong style="color:var(--cyan)">6 patches</strong> generated</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Quick Start (Animated Terminal) -->
-<section id="quickstart">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="label">Getting Started</div>
-      <h2>Initialize the <strong>Core.</strong></h2>
-      <p class="section-sub">Deploy governed, self-improving agent pipelines in seconds. Built for high-fidelity orchestration.</p>
-    </div>
-
-    <div class="terminal-wrapper reveal reveal-d1">
-      <div class="terminal">
-        <div class="terminal-bar">
-          <div class="mac-dots">
-            <div class="mac-dot" style="background:#ff5f56; border: 1px solid #e0443e;"></div>
-            <div class="mac-dot" style="background:#ffbd2e; border: 1px solid #dea123;"></div>
-            <div class="mac-dot" style="background:#27c93f; border: 1px solid #1aab29;"></div>
+          <div class="hero-cta">
+            <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn btn-primary">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.05c-3.2.7-3.87-1.37-3.87-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.73-1.53-2.55-.29-5.24-1.27-5.24-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.17a10.97 10.97 0 0 1 5.74 0c2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.07 0 4.4-2.69 5.37-5.25 5.65.41.36.78 1.06.78 2.13v3.16c0 .31.21.66.8.55C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5Z"/></svg>
+              View on GitHub
+            </a>
+            <button type="button" class="code-chip" data-copy="pip install ag-os" aria-label="Copy install command">
+              <span class="prompt">$</span><span>pip install ag-os</span>
+              <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <span class="toast">Copied</span>
+            </button>
           </div>
-          <div class="terminal-label">bash - antigravity-os</div>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="num">9</div>
+              <div class="label">Constitution rules</div>
+            </div>
+            <div class="hero-stat">
+              <div class="num">6</div>
+              <div class="label">Provider surfaces</div>
+            </div>
+            <div class="hero-stat">
+              <div class="num">0<span class="unit">cloud</span></div>
+              <div class="label">Lock-in dependencies</div>
+            </div>
+          </div>
         </div>
-        <div class="terminal-body" id="term-body">
-          <noscript>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">pip install ag-os</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-ok">Successfully installed ag-os-1.4.0</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os init --governance --cost-guard</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-ok">Governance framework initialized (9 rules active)</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os demo</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-prompt">$</span><span class="t-cmd">ag-os dream</span></div>
-            <div class="t-line" style="opacity:1;transform:none"><span class="t-comment"># Self-improvement cycle complete. 2 patches synthesized.</span></div>
-          </noscript>
+
+        <!-- Diagram -->
+        <figure class="hero-diagram" aria-labelledby="diagram-caption">
+          <svg viewBox="0 0 960 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="diagram-caption">
+            <title id="diagram-caption">Ungoverned AI agents pass through Antigravity OS — cost guard, policy engine, audit trail, and self-improvement — emerging governed, auditable, and cost-bound.</title>
+
+            <defs>
+              <linearGradient id="lineGrad" x1="0" x2="1">
+                <stop offset="0" stop-color="#5b5b62" stop-opacity="0.5"/>
+                <stop offset="0.5" stop-color="#0ea5e9" stop-opacity="0.7"/>
+                <stop offset="1" stop-color="#34d399" stop-opacity="0.6"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 Z" fill="#34d399" opacity="0.7"/>
+              </marker>
+            </defs>
+
+            <!-- Section labels -->
+            <text x="80" y="32" text-anchor="middle" fill="#86868b" font-family="Inter,sans-serif" font-size="11" font-weight="600" letter-spacing="2">UNGOVERNED</text>
+            <text x="480" y="32" text-anchor="middle" fill="#0ea5e9" font-family="Inter,sans-serif" font-size="11" font-weight="600" letter-spacing="2">ANTIGRAVITY OS</text>
+            <text x="880" y="32" text-anchor="middle" fill="#34d399" font-family="Inter,sans-serif" font-size="11" font-weight="600" letter-spacing="2">GOVERNED</text>
+
+            <!-- Flow line -->
+            <line x1="60" y1="170" x2="900" y2="170" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 6"/>
+
+            <!-- Left agents -->
+            <g font-family="Inter,sans-serif" font-size="12" fill="#c9c9d0">
+              <rect x="20" y="80" width="120" height="40" rx="8" fill="#11161f" stroke="#1f2533" stroke-width="1"/>
+              <text x="80" y="105" text-anchor="middle">Agent 1</text>
+
+              <rect x="20" y="148" width="120" height="40" rx="8" fill="#11161f" stroke="#1f2533" stroke-width="1"/>
+              <text x="80" y="173" text-anchor="middle">Agent 2</text>
+
+              <rect x="20" y="216" width="120" height="40" rx="8" fill="#11161f" stroke="#1f2533" stroke-width="1"/>
+              <text x="80" y="241" text-anchor="middle">Agent N</text>
+            </g>
+
+            <!-- Kernel boundary -->
+            <rect x="200" y="60" width="560" height="220" rx="14" fill="rgba(14,165,233,0.04)" stroke="#0ea5e9" stroke-width="1" stroke-dasharray="3 4" opacity="0.7"/>
+
+            <!-- 4 modules -->
+            <g font-family="Inter,sans-serif">
+              <!-- Cost Guard (green) -->
+              <rect x="220" y="100" width="120" height="140" rx="10" fill="#0d1320" stroke="#34d39955" stroke-width="1"/>
+              <circle cx="280" cy="135" r="14" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1"/>
+              <path d="M275 135 L279 139 L286 131" stroke="#34d399" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="280" y="172" text-anchor="middle" fill="#f5f5f7" font-size="12" font-weight="600">Cost Guard</text>
+              <text x="280" y="190" text-anchor="middle" fill="#86868b" font-size="10">Solvency gate</text>
+              <text x="280" y="207" text-anchor="middle" fill="#86868b" font-size="10">per operation</text>
+
+              <!-- Constitution (violet) -->
+              <rect x="350" y="100" width="120" height="140" rx="10" fill="#0d1320" stroke="#a78bfa55" stroke-width="1"/>
+              <circle cx="410" cy="135" r="14" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" stroke-width="1"/>
+              <path d="M404 130 H416 M404 134 H416 M404 138 H416 M404 142 H412" stroke="#a78bfa" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <text x="410" y="172" text-anchor="middle" fill="#f5f5f7" font-size="12" font-weight="600">Constitution</text>
+              <text x="410" y="190" text-anchor="middle" fill="#86868b" font-size="10">9 policy rules</text>
+              <text x="410" y="207" text-anchor="middle" fill="#86868b" font-size="10">enforced</text>
+
+              <!-- Flight Recorder (amber) -->
+              <rect x="480" y="100" width="120" height="140" rx="10" fill="#0d1320" stroke="#fbbf2455" stroke-width="1"/>
+              <circle cx="540" cy="135" r="14" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" stroke-width="1"/>
+              <path d="M534 130 V140 H546 M534 135 H541" stroke="#fbbf24" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <text x="540" y="172" text-anchor="middle" fill="#f5f5f7" font-size="12" font-weight="600">Flight Recorder</text>
+              <text x="540" y="190" text-anchor="middle" fill="#86868b" font-size="10">Full audit trail</text>
+              <text x="540" y="207" text-anchor="middle" fill="#86868b" font-size="10">every transition</text>
+
+              <!-- DreamEngine (cyan) -->
+              <rect x="610" y="100" width="120" height="140" rx="10" fill="#0d1320" stroke="#0ea5e955" stroke-width="1"/>
+              <circle cx="670" cy="135" r="14" fill="rgba(14,165,233,0.12)" stroke="#0ea5e9" stroke-width="1"/>
+              <path d="M665 130 Q670 124 675 130 Q680 136 675 142 Q670 148 665 142 Q660 136 665 130" stroke="#0ea5e9" stroke-width="1.6" fill="none"/>
+              <text x="670" y="172" text-anchor="middle" fill="#f5f5f7" font-size="12" font-weight="600">DreamEngine</text>
+              <text x="670" y="190" text-anchor="middle" fill="#86868b" font-size="10">Self-improvement</text>
+              <text x="670" y="207" text-anchor="middle" fill="#86868b" font-size="10">patch synthesis</text>
+            </g>
+
+            <!-- Right outputs -->
+            <g font-family="Inter,sans-serif" font-size="12" fill="#c9c9d0">
+              <rect x="820" y="80" width="120" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="#34d39955" stroke-width="1"/>
+              <text x="880" y="105" text-anchor="middle" fill="#34d399">Governed</text>
+
+              <rect x="820" y="148" width="120" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="#34d39955" stroke-width="1"/>
+              <text x="880" y="173" text-anchor="middle" fill="#34d399">Auditable</text>
+
+              <rect x="820" y="216" width="120" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="#34d39955" stroke-width="1"/>
+              <text x="880" y="241" text-anchor="middle" fill="#34d399">Cost-bound</text>
+            </g>
+
+            <!-- Arrow heads at output edge -->
+            <line x1="760" y1="100" x2="815" y2="100" stroke="#34d39977" stroke-width="1" marker-end="url(#arrow)"/>
+            <line x1="760" y1="170" x2="815" y2="170" stroke="#34d39977" stroke-width="1" marker-end="url(#arrow)"/>
+            <line x1="760" y1="236" x2="815" y2="236" stroke="#34d39977" stroke-width="1" marker-end="url(#arrow)"/>
+          </svg>
+        </figure>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PROBLEM ─── -->
+  <section id="problem">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">The problem</span>
+        <h2>Autonomous agents are powerful. Ungoverned agents are dangerous.</h2>
+        <p class="lead">Agentic pipelines introduce unbounded state transitions into production. The operational failure modes group into three observables.</p>
+      </div>
+
+      <ul class="problem-list reveal">
+        <li class="problem-item">
+          <span class="num">01</span>
+          <h3>Unbounded cost</h3>
+          <p>Execution loops retry without solvency checks. A single agent can exhaust thousands in GPU compute before any human notices.</p>
+          <div class="stat">Observed: <span class="danger">$4,200 burned</span> in a 12 h window</div>
+        </li>
+        <li class="problem-item">
+          <span class="num">02</span>
+          <h3>State opacity</h3>
+          <p>Transitions occur in transient memory contexts. Post-incident forensics lack a deterministic replay mechanism.</p>
+          <div class="stat">Audit coverage: <span class="danger">0%</span> in baseline runs</div>
+        </li>
+        <li class="problem-item">
+          <span class="num">03</span>
+          <h3>Static competence</h3>
+          <p>Agents discard execution context between sessions. Identical failure patterns repeat across independent runs.</p>
+          <div class="stat">Retry storms: <span class="danger">12 cycles</span> avg before escalation</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── ARCHITECTURE ─── -->
+  <section id="architecture" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,0.012),transparent);">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">The architecture</span>
+        <h2>Six modules. One install. Complete governance.</h2>
+        <p class="lead">Independent abstractions intercept agent state transitions without modifying the underlying logic. Each module is swappable; every interface is documented.</p>
+      </div>
+
+      <div class="arch-grid reveal">
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Cost Guard</h3>
+          <p>Real-time solvency gating. Halts execution when projected spend exceeds budget. Per-tier rate cards with configurable thresholds.</p>
+          <code class="arch-cmd">ag-os check 1.0 --tier gpu_a100</code>
+        </article>
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6"/><path d="M12 4v16"/><path d="M5 9l4 8 4-8 4 8 4-8"/></svg>
+          </div>
+          <h3>The Constitution</h3>
+          <p>Nine governance rules enforced at every state transition. Policy-as-code defined in Markdown. Extensible by design.</p>
+          <code class="arch-cmd">.agent/rules/08-economic-safety.md</code>
+        </article>
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          </div>
+          <h3>Flight Recorder</h3>
+          <p>Append-only state machine with deterministic replay. SQLite WAL-backed. Every operation traced end-to-end.</p>
+          <code class="arch-cmd">ag-os status --tail 100</code>
+        </article>
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><circle cx="12" cy="12" r="3.5"/><path d="M19 12h3"/><path d="M2 12h3"/></svg>
+          </div>
+          <h3>DreamEngine</h3>
+          <p>Self-improvement loop. Scans friction logs, identifies failure patterns, synthesizes governance patches automatically.</p>
+          <code class="arch-cmd">ag-os dream --apply</code>
+        </article>
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg>
+          </div>
+          <h3>Provider Registry</h3>
+          <p>Six swappable surfaces — secrets, issues, cost, state, telemetry, policy. Works offline. Scales to cloud.</p>
+          <code class="arch-cmd">providers: { state: redis }</code>
+        </article>
+
+        <article class="arch-card">
+          <div class="arch-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M8 6V3"/><path d="M16 6V3"/><circle cx="9" cy="13" r="1.5"/><circle cx="15" cy="13" r="1.5"/></svg>
+          </div>
+          <h3>MCP Server</h3>
+          <p>Exposes governance as Model Context Protocol tools. Any MCP-compatible agent gets governance built-in.</p>
+          <code class="arch-cmd">ag-os serve --transport stdio</code>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EVIDENCE ─── -->
+  <section id="evidence">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">The evidence</span>
+        <h2>Measured impact on a production pipeline.</h2>
+        <p class="lead">A 7-agent content pipeline operating across 5 regional tenants. Every metric reflects the kernel's enforcement, not advertising.</p>
+      </div>
+
+      <div class="evidence-grid reveal">
+
+        <table class="evidence-table" aria-label="Before and after metrics">
+          <caption>Before / After Antigravity OS</caption>
+          <thead>
+            <tr>
+              <th scope="col">Metric</th>
+              <th scope="col">Baseline</th>
+              <th scope="col">Governed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric">Budget overrun</td>
+              <td class="before">Uncapped</td>
+              <td class="after">$0.00</td>
+            </tr>
+            <tr>
+              <td class="metric">Avg retry cycles</td>
+              <td class="before">12.0</td>
+              <td class="after">2.1</td>
+            </tr>
+            <tr>
+              <td class="metric">Audit coverage</td>
+              <td class="before">0%</td>
+              <td class="after">100%</td>
+            </tr>
+            <tr>
+              <td class="metric">Self-healed patches</td>
+              <td class="before">—</td>
+              <td class="after">6 generated</td>
+            </tr>
+            <tr>
+              <td class="metric">Policy violations</td>
+              <td class="before">untracked</td>
+              <td class="after">14 caught</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="terminal" aria-label="Operational example">
+          <div class="terminal-bar">
+            <span class="mac-dots" aria-hidden="true">
+              <span class="mac-dot r"></span>
+              <span class="mac-dot y"></span>
+              <span class="mac-dot g"></span>
+            </span>
+            <span class="terminal-label">bash — antigravity-os</span>
+          </div>
+          <div class="terminal-body" id="term-body">
+            <span class="t-line"><span class="t-prompt">$</span><span class="t-cmd">pip install ag-os</span></span>
+            <span class="t-line"><span class="t-ok">✓ ag-os 1.4.0 installed</span></span>
+            <span class="t-line"><span class="t-prompt">$</span><span class="t-cmd">ag-os init --governance</span></span>
+            <span class="t-line"><span class="t-ok">✓ 9 Constitution rules active</span></span>
+            <span class="t-line"><span class="t-prompt">$</span><span class="t-cmd">ag-os run pipeline.yaml</span></span>
+            <span class="t-line"><span class="t-out">▸ executing 7-agent pipeline…</span></span>
+            <span class="t-line"><span class="t-dim">  step 1 · DataFetcher    · ok · $0.02</span></span>
+            <span class="t-line"><span class="t-dim">  step 2 · TextAnalyzer   · ok · $0.15</span></span>
+            <span class="t-line"><span class="t-dim">  step 3 · Synthesizer    · ok · $0.33</span></span>
+            <span class="t-line"><span class="t-ok">✓ pipeline complete · total $0.50</span></span>
+            <span class="t-line"><span class="t-prompt">$</span><span class="t-cmd">ag-os dream</span></span>
+            <span class="t-line"><span class="t-meta">analyzing 24 recent runs…</span></span>
+            <span class="t-line"><span class="t-ok">✓ 2 governance patches synthesized</span></span>
+            <span class="t-line"><span class="t-prompt">$</span><span class="terminal-cursor" aria-hidden="true"></span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REFERENCE / USE CASE ─── -->
+  <section id="reference" style="background:linear-gradient(180deg,transparent,rgba(255,255,255,0.012),transparent);">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Reference implementation</span>
+        <h2>Governing a multi-agent content pipeline.</h2>
+        <p class="lead">A real-world deployment running under Antigravity OS — what's being governed, how the kernel applies, and what was measured.</p>
+      </div>
+
+      <div class="reference-grid reveal">
+
+        <div class="ref-block">
+          <span class="ref-label">The system</span>
+          <h3>What's being governed</h3>
+          <p>Multi-tenant content pipeline with seven specialized agents, each with sub-agent decomposition.</p>
+          <ul class="ref-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20l4-9 4 9 4-9 2 4"/></svg>
+              7 agents, 15+ sub-agents
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+              5 regional tenants (IL, US, MX, ES, PT)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h2M7 14h2M13 10h4M13 14h4"/></svg>
+              GPU-accelerated inference endpoints
+            </li>
+          </ul>
+        </div>
+
+        <div class="ref-block">
+          <span class="ref-label">Modules active</span>
+          <h3>Governance applied</h3>
+          <p>Four kernel modules govern this pipeline end-to-end — cost, policy, trace, and self-improvement.</p>
+          <ul class="ref-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Cost Guard · per-operation solvency</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Constitution · 9 rules enforced</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Flight Recorder · full trace</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>DreamEngine · patch synthesis</li>
+          </ul>
+        </div>
+
+        <div class="ref-block">
+          <span class="ref-label">Observed delta</span>
+          <h3>Measured impact</h3>
+          <p>Operational metrics after integrating the kernel into the pipeline's execution loop.</p>
+          <ul class="ref-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Budget overrun: <strong style="color:var(--text);margin-left:auto">$0</strong></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Retry storms: <strong style="color:var(--text);margin-left:auto">12 → 2.1</strong></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Audit coverage: <strong style="color:var(--text);margin-left:auto">0% → 100%</strong></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Self-healed: <strong style="color:var(--text);margin-left:auto">6 patches</strong></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CLOSING CTA ─── -->
+  <section class="cta-section">
+    <div class="container narrow">
+      <div class="reveal">
+        <span class="eyebrow">Get started</span>
+        <h2>Install the kernel in seconds.</h2>
+        <p class="lead">One command. Six modules. Zero cloud dependencies. Read the source, fork the repo, ship governed agents today.</p>
+        <div class="cta-actions">
+          <button type="button" class="code-chip" data-copy="pip install ag-os" aria-label="Copy install command">
+            <span class="prompt">$</span><span>pip install ag-os</span>
+            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            <span class="toast">Copied</span>
+          </button>
+          <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn btn-ghost">
+            Read the source
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Footer -->
+</main>
+
 <footer>
-  <div class="container">
+  <div class="container wide">
     <div class="inner">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span class="material-symbols-outlined" style="color:var(--cyan); font-size:18px;">lock_open</span>
-        Antigravity OS · Open Source (MIT) · Daniel Manzela, 2026
+      <div class="footer-brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="#0d1320"/>
+          <path d="M16 6 L25 24 H7 Z" fill="none" stroke="#0ea5e9" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="16" cy="18" r="2.4" fill="#0ea5e9"/>
+        </svg>
+        <span>Antigravity OS</span>
       </div>
-      <div style="display:flex;gap:24px">
-        <a href="https://github.com/Manzela/Antigravity-OS/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
-        <a href="https://github.com/Manzela/Antigravity-OS/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a>
-        <a href="https://github.com/Manzela/Antigravity-OS/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a>
-        <a href="https://pypi.org/project/ag-os/" target="_blank" rel="noopener">PyPI</a>
-      </div>
+      <div class="footer-meta">© 2026 Daniel Manzela · MIT License · v1.4.0</div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/Manzela/Antigravity-OS/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a></li>
+        <li><a href="https://github.com/Manzela/Antigravity-OS/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a></li>
+        <li><a href="https://github.com/Manzela/Antigravity-OS/blob/main/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
+        <li><a href="https://pypi.org/project/ag-os/" target="_blank" rel="noopener">PyPI</a></li>
+      </ul>
     </div>
   </div>
 </footer>
 
 <script>
-// Scroll Reveal Observer
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
-}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+(function(){
+  'use strict';
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Animated Metric Counters
-const countObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const metrics = entry.target.querySelectorAll('.metric-val');
-      metrics.forEach(el => {
-        const target = parseInt(el.getAttribute('data-target'));
-        const duration = 1500;
-        const stepTime = Math.abs(Math.floor(duration / (target || 1)));
-        let curr = 0;
-        const timer = setInterval(() => {
-          curr += Math.ceil(target / 20) || 1;
-          if (curr >= target) { curr = target; clearInterval(timer); }
-          el.innerText = curr;
-        }, stepTime);
+  /* Reveal: hidden via CSS (html.js:not(.motion-reduce) .reveal),
+     observer marks `.in` when intersecting. Hard fallback at 1500ms
+     reveals everything regardless — protects against tall pages,
+     fast scrolls, fullPage screenshots, and detached observers. */
+  var revealEls = document.querySelectorAll('.reveal');
+  function revealAll(){ revealEls.forEach(function(el){ el.classList.add('in'); }); }
+
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          observer.unobserve(entry.target);
+        }
       });
-      countObserver.unobserve(entry.target);
-    }
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+
+    revealEls.forEach(function(el){ observer.observe(el); });
+    /* Safety net: ensure all .reveal elements become visible within 1.5s */
+    setTimeout(revealAll, 1500);
+  } else {
+    revealAll();
+  }
+
+  /* Copy-on-click code chips (F13) — show feedback immediately,
+     attempt copy in parallel. If clipboard API is blocked (sandbox,
+     iframe, no permission), fall back to execCommand on a hidden textarea. */
+  document.querySelectorAll('.code-chip[data-copy]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var text = chip.getAttribute('data-copy');
+      /* Show copied state immediately for instant feedback */
+      chip.setAttribute('data-copied', 'true');
+      setTimeout(function(){ chip.removeAttribute('data-copied'); }, 1800);
+      /* Attempt clipboard write — try modern API, fall back to execCommand */
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(function(){ fallbackCopy(text); });
+        } else {
+          fallbackCopy(text);
+        }
+      } catch (e) { fallbackCopy(text); }
+    });
   });
-}, { threshold: 0.5 });
-const metricsContainer = document.getElementById('metrics-container');
-if(metricsContainer) countObserver.observe(metricsContainer);
 
-// Terminal Animation Sequence
-const termLines = [
-  { type: 'cmd', text: 'pip install ag-os' },
-  { type: 'ok', text: '✓ Successfully installed ag-os-1.4.0' },
-  { type: 'cmd', text: 'ag-os init --governance --cost-guard' },
-  { type: 'ok', text: '✓ Governance framework initialized (9 rules active)' },
-  { type: 'ok', text: '✓ Flight recorder active' },
-  { type: 'ok', text: '✓ Cost guard active' },
-  { type: 'cmd', text: 'ag-os run pipeline_alpha.yaml' },
-  { type: 'out', text: 'Running Pipeline #1...' },
-  { type: 'table', text: '+-------+----------------+--------+---------+\n| Step  | Agent          | Status | Cost    |\n+-------+----------------+--------+---------+\n| 1     | DataFetcher    | ✓ OK   | <span class="t-cost">$0.02</span>   |\n| 2     | TextAnalyzer   | ✓ OK   | <span class="t-cost">$0.15</span>   |\n| 3     | Synthesizer    | ✓ OK   | <span class="t-cost">$0.33</span>   |\n+-------+----------------+--------+---------+' },
-  { type: 'ok', text: '✓ Pipeline completed. Total run cost: <span class="t-cost">$0.50</span>' },
-  { type: 'cmd', text: 'ag-os self-improve' },
-  { type: 'out', text: 'Analyzing recent runs...' },
-  { type: 'ok', text: '✓ DreamEngine identified friction in Step 2.' },
-  { type: 'ok', text: '✓ Synthesized 2 governance patches to optimize API calls.' },
-];
-
-const termBody = document.getElementById('term-body');
-let termObserver = new IntersectionObserver((entries) => {
-  if(entries[0].isIntersecting) {
-    runTerminal();
-    termObserver.disconnect();
+  function fallbackCopy(text){
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0';
+      ta.style.opacity = '0'; ta.style.pointerEvents = 'none';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (e) {}
   }
-}, { threshold: 0.5 });
-termObserver.observe(document.querySelector('.terminal-wrapper'));
 
-async function runTerminal() {
-  termBody.innerHTML = '<span class="t-cursor"></span>';
-  for(let i=0; i<termLines.length; i++) {
-    const line = termLines[i];
-    const delay = line.type === 'cmd' ? 800 : (line.type === 'table' ? 600 : 300);
-    await new Promise(r => setTimeout(r, delay));
-
-    // Remove cursor from previous
-    const cursor = document.querySelector('.t-cursor');
-    if(cursor) cursor.remove();
-
-    const div = document.createElement('div');
-    div.className = 't-line';
-
-    if(line.type === 'cmd') {
-      div.innerHTML = `<span class="t-prompt">$</span><span class="t-cmd">${line.text}</span>`;
-    } else {
-      div.innerHTML = `<span class="t-${line.type}">${line.text}</span>`;
-    }
-
-    // Add cursor to end
-    div.innerHTML += '<span class="t-cursor"></span>';
-    termBody.appendChild(div);
-    termBody.scrollTop = termBody.scrollHeight;
-  }
-}
+  /* Smooth-scroll nav anchors with fixed-nav offset */
+  document.querySelectorAll('a[href^="#"]').forEach(function(link){
+    link.addEventListener('click', function(e){
+      var id = link.getAttribute('href');
+      if (id.length <= 1) return;
+      var target = document.querySelector(id);
+      if (!target) return;
+      e.preventDefault();
+      var top = target.getBoundingClientRect().top + window.pageYOffset - 64;
+      window.scrollTo({ top: top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    });
+  });
+})();
 </script>
+
 </body>
 </html>
