@@ -434,15 +434,14 @@ def handle_dream():
 def interactive_main():
     """Main interactive loop."""
     # FTUX Check
-    if not Path("antigravity.yaml").exists():
-        if not run_ftux_wizard():
-            return
+    if not Path("antigravity.yaml").exists() and not run_ftux_wizard():
+        return
 
     # Welcome banner
     console.print(f"[bold cyan]Antigravity OS v{__version__}[/] — Interactive Shell")
     console.print("[dim]Type /help to see available commands. Press Ctrl+D to exit.[/]\n")
 
-    session = PromptSession(
+    session: PromptSession = PromptSession(
         completer=SlashCommandCompleter(),
         bottom_toolbar=_bottom_toolbar,
         style=style,
@@ -450,7 +449,7 @@ def interactive_main():
 
     while True:
         try:
-            text = session.prompt(HTML("<prompt>❯</prompt> "))
+            text = session.prompt(HTML("<prompt>❯</prompt> "))  # noqa: RUF001 - intentional prompt glyph
             text = text.strip()
 
             if not text:

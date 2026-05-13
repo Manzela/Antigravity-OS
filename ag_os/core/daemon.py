@@ -12,6 +12,7 @@ Usage:
     ag-os daemon status         # Check daemon health
 """
 
+import contextlib
 import json
 import logging
 import os
@@ -20,7 +21,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 logger = logging.getLogger("ag_os.daemon")
 
@@ -156,10 +157,8 @@ class DreamDaemon:
 
     def _cleanup(self) -> None:
         """Remove PID file on shutdown."""
-        try:
+        with contextlib.suppress(OSError):
             _PID_FILE.unlink(missing_ok=True)
-        except OSError:
-            pass
 
 
 def get_daemon_status() -> dict:
@@ -168,7 +167,9 @@ def get_daemon_status() -> dict:
     Returns a dict with keys: running, healthy, pid, last_tick,
     cycle_count, age_seconds.
     """
-    result = {
+    # Annotated as dict[str, Any] so the heterogeneous values the dict
+    # holds (bool, int, None, str, float age in seconds) all type-check.
+    result: dict[str, Any] = {
         "running": False,
         "healthy": False,
         "pid": None,
@@ -284,7 +285,7 @@ WantedBy=default.target
     return str(_SYSTEMD_SERVICE)
 
 
-def uninstall_service() -> Optional[str]:
+def uninstall_service() -> str | None:
     """Remove the installed OS service. Returns the path removed, or None."""
     if _LAUNCHD_PLIST.is_file():
         _LAUNCHD_PLIST.unlink()

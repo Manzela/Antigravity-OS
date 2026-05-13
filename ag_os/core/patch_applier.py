@@ -14,7 +14,6 @@ Risk classification:
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ def preview_patch(patch) -> str:
 
 def apply_patch(
     patch,
-    config_path: Optional[Path] = None,
+    config_path: Path | None = None,
     interactive: bool = True,
 ) -> bool:
     """Apply a governance patch to disk.
@@ -164,7 +163,7 @@ def _apply_new_rule(patch) -> bool:
     return True
 
 
-def _apply_config_change(patch, config_path: Optional[Path] = None) -> bool:
+def _apply_config_change(patch, config_path: Path | None = None) -> bool:
     """Apply a config/threshold change to antigravity.yaml.
 
     When ``config_path`` is not supplied, the target file is auto-discovered
@@ -197,7 +196,7 @@ def _apply_config_change(patch, config_path: Optional[Path] = None) -> bool:
         ryaml = YAML()
         ryaml.preserve_quotes = True
 
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = ryaml.load(f)
 
         _merge_patch_content(data, patch.yaml_content)
@@ -212,7 +211,7 @@ def _apply_config_change(patch, config_path: Optional[Path] = None) -> bool:
         # Fallback to PyYAML (loses comments)
         import yaml
 
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
 
         _merge_patch_content(data, patch.yaml_content)
@@ -274,17 +273,18 @@ def audit_patch_application(
         "description": patch.description,
     }
 
-    # Append to audit log
-    existing = []
+    # Append to audit log. yaml.safe_load can return any YAML type
+    # (a hostile or corrupted audit file might not be a list), so we
+    # validate the loaded value before treating it as a list.
+    existing: list = []
     if _AUDIT_PATH.is_file():
         try:
-            with open(_AUDIT_PATH, "r", encoding="utf-8") as f:
-                existing = yaml.safe_load(f) or []
+            with open(_AUDIT_PATH, encoding="utf-8") as f:
+                loaded = yaml.safe_load(f)
+            if isinstance(loaded, list):
+                existing = loaded
         except (yaml.YAMLError, OSError):
-            existing = []
-
-    if not isinstance(existing, list):
-        existing = []
+            pass
 
     existing.append(record)
 

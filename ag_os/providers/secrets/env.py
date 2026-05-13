@@ -1,7 +1,6 @@
 """Environment variable secrets provider."""
 
 import os
-from typing import Optional
 
 from ag_os.providers.registry import register
 from ag_os.providers.secrets import SecretsProvider
@@ -17,7 +16,7 @@ class EnvSecretsProvider(SecretsProvider):
     def __init__(self, prefix: str = "", **kwargs):
         self._prefix = prefix
 
-    def get_secret(self, name: str) -> Optional[str]:
+    def get_secret(self, name: str) -> str | None:
         return os.environ.get(f"{self._prefix}{name}")
 
     def list_secrets(self) -> list[str]:

@@ -19,7 +19,7 @@ class TestConfig:
     def test_load_config_returns_defaults(self):
         config = load_config()
         assert config["version"] == "1.0"
-        assert isinstance(config["monthly_cap"], (int, float))
+        assert isinstance(config["monthly_cap"], int | float)
         assert isinstance(config["providers"], dict)
 
     def test_find_config_file(self):

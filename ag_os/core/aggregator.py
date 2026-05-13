@@ -82,7 +82,7 @@ def merge_dream_dirs(dirs: list[str | Path]) -> AggregatedDreamReport:
 
         for path in files:
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                 if not data:
                     continue
@@ -163,42 +163,63 @@ def merge_dream_dirs(dirs: list[str | Path]) -> AggregatedDreamReport:
     )
 
 
-def print_aggregated_report(report: AggregatedDreamReport) -> None:
-    """Print a formatted aggregated dream report."""
-    print()
-    print("  ================================================")
-    print("  ANTIGRAVITY OS -- AGGREGATED DREAM REPORT")
-    print("  ================================================")
-    print()
-    print(f"  Report ID:    {report.report_id}")
-    print(f"  Timestamp:    {report.timestamp}")
-    print(f"  Repos:        {report.repos_analyzed}")
-    print(f"  Dreams:       {report.total_dreams_scanned}")
-    print(f"  Systemic:     {len(report.systemic_patterns)} patterns")
-    print()
+def format_aggregated_report(report: AggregatedDreamReport) -> str:
+    """Render an aggregated dream report as a string.
+
+    Side-effect-free primitive; safe for MCP / log handlers.
+    """
+    lines: list[str] = [
+        "",
+        "  ================================================",
+        "  ANTIGRAVITY OS -- AGGREGATED DREAM REPORT",
+        "  ================================================",
+        "",
+        f"  Report ID:    {report.report_id}",
+        f"  Timestamp:    {report.timestamp}",
+        f"  Repos:        {report.repos_analyzed}",
+        f"  Dreams:       {report.total_dreams_scanned}",
+        f"  Systemic:     {len(report.systemic_patterns)} patterns",
+        "",
+    ]
 
     if report.systemic_patterns:
-        print("  -- Systemic Patterns ----------------------------------------")
-        print()
+        lines.extend(["  -- Systemic Patterns ----------------------------------------", ""])
         for pattern in report.systemic_patterns:
-            print(f"  [{pattern.archetype}] ({pattern.frequency:.0%} of repos)")
-            print(f"    Repos: {', '.join(pattern.affected_repos)}")
-            print(f"    {pattern.diagnosis}")
-            print()
+            lines.extend(
+                [
+                    f"  [{pattern.archetype}] ({pattern.frequency:.0%} of repos)",
+                    f"    Repos: {', '.join(pattern.affected_repos)}",
+                    f"    {pattern.diagnosis}",
+                    "",
+                ]
+            )
 
     if report.per_repo_summary:
-        print("  -- Per-Repo Summary -----------------------------------------")
-        print()
+        lines.extend(["  -- Per-Repo Summary -----------------------------------------", ""])
         for repo, stats in sorted(report.per_repo_summary.items()):
-            print(f"  {repo}:")
-            print(
-                f"    Dreams: {stats['dreams_scanned']}, "
-                f"Friction: {stats['friction_count']}, "
-                f"Success: {stats['success_count']}"
+            lines.extend(
+                [
+                    f"  {repo}:",
+                    (
+                        f"    Dreams: {stats['dreams_scanned']}, "
+                        f"Friction: {stats['friction_count']}, "
+                        f"Success: {stats['success_count']}"
+                    ),
+                    "",
+                ]
             )
-            print()
 
-    print(f"  {report.summary}")
-    print()
-    print("  ================================================")
-    print()
+    lines.extend(
+        [
+            f"  {report.summary}",
+            "",
+            "  ================================================",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def print_aggregated_report(report: AggregatedDreamReport) -> None:
+    """Print the formatted aggregated report to stdout (CLI use only)."""
+    print(format_aggregated_report(report))

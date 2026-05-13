@@ -40,7 +40,7 @@ class LocalCostProvider(CostProvider):
     @staticmethod
     def _load_or_create(path: Path, defaults: dict) -> dict:
         if path.is_file():
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(defaults, f, indent=2)
@@ -49,7 +49,7 @@ class LocalCostProvider(CostProvider):
     def get_current_spend(self) -> float:
         # Re-read on each call to pick up manual edits
         if _SPEND_FILE.is_file():
-            with open(_SPEND_FILE, "r", encoding="utf-8") as f:
+            with open(_SPEND_FILE, encoding="utf-8") as f:
                 self._spend = json.load(f)
         return float(self._spend.get("current_spend", 0.0))
 

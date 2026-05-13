@@ -1,7 +1,7 @@
 """Console telemetry provider (DEFAULT) -- pretty-prints traces and metrics."""
 
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ag_os.providers.registry import register
 from ag_os.providers.telemetry import TelemetryProvider
@@ -18,7 +18,7 @@ class ConsoleTelemetryProvider(TelemetryProvider):
     def __init__(self, **kwargs):
         pass
 
-    def emit_trace(self, trace_payload: Dict[str, Any]) -> Optional[str]:
+    def emit_trace(self, trace_payload: dict[str, Any]) -> str | None:
         timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
         trace_id = trace_payload.get("trace_id", "unknown")
         status = trace_payload.get("status", "unknown")
@@ -40,7 +40,7 @@ class ConsoleTelemetryProvider(TelemetryProvider):
         self,
         name: str,
         value: float,
-        tags: Dict[str, str] | None = None,
+        tags: dict[str, str] | None = None,
     ) -> None:
         timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
         tag_str = ""

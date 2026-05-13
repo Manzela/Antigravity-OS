@@ -34,17 +34,26 @@ def evaluate_governance(
     return provider.evaluate(input_data)
 
 
-def print_policy_report(result: PolicyResult) -> None:
-    """Print a human-readable policy evaluation report."""
+def format_policy_report(result: PolicyResult) -> str:
+    """Render a human-readable policy evaluation report as a string.
+
+    Side-effect-free primitive; safe for MCP / log handlers.
+    """
     status = "ALLOWED" if result.allowed else "BLOCKED"
     indicator = "[OK]" if result.allowed else "[BLOCKED]"
 
-    print(f"\n  {indicator} Governance Gate: {status}")
+    lines = ["", f"  {indicator} Governance Gate: {status}"]
 
     if result.violations:
-        print(f"  Violations ({len(result.violations)}):")
-        for v in result.violations:
-            print(f"    - {v}")
+        lines.append(f"  Violations ({len(result.violations)}):")
+        lines.extend(f"    - {v}" for v in result.violations)
     else:
-        print("  All governance rules satisfied.")
-    print()
+        lines.append("  All governance rules satisfied.")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def print_policy_report(result: PolicyResult) -> None:
+    """Print the formatted policy report to stdout (CLI use only)."""
+    print(format_policy_report(result))

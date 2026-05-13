@@ -7,11 +7,14 @@ Falls back to environment variables and sensible defaults.
 
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
-_DEFAULT_CONFIG = {
+# Typed as dict[str, Any] so callers that copy this and index into nested
+# providers["..."] / ci["..."] etc don't need per-call casts. mypy otherwise
+# infers dict[str, object] which makes nested access opaque.
+_DEFAULT_CONFIG: dict[str, Any] = {
     "version": "1.0",
     "monthly_cap": 50.00,
     "max_loop_count": 5,
@@ -39,7 +42,7 @@ _DEFAULT_CONFIG = {
 _CONFIG_FILENAMES = ["antigravity.yaml", "antigravity.yml"]
 
 
-def find_config_file(start_dir: Optional[Path] = None) -> Optional[Path]:
+def find_config_file(start_dir: Path | None = None) -> Path | None:
     """Walk up from `start_dir` looking for an antigravity config file."""
     current = start_dir or Path.cwd()
     for _ in range(20):  # Safety bound: do not walk more than 20 levels
@@ -54,7 +57,7 @@ def find_config_file(start_dir: Optional[Path] = None) -> Optional[Path]:
     return None
 
 
-def load_config(path: Optional[Path] = None) -> dict[str, Any]:
+def load_config(path: Path | None = None) -> dict[str, Any]:
     """Load and validate the Antigravity OS configuration.
 
     Resolution order:
@@ -71,7 +74,7 @@ def load_config(path: Optional[Path] = None) -> dict[str, Any]:
     config_path = path or find_config_file()
 
     if config_path and config_path.is_file():
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             user_config = yaml.safe_load(f) or {}
         config = _deep_merge(config, user_config)
         config["_config_path"] = str(config_path)

@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List
 
 
 @dataclass
@@ -10,7 +9,7 @@ class PolicyResult:
     """Result of a policy evaluation."""
 
     allowed: bool
-    violations: List[str] = field(default_factory=list)
+    violations: list[str] = field(default_factory=list)
     policy_name: str = ""
 
 
@@ -27,6 +26,6 @@ class PolicyProvider(ABC):
         ...
 
     @abstractmethod
-    def list_policies(self) -> List[str]:
+    def list_policies(self) -> list[str]:
         """List available policy names."""
         ...

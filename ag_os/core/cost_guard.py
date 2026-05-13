@@ -37,19 +37,44 @@ def check_solvency(
     return provider.check_solvency(units=units, tier=tier, config=config)
 
 
-def print_solvency_report(result: SolvencyResult) -> None:
-    """Print a human-readable solvency report to stdout."""
+def format_solvency_report(result: SolvencyResult) -> str:
+    """Render a human-readable solvency report as a single string.
+
+    This is the safe primitive — no I/O — so MCP tools, log handlers, and
+    any other importer can use it without the side-effect of writing to
+    stdout (which would corrupt the MCP stdio JSON-RPC stream).
+    """
     status = "SOLVENT" if result.is_solvent else "INSOLVENT"
     indicator = "[OK]" if result.is_solvent else "[BLOCKED]"
 
-    print(f"\n  {indicator} Solvency Gate: {status}")
-    print(f"  Current spend:  ${result.current_spend:.2f}")
-    print(f"  Projected cost: ${result.projected_cost:.2f}")
-    print(f"  Monthly cap:    ${result.monthly_cap:.2f}")
-    print(f"  Remaining:      ${result.margin:.2f}")
+    lines = [
+        "",
+        f"  {indicator} Solvency Gate: {status}",
+        f"  Current spend:  ${result.current_spend:.2f}",
+        f"  Projected cost: ${result.projected_cost:.2f}",
+        f"  Monthly cap:    ${result.monthly_cap:.2f}",
+        f"  Remaining:      ${result.margin:.2f}",
+    ]
 
     if not result.is_solvent:
         overage = abs(result.margin)
-        print(f"\n  Budget exceeded by ${overage:.2f}. Execution blocked.")
-        print("  Increase monthly_cap in antigravity.yaml or reduce resource usage.")
-    print()
+        lines.extend(
+            [
+                "",
+                f"  Budget exceeded by ${overage:.2f}. Execution blocked.",
+                "  Increase monthly_cap in antigravity.yaml or reduce resource usage.",
+            ]
+        )
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def print_solvency_report(result: SolvencyResult) -> None:
+    """Print the formatted solvency report to stdout (CLI use only).
+
+    For MCP / library use, prefer :func:`format_solvency_report` so the
+    output goes wherever the caller needs it (JSON response, log line,
+    string concatenation).
+    """
+    print(format_solvency_report(result))

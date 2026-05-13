@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -29,7 +28,7 @@ class IssueProvider(ABC):
         ...
 
     @abstractmethod
-    def find_duplicate(self, fingerprint: str) -> Optional[str]:
+    def find_duplicate(self, fingerprint: str) -> str | None:
         """Find existing issue by fingerprint. Returns ID or None."""
         ...
 

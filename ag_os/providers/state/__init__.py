@@ -1,7 +1,6 @@
 """State provider interface (The Brain)."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class StateProvider(ABC):
@@ -22,7 +21,7 @@ class StateProvider(ABC):
         ...
 
     @abstractmethod
-    def get(self, key: str) -> Optional[str]:
+    def get(self, key: str) -> str | None:
         """Retrieve a value by key. Returns None if not found or expired."""
         ...
 

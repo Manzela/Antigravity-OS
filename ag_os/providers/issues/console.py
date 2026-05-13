@@ -3,7 +3,6 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from ag_os.providers.issues import IssuePayload, IssueProvider
 from ag_os.providers.registry import register
@@ -62,10 +61,10 @@ class ConsoleIssueProvider(IssueProvider):
 
         return issue_id
 
-    def find_duplicate(self, fingerprint: str) -> Optional[str]:
+    def find_duplicate(self, fingerprint: str) -> str | None:
         if not _ISSUE_STORE.is_file():
             return None
-        with open(_ISSUE_STORE, "r", encoding="utf-8") as f:
+        with open(_ISSUE_STORE, encoding="utf-8") as f:
             for line in f:
                 try:
                     record = json.loads(line.strip())

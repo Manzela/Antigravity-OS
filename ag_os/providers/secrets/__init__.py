@@ -1,14 +1,13 @@
 """Secrets provider interface."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class SecretsProvider(ABC):
     """Abstract base class for secret/credential retrieval."""
 
     @abstractmethod
-    def get_secret(self, name: str) -> Optional[str]:
+    def get_secret(self, name: str) -> str | None:
         """Retrieve a secret value by name.
 
         Returns:

@@ -37,8 +37,23 @@ jobs:
           ruff check .
           ruff format --check .
 
+      - name: Type check
+        # Non-strict baseline; see pyproject.toml [tool.mypy].
+        # Audit-plan.md P0-9 tracks the strict-mode follow-up.
+        run: mypy ag_os
+
       - name: Test
-        run: pytest --tb=short -q
+        # Coverage flags come from pyproject.toml [tool.pytest.ini_options].
+        run: pytest
+
+      - name: Upload coverage report
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: Security - Dependency Audit
         run: |

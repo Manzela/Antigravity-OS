@@ -10,13 +10,13 @@ Falls back gracefully to an encrypted config file in headless environments.
 Follows the same pattern as GitHub CLI (gh auth).
 """
 
+import contextlib
 import json
 import logging
 import os
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +45,15 @@ class ProviderAuth:
 
     surface: str
     name: str
-    credentials: List[CredentialSpec] = field(default_factory=list)
-    validate_fn: Optional[str] = None  # Name of validation method
+    credentials: list[CredentialSpec] = field(default_factory=list)
+    validate_fn: str | None = None  # Name of validation method
 
 
 # ─── Credential Registry ─────────────────────────────────────────────────────
 # Maps (surface, provider_name) → required credentials.
 # Providers not listed here require zero credentials (offline-capable).
 
-PROVIDER_CREDENTIALS: Dict[tuple, ProviderAuth] = {
+PROVIDER_CREDENTIALS: dict[tuple, ProviderAuth] = {
     ("issues", "github"): ProviderAuth(
         surface="issues",
         name="github",
@@ -199,10 +199,8 @@ def _fallback_save(data: dict) -> None:
     """
     _FALLBACK_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Tighten the directory in case it pre-existed with looser perms.
-    try:
+    with contextlib.suppress(OSError):
         _FALLBACK_DIR.chmod(0o700)
-    except OSError:
-        pass
 
     payload = json.dumps(data, indent=2).encode("utf-8")
 
@@ -239,7 +237,7 @@ def store_credential(key: str, value: str) -> None:
         logger.debug("Stored %s in fallback file", key)
 
 
-def get_credential(key: str) -> Optional[str]:
+def get_credential(key: str) -> str | None:
     """Retrieve a credential from the OS keychain (or fallback).
 
     Also checks environment variables as a final override (for CI/CD).
@@ -272,8 +270,12 @@ def delete_credential(key: str) -> bool:
         try:
             keyring.delete_password(SERVICE_NAME, key)
             deleted = True
-        except Exception:
-            pass
+        except Exception as e:
+            # `delete_password` raises if the key wasn't there (PasswordDeleteError)
+            # or if the backend is misbehaving. Log instead of silently swallowing
+            # so the user can diagnose; the function still falls through to the
+            # fallback-file delete below.
+            logger.debug("keyring.delete_password failed for %s: %s", key, e)
 
     data = _fallback_load()
     if key in data:
@@ -284,7 +286,7 @@ def delete_credential(key: str) -> bool:
     return deleted
 
 
-def list_stored_credentials() -> List[str]:
+def list_stored_credentials() -> list[str]:
     """List all credential keys that have stored values."""
     stored = []
     all_keys = set()
@@ -298,7 +300,7 @@ def list_stored_credentials() -> List[str]:
     return stored
 
 
-def get_required_credentials(config: dict) -> List[CredentialSpec]:
+def get_required_credentials(config: dict) -> list[CredentialSpec]:
     """Given a parsed antigravity.yaml config, return all required credentials.
 
     Deduplicates by key (e.g., GITHUB_TOKEN used by both issues and CI).
@@ -329,7 +331,7 @@ def get_required_credentials(config: dict) -> List[CredentialSpec]:
     return required
 
 
-def get_credential_status(config: dict) -> Dict[str, bool]:
+def get_credential_status(config: dict) -> dict[str, bool]:
     """Return a dict of {credential_key: is_stored} for all required creds."""
     required = get_required_credentials(config)
     return {spec.key: bool(get_credential(spec.key)) for spec in required}
@@ -367,7 +369,10 @@ def _validate_github(token: str) -> tuple[bool, str]:
                 "User-Agent": "ag-os",
             },
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        # S310 noqa: URL is the hardcoded literal "https://api.github.com/user"
+        # — no user-controlled scheme/host/path component, only the bearer
+        # token which goes into a header.
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             if resp.status == 200:
                 data = json.loads(resp.read())
                 return True, f"Authenticated as @{data.get('login', 'unknown')}"
@@ -391,7 +396,9 @@ def _validate_linear(api_key: str) -> tuple[bool, str]:
                 "User-Agent": "ag-os",
             },
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        # S310 noqa: URL is the hardcoded literal
+        # "https://api.linear.app/graphql" — no user-controlled scheme.
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             if resp.status == 200:
                 data = json.loads(resp.read())
                 viewer = data.get("data", {}).get("viewer", {})
@@ -412,7 +419,17 @@ def _validate_jira(token: str) -> tuple[bool, str]:
         import urllib.request
 
         auth = base64.b64encode(f"{jira_email}:{token}".encode()).decode()
-        req = urllib.request.Request(
+        # The Jira URL comes from the user's own credential store
+        # (JIRA_URL credential the user typed in via FTUX). Validate scheme
+        # explicitly to satisfy S310 — we accept https only, refusing
+        # file:/ftp:/data: that could leak the basic-auth header to a
+        # local/attacker-chosen target.
+        from urllib.parse import urlparse
+
+        scheme = urlparse(jira_url).scheme
+        if scheme not in ("https",):
+            return False, f"Jira URL must use https, got {scheme!r}"
+        req = urllib.request.Request(  # noqa: S310 - scheme checked above
             f"{jira_url.rstrip('/')}/rest/api/2/myself",
             headers={
                 "Authorization": f"Basic {auth}",
@@ -420,7 +437,7 @@ def _validate_jira(token: str) -> tuple[bool, str]:
                 "User-Agent": "ag-os",
             },
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310 - scheme checked above
             if resp.status == 200:
                 data = json.loads(resp.read())
                 return True, f"Authenticated as {data.get('displayName', 'unknown')}"
