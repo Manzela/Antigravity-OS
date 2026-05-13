@@ -75,31 +75,37 @@ class TestMergePatchContent:
 class TestApplyPatch:
     """Validate patch application logic."""
 
-    def test_apply_new_rule_creates_file(self, tmp_path):
-        target = tmp_path / ".agent" / "rules" / "test-rule.md"
+    def test_apply_new_rule_creates_file(self, tmp_path, monkeypatch):
+        # Run from a clean tmp dir so .agent/rules is anchored under tmp_path.
+        monkeypatch.chdir(tmp_path)
+        target_rel = ".agent/rules/test-rule.md"
         patch = GovernancePatch(
             patch_type="NEW_RULE",
-            target=str(target),
+            target=target_rel,
             description="Test rule",
             yaml_content="# Rule: test\nDo the thing.",
         )
         result = apply_patch(patch, interactive=False)
         assert result is True
-        assert target.is_file()
-        assert "Do the thing" in target.read_text()
+        assert (tmp_path / target_rel).is_file()
+        assert "Do the thing" in (tmp_path / target_rel).read_text()
 
-    def test_apply_new_rule_skips_existing(self, tmp_path):
-        target = tmp_path / "existing-rule.md"
-        target.write_text("existing content")
+    def test_apply_new_rule_skips_existing(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        target_rel = ".agent/rules/existing-rule.md"
+        existing = tmp_path / target_rel
+        existing.parent.mkdir(parents=True)
+        existing.write_text("existing content")
+
         patch = GovernancePatch(
             patch_type="NEW_RULE",
-            target=str(target),
+            target=target_rel,
             description="Test",
             yaml_content="new content",
         )
         result = apply_patch(patch, interactive=False)
         assert result is False
-        assert target.read_text() == "existing content"
+        assert existing.read_text() == "existing content"
 
     def test_apply_config_change(self, tmp_path):
         config_file = tmp_path / "antigravity.yaml"
@@ -115,6 +121,128 @@ class TestApplyPatch:
         with open(config_file) as f:
             data = yaml.safe_load(f)
         assert data["max_loop_count"] == 3
+
+
+class TestApplyNewRuleTraversal:
+    """Path-traversal regression tests for _apply_new_rule (P0-2)."""
+
+    def test_rejects_absolute_posix_path(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        sentinel = tmp_path / "sentinel.md"
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target=str(sentinel),  # absolute path
+            description="Should be rejected",
+            yaml_content="# pwn\n",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is False
+        assert not sentinel.exists()
+
+    def test_rejects_home_relative_path(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target="~/.ssh/authorized_keys",
+            description="Home-relative attack",
+            yaml_content="ssh-rsa AAAA...",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is False
+
+    def test_rejects_parent_traversal(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target=".agent/rules/../../escape.md",
+            description="Parent traversal",
+            yaml_content="# escape\n",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is False
+        assert not (tmp_path / "escape.md").exists()
+
+    def test_rejects_path_outside_rules_dir(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        # Relative path with no traversal but lands outside .agent/rules
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target=".agent/wrong/escape.md",
+            description="Sibling-dir attack",
+            yaml_content="# escape\n",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is False
+        assert not (tmp_path / ".agent" / "wrong" / "escape.md").exists()
+
+    def test_rejects_null_byte_injection(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target=".agent/rules/legit.md\x00/etc/passwd",
+            description="Null-byte truncation attack",
+            yaml_content="# pwn\n",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is False
+
+    def test_accepts_valid_relative_rule_path(self, tmp_path, monkeypatch):
+        # Mirrors the engine's own emitted target shape (dreaming.py:424).
+        monkeypatch.chdir(tmp_path)
+        target_rel = ".agent/rules/09-rollback-circuit-breaker.md"
+        patch = GovernancePatch(
+            patch_type="NEW_RULE",
+            target=target_rel,
+            description="Engine-emitted shape",
+            yaml_content="# Rule\n",
+        )
+        result = apply_patch(patch, interactive=False)
+        assert result is True
+        assert (tmp_path / target_rel).is_file()
+
+
+class TestApplyConfigChangeAutoDiscovery:
+    """Regression tests for the CWD-relative config write (P1-1)."""
+
+    def test_refuses_when_no_config_discovered(self, tmp_path, monkeypatch):
+        # Empty tmp dir — no antigravity.yaml anywhere upward (we walk up
+        # at most 20 levels from cwd, but tmp_path isolates this).
+        monkeypatch.chdir(tmp_path)
+        patch = GovernancePatch(
+            patch_type="THRESHOLD_ADJUSTMENT",
+            target="max_loop_count",
+            description="Should refuse — no config",
+            yaml_content="max_loop_count: 7",
+        )
+        result = apply_patch(patch, interactive=False)
+        # Refused: no config to write to and no explicit path.
+        assert result is False
+        # Crucially: no antigravity.yaml was created in CWD.
+        assert not (tmp_path / "antigravity.yaml").exists()
+
+    def test_writes_to_explicit_config_path_regardless_of_cwd(self, tmp_path, monkeypatch):
+        explicit = tmp_path / "configs" / "antigravity.yaml"
+        explicit.parent.mkdir()
+        explicit.write_text("max_loop_count: 5\n")
+
+        # Drop into a sibling dir to prove the patch does NOT chase CWD.
+        sibling = tmp_path / "elsewhere"
+        sibling.mkdir()
+        monkeypatch.chdir(sibling)
+
+        patch = GovernancePatch(
+            patch_type="THRESHOLD_ADJUSTMENT",
+            target="max_loop_count",
+            description="Explicit path wins",
+            yaml_content="max_loop_count: 3",
+        )
+        result = apply_patch(patch, config_path=explicit, interactive=False)
+        assert result is True
+        with open(explicit) as f:
+            data = yaml.safe_load(f)
+        assert data["max_loop_count"] == 3
+        # Sibling dir was not touched.
+        assert not (sibling / "antigravity.yaml").exists()
 
 
 class TestAuditTrail:
