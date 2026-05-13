@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Closes CodeQL alert actions/missing-workflow-permissions (#7).
+# CI only needs to read the repo and post coverage; nothing more.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
