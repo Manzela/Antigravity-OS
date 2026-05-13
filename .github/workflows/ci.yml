@@ -42,6 +42,17 @@ jobs:
         # Audit-plan.md P0-9 tracks the strict-mode follow-up.
         run: mypy ag_os
 
+      - name: Pre-commit gates (detect-secrets, large-files, private-key, etc.)
+        # P2-5: catches gates that .pre-commit-config.yaml enforces locally
+        # but were never wired into CI — so contributors not running
+        # pre-commit can't sneak past detect-secrets / detect-private-key
+        # / 500KB-large-file / trailing-whitespace checks. Runs once per
+        # CI invocation (3.12 slot only) to keep matrix fan-out cheap.
+        if: matrix.python-version == '3.12'
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files --show-diff-on-failure
+
       - name: Test
         # Coverage flags come from pyproject.toml [tool.pytest.ini_options].
         run: pytest

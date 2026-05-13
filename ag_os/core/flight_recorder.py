@@ -7,12 +7,53 @@ Implements Rule 05 of the Constitution.
 
 import hashlib
 import json
+import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
 from ag_os.config import load_config
 from ag_os.providers.registry import get_provider
+
+logger = logging.getLogger(__name__)
+
+# Provider extras hint — surfaced in fallback warnings so the user sees
+# the exact `pip install` command needed to make their configured
+# provider work (instead of silently using the sqlite/console default).
+_PROVIDER_EXTRAS = {
+    ("state", "redis"): "ag-os[redis]",
+    ("state", "file"): "(builtin — check spelling)",
+    ("telemetry", "otlp"): "(install OpenTelemetry SDK)",
+    ("telemetry", "datadog"): "ag-os[datadog]",
+    ("telemetry", "gcp"): "ag-os[gcp]",
+}
+
+
+def _resolve_provider_with_warning(surface: str, configured: str, fallback: str):
+    """Try to load the configured provider; warn loudly on fallback.
+
+    Per Constitution Rule 02 ("Fail Closed: on any ambiguous, unknown, or
+    error state, the system halts and escalates"), silently substituting
+    a configured provider is a footgun. We don't break callers — but we
+    do log a WARNING so the user sees that their `state: redis` config
+    isn't being honored.
+    """
+    if configured == fallback:
+        return get_provider(surface, fallback)
+    try:
+        return get_provider(surface, configured)
+    except ValueError:
+        extras = _PROVIDER_EXTRAS.get((surface, configured), f"ag-os[{configured}]")
+        logger.warning(
+            "Configured %s provider %r is not registered; falling back to %r. "
+            "Install with: pip install %s",
+            surface,
+            configured,
+            fallback,
+            extras,
+        )
+        return get_provider(surface, fallback)
+
 
 # Valid state transitions (deterministic state machine)
 _VALID_TRANSITIONS = {
@@ -64,17 +105,10 @@ class FlightRecorder:
     def __init__(self, config: dict | None = None):
         self._config = config or load_config()
         provider_name = self._config.get("providers", {}).get("state", "sqlite")
-        try:
-            self._state = get_provider("state", provider_name)
-        except ValueError:
-            # Graceful fallback: configured provider not installed
-            self._state = get_provider("state", "sqlite")
+        self._state = _resolve_provider_with_warning("state", provider_name, "sqlite")
 
         telemetry_name = self._config.get("providers", {}).get("telemetry", "console")
-        try:
-            self._telemetry = get_provider("telemetry", telemetry_name)
-        except ValueError:
-            self._telemetry = get_provider("telemetry", "console")
+        self._telemetry = _resolve_provider_with_warning("telemetry", telemetry_name, "console")
 
     def get_current_state(self, operation: str) -> str:
         """Get the current state for an operation."""

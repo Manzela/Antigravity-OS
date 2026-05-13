@@ -10,9 +10,10 @@ This module is model-agnostic and has zero LLM dependencies.
 Any AI agent that reads the output gains self-improvement.
 """
 
-import contextlib
 import json
+import logging
 import sqlite3
+import statistics
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,7 +22,8 @@ from typing import Any
 import yaml
 
 from ag_os.config import load_config
-from ag_os.providers.registry import get_provider
+
+logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────────────────────
 # Data Structures
@@ -120,12 +122,11 @@ class DreamEngine:
         self._max_loops = self._config.get("max_loop_count", 5)
 
     def _get_state_provider(self):
-        """Get the configured state provider."""
+        """Get the configured state provider, warning if it falls back."""
+        from ag_os.core.flight_recorder import _resolve_provider_with_warning
+
         provider_name = self._config.get("providers", {}).get("state", "sqlite")
-        try:
-            return get_provider("state", provider_name)
-        except ValueError:
-            return get_provider("state", "sqlite")
+        return _resolve_provider_with_warning("state", provider_name, "sqlite")
 
     def _query_all_flight_records(self) -> dict[str, list[dict]]:
         """Query the SQLite state store for all flight records.
@@ -310,10 +311,10 @@ class DreamEngine:
             states = [r.get("state", "") for r in records]
             if "COMPLETE" in states:
                 completed_counts.append(len(records))
-        if completed_counts:
-            median_count = sorted(completed_counts)[len(completed_counts) // 2]
-        else:
-            median_count = 5
+        # statistics.median returns the average of the two middle values for
+        # even-length lists; the previous `sorted(...)[len // 2]` returned
+        # the upper-median, which biased the FAST_COMPLETION threshold high.
+        median_count = statistics.median(completed_counts) if completed_counts else 5
 
         linear_path = ["PLANNING", "PLAN_APPROVED", "BUILDING", "VERIFYING", "COMPLETE"]
 
@@ -571,7 +572,8 @@ class DreamEngine:
                         successes_detected=data.get("successes_detected", 0),
                     )
                     reports.append(report)
-            except (yaml.YAMLError, TypeError, KeyError):
+            except (yaml.YAMLError, TypeError, KeyError) as e:
+                logger.warning("Skipping malformed dream report %s: %s", path.name, e)
                 continue
 
         return reports
@@ -616,7 +618,8 @@ class DreamEngine:
                         self._write_rollup(aggregates_path, data)
                         to_delete.append(path)
                         consolidated += 1
-            except (yaml.YAMLError, ValueError, OSError):
+            except (yaml.YAMLError, ValueError, OSError) as e:
+                logger.warning("Skipping unreadable dream during prune %s: %s", path.name, e)
                 continue
 
         # Phase 2: Count-based eviction (oldest first)
@@ -630,14 +633,18 @@ class DreamEngine:
                     if data:
                         self._write_rollup(aggregates_path, data)
                         consolidated += 1
-                except (yaml.YAMLError, OSError):
-                    pass
+                except (yaml.YAMLError, OSError) as e:
+                    logger.warning("Failed to roll up dream during eviction %s: %s", path.name, e)
                 to_delete.append(path)
 
-        # Execute deletions
+        # Execute deletions. Phase 5 (P2-2) intentionally chooses logging
+        # over silent suppression so a user diagnosing a stuck retention
+        # cycle can find which file failed to delete.
         for path in to_delete:
-            with contextlib.suppress(OSError):
+            try:
                 path.unlink()
+            except OSError as e:
+                logger.warning("Failed to delete pruned dream %s: %s", path.name, e)
 
         remaining = len(list(_DREAMS_DIR.glob("dream-*.yaml")))
         return {
