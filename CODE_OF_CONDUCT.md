@@ -45,9 +45,13 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at:
+reported by **opening a [GitHub issue](https://github.com/Manzela/Antigravity-OS/issues/new) and tagging @Manzela**.
 
-**conduct@antigravity-os.dev**
+For confidential or sensitive reports (e.g., when the reporter or
+subject would be identifiable from a public issue), use the same
+private channel as security disclosures:
+**[private vulnerability reporting](https://github.com/Manzela/Antigravity-OS/security/advisories/new)** —
+mark the title with `[CoC]` so it routes correctly.
 
 All complaints will be reviewed and investigated promptly and fairly.
 

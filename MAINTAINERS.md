@@ -4,9 +4,13 @@ This file lists the current maintainers of Antigravity OS.
 
 ## Active Maintainers
 
-| Name | GitHub | Role | Since |
-|------|--------|------|-------|
-| Daniel Manzela | @danielmanzela | Project Lead | 2024-01 |
+| Name           | GitHub                                       | Role         | Since   |
+|----------------|----------------------------------------------|--------------|---------|
+| Daniel Manzela | [@Manzela](https://github.com/Manzela)       | Project Lead | 2026-05 |
+
+For private security or Code-of-Conduct reports, see
+[SECURITY.md](SECURITY.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md);
+both route through GitHub private vulnerability reporting.
 
 ## Emeritus
 
