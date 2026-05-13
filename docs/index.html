@@ -269,7 +269,7 @@ footer a:hover{color:var(--text)}
       <span class="material-symbols-outlined">lock_open</span>
       Open Source · MIT License · Zero Cloud Dependencies
     </div>
-    
+
     <!-- Hero Governance Flow Diagram -->
     <div class="hero-graphic reveal reveal-d1">
       <svg viewBox="0 0 900 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing ungoverned AI agents passing through the Antigravity OS governance kernel with four enforcement gates, emerging as governed agents">
@@ -379,14 +379,14 @@ footer a:hover{color:var(--text)}
 
     <h1 class="reveal reveal-d2">The governance kernel for <em>AI agents</em></h1>
     <p class="hero-sub reveal reveal-d2">AI agents can write code, deploy services, and manage infrastructure. But without deterministic guardrails, they burn budgets, loop endlessly, and operate as black boxes. This kernel solves that.</p>
-    
+
     <div class="hero-actions reveal reveal-d3">
       <a href="https://github.com/Manzela/Antigravity-OS" target="_blank" rel="noopener" class="btn-primary">
         <span class="material-symbols-outlined" style="font-size:20px">code</span> View Repository
       </a>
       <div class="install-cmd">pip install ag-os</div>
     </div>
-    
+
     <div class="metrics reveal reveal-d3" id="metrics-container">
       <div class="metric"><div class="metric-val" data-target="102">0</div><div class="metric-label">Tests Passing</div></div>
       <div class="metric"><div class="metric-val" data-target="9">0</div><div class="metric-label">Governance Rules</div></div>
@@ -532,7 +532,7 @@ footer a:hover{color:var(--text)}
       <h2>Initialize the <strong>Core.</strong></h2>
       <p class="section-sub">Deploy governed, self-improving agent pipelines in seconds. Built for high-fidelity orchestration.</p>
     </div>
-    
+
     <div class="terminal-wrapper reveal reveal-d1">
       <div class="terminal">
         <div class="terminal-bar">
@@ -591,7 +591,7 @@ const countObserver = new IntersectionObserver((entries) => {
       const metrics = entry.target.querySelectorAll('.metric-val');
       metrics.forEach(el => {
         const target = parseInt(el.getAttribute('data-target'));
-        const duration = 1500; 
+        const duration = 1500;
         const stepTime = Math.abs(Math.floor(duration / (target || 1)));
         let curr = 0;
         const timer = setInterval(() => {
@@ -640,20 +640,20 @@ async function runTerminal() {
     const line = termLines[i];
     const delay = line.type === 'cmd' ? 800 : (line.type === 'table' ? 600 : 300);
     await new Promise(r => setTimeout(r, delay));
-    
+
     // Remove cursor from previous
     const cursor = document.querySelector('.t-cursor');
     if(cursor) cursor.remove();
-    
+
     const div = document.createElement('div');
     div.className = 't-line';
-    
+
     if(line.type === 'cmd') {
       div.innerHTML = `<span class="t-prompt">$</span><span class="t-cmd">${line.text}</span>`;
     } else {
       div.innerHTML = `<span class="t-${line.type}">${line.text}</span>`;
     }
-    
+
     // Add cursor to end
     div.innerHTML += '<span class="t-cursor"></span>';
     termBody.appendChild(div);

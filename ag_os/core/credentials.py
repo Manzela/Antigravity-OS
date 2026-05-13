@@ -172,7 +172,7 @@ def _keyring_available() -> bool:
     """
     try:
         import keyring
-        import keyring.errors  # noqa: F401  (forces ImportError chain to surface)
+        import keyring.errors
 
         # Test with a probe write/read/delete cycle.
         keyring.set_password(SERVICE_NAME, "__probe__", "test")

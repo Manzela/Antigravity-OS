@@ -10,7 +10,6 @@ This module is model-agnostic and has zero LLM dependencies.
 Any AI agent that reads the output gains self-improvement.
 """
 
-import contextlib
 import json
 import logging
 import sqlite3
@@ -312,14 +311,10 @@ class DreamEngine:
             states = [r.get("state", "") for r in records]
             if "COMPLETE" in states:
                 completed_counts.append(len(records))
-        if completed_counts:
-            # statistics.median returns the average of the two middle values
-            # for even-length lists; the previous `sorted(...)[len // 2]`
-            # returned the upper-median, which biased the FAST_COMPLETION
-            # threshold high.
-            median_count = statistics.median(completed_counts)
-        else:
-            median_count = 5
+        # statistics.median returns the average of the two middle values for
+        # even-length lists; the previous `sorted(...)[len // 2]` returned
+        # the upper-median, which biased the FAST_COMPLETION threshold high.
+        median_count = statistics.median(completed_counts) if completed_counts else 5
 
         linear_path = ["PLANNING", "PLAN_APPROVED", "BUILDING", "VERIFYING", "COMPLETE"]
 
