@@ -1,5 +1,8 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+# setuptools >=77.0 is required for the PEP 639 SPDX `license = "MIT"`
+# string form below; older setuptools (68-76) reject it with
+# "configuration error: project.license must be valid exactly by one definition".
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]

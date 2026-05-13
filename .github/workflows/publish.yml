@@ -27,6 +27,25 @@ jobs:
       - name: Install build tools
         run: pip install build
 
+      - name: Verify release tag matches pyproject version
+        # Refuses to publish when the GitHub release tag (vX.Y.Z) and the
+        # version in pyproject.toml disagree — otherwise `python -m build`
+        # would silently package the pyproject version under the wrong
+        # release label and PyPI would reject it as a duplicate, leaving
+        # the release in a half-published state. Skipped for
+        # workflow_dispatch where there is no tag.
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pyver=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
+          if [ "$tag" != "$pyver" ]; then
+            echo "::error::Release tag '${GITHUB_REF_NAME}' (normalized '$tag') does not match pyproject.toml version '$pyver'."
+            echo "Bump pyproject.toml or re-tag, then create a fresh release."
+            exit 1
+          fi
+          echo "Tag and pyproject version agree on '$pyver'."
+
       - name: Build distributions
         run: python -m build
 
