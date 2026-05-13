@@ -164,17 +164,23 @@ _OFFLINE_PROVIDERS = {
 
 
 def _keyring_available() -> bool:
-    """Check if keyring backend is functional."""
+    """Check if keyring backend is functional.
+
+    Logs the specific failure mode at debug level so a user staring at
+    "credentials silently use the fallback file" can find the reason
+    in `LOG_LEVEL=debug ag-os status`.
+    """
     try:
         import keyring
-        import keyring.errors
+        import keyring.errors  # noqa: F401  (forces ImportError chain to surface)
 
         # Test with a probe write/read/delete cycle.
         keyring.set_password(SERVICE_NAME, "__probe__", "test")
         val = keyring.get_password(SERVICE_NAME, "__probe__")
         keyring.delete_password(SERVICE_NAME, "__probe__")
         return val == "test"
-    except Exception:
+    except Exception as e:
+        logger.debug("keyring backend unavailable, falling back to file: %s", e)
         return False
 
 
