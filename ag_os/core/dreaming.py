@@ -10,6 +10,7 @@ This module is model-agnostic and has zero LLM dependencies.
 Any AI agent that reads the output gains self-improvement.
 """
 
+import contextlib
 import json
 import sqlite3
 from dataclasses import asdict, dataclass, field
@@ -147,7 +148,7 @@ class DreamEngine:
         except sqlite3.Error:
             return operations
 
-        for key, raw_value in rows:
+        for _key, raw_value in rows:
             try:
                 record = json.loads(raw_value)
                 op_name = record.get("operation", "")
@@ -176,7 +177,7 @@ class DreamEngine:
             last_state = states[-1] if states else ""
 
             # ── LOOP_DETECTED ──
-            # Operation has more than 2× max_loop_count transitions
+            # Operation has more than 2x max_loop_count transitions
             loop_threshold = self._max_loops * 2
             if transition_count > loop_threshold:
                 friction.append(
@@ -187,7 +188,7 @@ class DreamEngine:
                         diagnosis=(
                             f"Operation '{op_name}' executed {transition_count} transitions, "
                             f"exceeding the loop threshold of {loop_threshold} "
-                            f"(2× max_loop_count={self._max_loops}). "
+                            f"(2x max_loop_count={self._max_loops}). "
                             f"This indicates the agent was stuck in a retry loop."
                         ),
                         evidence={
@@ -480,7 +481,7 @@ class DreamEngine:
         success_patterns = self.scan_success()
 
         # ── Build summary ──
-        archetype_counts = {}
+        archetype_counts: dict[str, int] = {}
         for e in friction_events:
             archetype_counts[e.archetype] = archetype_counts.get(e.archetype, 0) + 1
 
@@ -551,7 +552,7 @@ class DreamEngine:
 
         for path in files[:n]:
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                 if data:
                     # Reconstruct nested dataclasses
@@ -604,7 +605,7 @@ class DreamEngine:
         # Phase 1: TTL-based expiry
         for path in files:
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                 ts_str = data.get("timestamp", "") if data else ""
                 if ts_str:
@@ -624,7 +625,7 @@ class DreamEngine:
             excess = remaining_files[: len(remaining_files) - max_count]
             for path in excess:
                 try:
-                    with open(path, "r", encoding="utf-8") as f:
+                    with open(path, encoding="utf-8") as f:
                         data = yaml.safe_load(f)
                     if data:
                         self._write_rollup(aggregates_path, data)
@@ -635,10 +636,8 @@ class DreamEngine:
 
         # Execute deletions
         for path in to_delete:
-            try:
+            with contextlib.suppress(OSError):
                 path.unlink()
-            except OSError:
-                pass
 
         remaining = len(list(_DREAMS_DIR.glob("dream-*.yaml")))
         return {
@@ -686,68 +685,87 @@ _SEVERITY_ICONS = {
 }
 
 
-def print_dream_report(report: DreamReport) -> None:
-    """Print a formatted Dream Report to stdout."""
-    print()
-    print("  ╔══════════════════════════════════════════════════════════╗")
-    print("  ║           ANTIGRAVITY OS — DREAM REPORT                 ║")
-    print("  ╚══════════════════════════════════════════════════════════╝")
-    print()
-    print(f"  Dream ID:   {report.dream_id}")
-    print(f"  Timestamp:  {report.timestamp}")
-    print(f"  Analyzed:   {report.operations_analyzed} operations")
-    print(f"  Friction:   {report.friction_detected} events detected")
-    print(f"  Successes:  {report.successes_detected} patterns identified")
-    print()
+def format_dream_report(report: DreamReport) -> str:
+    """Render a formatted Dream Report as a string.
+
+    Side-effect-free primitive; safe for MCP / log handlers / JSON
+    response bodies. The CLI wrapper :func:`print_dream_report` is the
+    only thing that should write to stdout.
+    """
+    lines: list[str] = [
+        "",
+        "  ╔══════════════════════════════════════════════════════════╗",
+        "  ║           ANTIGRAVITY OS — DREAM REPORT                 ║",
+        "  ╚══════════════════════════════════════════════════════════╝",
+        "",
+        f"  Dream ID:   {report.dream_id}",
+        f"  Timestamp:  {report.timestamp}",
+        f"  Analyzed:   {report.operations_analyzed} operations",
+        f"  Friction:   {report.friction_detected} events detected",
+        f"  Successes:  {report.successes_detected} patterns identified",
+        "",
+    ]
 
     if report.friction_events:
-        print("  -- Friction Events ------------------------------------------")
-        print()
-        for i, event in enumerate(report.friction_events, 1):
+        lines.extend(["  -- Friction Events ------------------------------------------", ""])
+        for event in report.friction_events:
             icon = _SEVERITY_ICONS.get(event.severity, "?")
-            print(f"  {icon} [{event.severity}] {event.archetype}")
-            print(f"    Operation: {event.operation}")
-            print(f"    Diagnosis: {event.diagnosis}")
-            print()
+            lines.extend(
+                [
+                    f"  {icon} [{event.severity}] {event.archetype}",
+                    f"    Operation: {event.operation}",
+                    f"    Diagnosis: {event.diagnosis}",
+                    "",
+                ]
+            )
     else:
-        print("  No friction detected. All operations nominal.")
-        print()
+        lines.extend(["  No friction detected. All operations nominal.", ""])
 
     if report.success_patterns:
-        print("  -- Success Patterns -----------------------------------------")
-        print()
-        for i, pattern in enumerate(report.success_patterns, 1):
-            print(f"  + [{pattern.archetype}]")
-            print(f"    Operation: {pattern.operation}")
-            print(f"    Diagnosis: {pattern.diagnosis}")
-            print()
+        lines.extend(["  -- Success Patterns -----------------------------------------", ""])
+        for pattern in report.success_patterns:
+            lines.extend(
+                [
+                    f"  + [{pattern.archetype}]",
+                    f"    Operation: {pattern.operation}",
+                    f"    Diagnosis: {pattern.diagnosis}",
+                    "",
+                ]
+            )
 
     if report.proposed_patches:
-        print("  ── Proposed Governance Patches ──────────────────────────")
-        print()
+        lines.extend(["  ── Proposed Governance Patches ──────────────────────────", ""])
         for i, patch in enumerate(report.proposed_patches, 1):
-            print(f"  Patch {i}: [{patch.patch_type}]")
-            print(f"    Target:      {patch.target}")
-            print(f"    Description: {patch.description}")
+            lines.extend(
+                [
+                    f"  Patch {i}: [{patch.patch_type}]",
+                    f"    Target:      {patch.target}",
+                    f"    Description: {patch.description}",
+                ]
+            )
             if patch.yaml_content:
-                print("    Content:")
-                for line in patch.yaml_content.strip().splitlines():
-                    print(f"      {line}")
-            print()
+                lines.append("    Content:")
+                lines.extend(f"      {ln}" for ln in patch.yaml_content.strip().splitlines())
+            lines.append("")
 
-    print("  ── Summary ─────────────────────────────────────────────")
-    print()
-    # Word-wrap the summary at ~60 chars
-    words = report.summary.split()
-    line = "  "
-    for word in words:
-        if len(line) + len(word) + 1 > 70:
-            print(line)
-            line = "  " + word
-        else:
-            line += " " + word if line.strip() else "  " + word
-    if line.strip():
-        print(line)
-    print()
-    print("  ════════════════════════════════════════════════════════")
-    print()
+    lines.extend(["  ── Summary ─────────────────────────────────────────────", ""])
+    # Word-wrap the summary using stdlib textwrap rather than the
+    # hand-rolled loop that lived here before.
+    import textwrap
+
+    wrapped = textwrap.fill(
+        report.summary,
+        width=70,
+        initial_indent="  ",
+        subsequent_indent="  ",
+    )
+    if wrapped:
+        lines.append(wrapped)
+    lines.extend(["", "  ════════════════════════════════════════════════════════", ""])
+
+    return "\n".join(lines)
+
+
+def print_dream_report(report: DreamReport) -> None:
+    """Print the formatted Dream Report to stdout (CLI use only)."""
+    print(format_dream_report(report))

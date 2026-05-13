@@ -15,9 +15,9 @@ Usage:
     provider = get_provider("secrets", "local", config=config)
 """
 
-from typing import Any, Dict, Type
+from typing import Any
 
-_REGISTRY: Dict[str, Dict[str, Type]] = {}
+_REGISTRY: dict[str, dict[str, type]] = {}
 
 
 def register(surface: str, name: str):
@@ -63,7 +63,7 @@ def get_provider(surface: str, name: str, **kwargs) -> Any:
     return providers[name](**kwargs)
 
 
-def list_providers(surface: str = "") -> Dict[str, list[str]]:
+def list_providers(surface: str = "") -> dict[str, list[str]]:
     """List all registered providers, optionally filtered by surface.
 
     Returns:
@@ -78,12 +78,12 @@ def _discover_builtins():
     """Import all built-in provider modules to trigger @register decorators."""
     # Each import triggers the @register decorator at module load time.
     # This is the only place where provider modules are explicitly imported.
-    import ag_os.providers.cost.local  # noqa: F401
-    import ag_os.providers.issues.console  # noqa: F401
-    import ag_os.providers.policy.builtin  # noqa: F401
-    import ag_os.providers.secrets.env  # noqa: F401
-    import ag_os.providers.secrets.local  # noqa: F401
-    import ag_os.providers.state.sqlite  # noqa: F401
+    import ag_os.providers.cost.local
+    import ag_os.providers.issues.console
+    import ag_os.providers.policy.builtin
+    import ag_os.providers.secrets.env
+    import ag_os.providers.secrets.local
+    import ag_os.providers.state.sqlite
     import ag_os.providers.telemetry.console  # noqa: F401
 
 

@@ -9,7 +9,7 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any
 
 from ag_os.config import load_config
 from ag_os.providers.registry import get_provider
@@ -36,15 +36,19 @@ class FlightRecord:
     state: str
     timestamp: str = ""
     previous_state: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     error: str = ""
 
     def __post_init__(self):
         if not self.timestamp:
             self.timestamp = datetime.now(timezone.utc).isoformat()
         if not self.trace_id:
+            # Non-cryptographic identifier — collisions on a 12-hex-char
+            # truncated digest are not a security concern for trace IDs.
+            # Switched from md5 to sha256 to satisfy ruff S324; behavior
+            # is unchanged for the consumer (still 12 hex chars).
             raw = f"{self.operation}-{self.timestamp}"
-            self.trace_id = hashlib.md5(raw.encode()).hexdigest()[:12]
+            self.trace_id = hashlib.sha256(raw.encode()).hexdigest()[:12]
 
 
 class FlightRecorder:
@@ -81,7 +85,7 @@ class FlightRecorder:
         self,
         operation: str,
         new_state: str,
-        metadata: Dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
         error: str = "",
     ) -> FlightRecord:
         """Transition an operation to a new state.

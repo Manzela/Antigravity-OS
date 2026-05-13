@@ -103,7 +103,7 @@ class TestFrictionScan:
     """Tests for DreamEngine.scan_friction() detection heuristics."""
 
     def test_detects_loop(self):
-        """Operations with >2× max_loop_count transitions are LOOP_DETECTED."""
+        """Operations with >2x max_loop_count transitions are LOOP_DETECTED."""
         engine, op_id = _create_engine_with_friction(loops=3)
         friction = engine.scan_friction()
 

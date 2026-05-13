@@ -3,7 +3,6 @@
 import sqlite3
 import time
 from pathlib import Path
-from typing import Optional
 
 from ag_os.providers.registry import register
 from ag_os.providers.state import StateProvider
@@ -49,7 +48,7 @@ class SQLiteStateProvider(StateProvider):
                 (key, value, expires_at),
             )
 
-    def get(self, key: str) -> Optional[str]:
+    def get(self, key: str) -> str | None:
         with self._connect() as conn:
             row = conn.execute(
                 "SELECT value, expires_at FROM state WHERE key = ?",

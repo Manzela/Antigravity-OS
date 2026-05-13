@@ -60,15 +60,16 @@ gcp = [
 aws = ["boto3>=1.28"]
 vault = ["hvac>=2.0"]
 jira = ["jira>=3.0"]
-linear = []
 redis = ["redis>=5.0"]
 datadog = ["ddtrace>=2.0"]
-cedar = []
 mcp = ["mcp[cli]>=1.0"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
-    "ruff>=0.4",
+    # Pin matches .pre-commit-config.yaml (ruff-pre-commit v0.11.12) so
+    # CI and pre-commit cannot diverge as new ruff rules ship.
+    "ruff==0.11.12",
+    "mypy>=1.8",
 ]
 all = ["ag-os[gcp,aws,jira,redis,mcp]"]
 
@@ -90,7 +91,62 @@ line-length = 100
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W"]
+# Expanded rule set — see audit/audit-plan.md (P1-10).
+# - B   flake8-bugbear (mutable defaults, raise-from-loss)
+# - S   flake8-bandit  (subprocess shell=True, hardcoded creds)
+# - UP  pyupgrade      (modern syntax for >=3.10)
+# - RUF ruff-native    (mutable class attrs, implicit-Optional)
+# - SIM flake8-simplify
+# - C4  flake8-comprehensions
+# - PTH flake8-use-pathlib
+select = ["E", "F", "I", "N", "W", "B", "S", "UP", "RUF", "SIM", "C4", "PTH"]
+ignore = [
+    # Stylistic Path.open() migration — 25 sites across 9 files. Worth doing
+    # but mechanical; tracked as audit-plan.md P1-10 follow-up rather than
+    # bundled into this PR. PTH100+ (other path rules) stay enforced.
+    "PTH123",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# `assert` is the standard pytest assertion mechanism.
+# Subprocess in test fixtures is fine.
+"tests/*" = ["S101", "S603"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--cov=ag_os --cov-report=term-missing --cov-report=xml --tb=short -q"
+
+[tool.coverage.run]
+source = ["ag_os"]
+branch = true
+omit = [
+    "ag_os/__init__.py",
+]
+
+[tool.coverage.report]
+# No `fail_under` yet — establish the baseline first; audit-plan.md P1-7
+# documents the follow-up to set a floor (target: 70+).
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.mypy]
+# Non-strict baseline (audit-plan.md P0-9). Strict mode is the follow-up
+# once existing type errors are addressed; today this catches unannotated
+# new code in CI without forcing an immediate fix-everything-at-once PR.
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+no_implicit_optional = true
+# Per-module overrides
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true

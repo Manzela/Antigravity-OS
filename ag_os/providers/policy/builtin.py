@@ -2,7 +2,6 @@
 
 import re
 from pathlib import Path
-from typing import List
 
 from ag_os.providers.policy import PolicyProvider, PolicyResult
 from ag_os.providers.registry import register
@@ -126,5 +125,5 @@ class BuiltinPolicyProvider(PolicyProvider):
             policy_name=policy_name,
         )
 
-    def list_policies(self) -> List[str]:
+    def list_policies(self) -> list[str]:
         return sorted(self._rules.keys())

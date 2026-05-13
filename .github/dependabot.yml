@@ -1,0 +1,28 @@
+# Weekly dependency PRs from Dependabot.
+#
+# Two ecosystems: pip (the package's own runtime + extras + dev deps) and
+# github-actions (workflow action versions like actions/checkout@vN).
+
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions

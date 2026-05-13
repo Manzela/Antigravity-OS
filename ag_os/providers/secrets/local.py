@@ -1,7 +1,6 @@
 """Local .env file secrets provider (DEFAULT)."""
 
 from pathlib import Path
-from typing import Optional
 
 from ag_os.providers.registry import register
 from ag_os.providers.secrets import SecretsProvider
@@ -25,7 +24,7 @@ class LocalSecretsProvider(SecretsProvider):
         self._cache.clear()
         if not self._path.is_file():
             return
-        with open(self._path, "r", encoding="utf-8") as f:
+        with open(self._path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -38,7 +37,7 @@ class LocalSecretsProvider(SecretsProvider):
                 if key:
                     self._cache[key] = value
 
-    def get_secret(self, name: str) -> Optional[str]:
+    def get_secret(self, name: str) -> str | None:
         return self._cache.get(name)
 
     def list_secrets(self) -> list[str]:
