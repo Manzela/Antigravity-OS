@@ -270,19 +270,24 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full provider development guide.
 ```
 ag-os/
 ├── ag_os/
-│   ├── cli.py                  # ag-os CLI (init, check, demo, status, dream, daemon)
-│   ├── config.py               # antigravity.yaml loader
-│   ├── interactive.py           # Interactive shell (FTUX, /commands)
-│   ├── server.py               # MCP server (model context protocol)
+│   ├── __init__.py             # __version__
+│   ├── cli.py                  # Click CLI: init, check, demo, status, serve,
+│   │                           #   dream (+ merge), daemon (start/install/
+│   │                           #   uninstall/status)
+│   ├── config.py               # antigravity.yaml loader (walk-up discovery)
+│   ├── interactive.py          # prompt_toolkit shell, FTUX wizard, /auth
+│   ├── py.typed                # PEP 561 marker
 │   ├── core/
 │   │   ├── cost_guard.py       # Solvency logic (Rule 08)
-│   │   ├── credentials.py      # OS Keychain credential manager
+│   │   ├── credentials.py      # OS Keychain + fallback credential store
 │   │   ├── dreaming.py         # Dreaming Module (self-improvement)
-│   │   ├── daemon.py           # Dream Daemon (background service)
+│   │   ├── daemon.py           # Dream Daemon (launchd / systemd installer)
 │   │   ├── aggregator.py       # Cross-repo fleet aggregator
 │   │   ├── patch_applier.py    # GitOps patch application (HITL gates)
 │   │   ├── flight_recorder.py  # State machine (Rule 05)
 │   │   └── rules_engine.py     # Policy evaluator
+│   ├── mcp/
+│   │   └── server.py           # FastMCP server (stdio transport)
 │   └── providers/
 │       ├── registry.py         # @register + get_provider()
 │       ├── secrets/            # SecretsProvider ABC + local, env
@@ -291,13 +296,22 @@ ag-os/
 │       ├── state/              # StateProvider ABC + sqlite
 │       ├── telemetry/          # TelemetryProvider ABC + console
 │       └── policy/             # PolicyProvider ABC + builtin
+├── tests/                      # pytest suite (governance, dreaming,
+│                               #   patch_applier, daemon, credentials, ...)
+├── templates/                  # Constitution rules + Agent/Skills templates
+│                               #   shipped to user projects
 ├── docs/
-│   ├── index.html              # Pipeline Observatory (interactive demo)
-│   ├── style.css               # Observatory design system
-│   ├── observatory.js          # Observatory interactions & simulation
-│   └── adr/                    # Architecture Decision Records
+│   ├── index.html              # Pipeline Observatory (self-contained;
+│   │                           #   CSS + JS are inlined in this file)
+│   ├── Flight_Recorder_Schema.json
+│   └── adr/                    # Architecture Decision Records (001..004)
+├── .github/
+│   ├── workflows/              # ci.yml, publish.yml, pages.yml
+│   └── ISSUE_TEMPLATE/         # bug_report, feature_request, new_provider
 ├── antigravity.yaml
 ├── pyproject.toml
+├── .pre-commit-config.yaml
+├── .secrets.baseline           # detect-secrets baseline
 ├── GOVERNANCE.md
 ├── MAINTAINERS.md
 ├── ADOPTERS.md
