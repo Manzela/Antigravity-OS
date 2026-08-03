@@ -68,7 +68,7 @@ dev = [
     "pytest-cov>=4.0",
     # Pin matches .pre-commit-config.yaml (ruff-pre-commit v0.11.12) so
     # CI and pre-commit cannot diverge as new ruff rules ship.
-    "ruff==0.15.13",
+    "ruff==0.16.1",
     "mypy>=1.8",
 ]
 all = ["ag-os[gcp,aws,jira,redis,mcp]"]
